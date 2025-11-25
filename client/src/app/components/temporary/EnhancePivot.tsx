@@ -1,0 +1,226 @@
+'use client';
+
+import { motion } from 'motion/react';
+import { ArrowRight, RefreshCcw, Sparkles, Rocket, AlertTriangle, XCircle } from 'lucide-react';
+
+interface EnhancePivotProps {
+    onEnhance: () => void;
+    onPivot: () => void;
+    onRetry: () => void;
+    onProceed: () => void; // For high scores
+    score?: number;
+}
+
+export default function EnhancePivot({
+    onEnhance,
+    onPivot,
+    onRetry,
+    onProceed,
+    score = 58 // Default to the "Pivot/Enhance" range for demo
+}: EnhancePivotProps) {
+
+    // Determine state based on score
+    const isKill = score < 50;
+    const isPivot = score >= 50 && score < 70;
+    const isBuild = score >= 70 && score < 90;
+    const isUnicorn = score >= 90;
+
+    const getScoreColor = (s: number) => {
+        if (s < 50) return 'text-red-500';
+        if (s < 70) return 'text-yellow-500';
+        if (s < 90) return 'text-green-500';
+        return 'text-purple-500';
+    };
+
+    const getScoreLabel = (s: number) => {
+        if (s < 50) return 'Kill';
+        if (s < 70) return 'Pivot';
+        if (s < 90) return 'Build';
+        return 'Unicorn';
+    };
+
+    const getRationale = (s: number) => {
+        if (s < 50) return "Fatal flaws detected (Zero TAM, saturated market, no clear problem).";
+        if (s < 70) return "Good core, but weak execution/market. Ask user to refine prompt before building.";
+        if (s < 90) return "Solid fundamentals. Worth the API cost to generate MVP specs.";
+        return "Exceptional opportunity. High urgency.";
+    };
+
+    return (
+        <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+        >
+            <div className="w-full max-w-6xl bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+
+                {/* Left Panel: Score & Analysis */}
+                <div className="w-full md:w-1/3 p-6 border-b md:border-b-0 md:border-r border-neutral-800 bg-neutral-900/50 flex flex-col">
+                    <div className="mb-8">
+                        <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wider mb-2">Verdyct Score</h3>
+                        <div className="flex items-baseline gap-2">
+                            <span className={`text-6xl font-bold ${getScoreColor(score)}`}>{score}</span>
+                            <span className="text-neutral-500 text-xl">/ 100</span>
+                        </div>
+                        <p className={`mt-2 text-lg font-bold ${getScoreColor(score)}`}>
+                            {getScoreLabel(score)}
+                        </p>
+                        <p className="mt-1 text-sm text-neutral-400">
+                            {getRationale(score)}
+                        </p>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                                Analysis & Risks
+                            </h4>
+                            <ul className="space-y-2 text-sm text-neutral-400">
+                                {isKill ? (
+                                    <>
+                                        <li className="flex gap-2">
+                                            <span className="text-red-500">•</span>
+                                            <span>Total Addressable Market (TAM) appears negligible.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <span className="text-red-500">•</span>
+                                            <span>Legal/Regulatory barriers are insurmountable for an MVP.</span>
+                                        </li>
+                                    </>
+                                ) : isPivot ? (
+                                    <>
+                                        <li className="flex gap-2">
+                                            <span className="text-yellow-500">•</span>
+                                            <span>Market Saturation: High. 15+ direct competitors identified.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <span className="text-yellow-500">•</span>
+                                            <span>Differentiation: Low. Core features overlap 90% with market leaders.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <span className="text-yellow-500">•</span>
+                                            <span>Acquisition Cost: Estimated CAC &gt; $50, unsustainable for this model.</span>
+                                        </li>
+                                    </>
+                                ) : (
+                                    <>
+                                        <li className="flex gap-2">
+                                            <span className="text-green-500">•</span>
+                                            <span>Strong founder-market fit potential.</span>
+                                        </li>
+                                        <li className="flex gap-2">
+                                            <span className="text-green-500">•</span>
+                                            <span>Clear path to initial revenue.</span>
+                                        </li>
+                                    </>
+                                )}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Panel: Actions */}
+                <div className="w-full md:w-2/3 p-6 bg-black/20 flex flex-col overflow-y-auto">
+                    <h2 className="text-2xl font-bold text-white mb-6">Recommended Actions</h2>
+
+                    {isKill ? (
+                        <div className="flex flex-col items-center justify-center flex-1 text-center">
+                            <XCircle className="w-16 h-16 text-neutral-700 mb-4" />
+                            <h3 className="text-xl text-white font-medium mb-2">Hard Stop</h3>
+                            <p className="text-neutral-400 max-w-md mb-8">
+                                The analysis suggests this idea has fatal flaws. It is not recommended to proceed.
+                            </p>
+                            <button
+                                onClick={onRetry}
+                                className="px-6 py-3 bg-white text-black rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center gap-2"
+                            >
+                                <RefreshCcw className="w-4 h-4" />
+                                Try Another Idea
+                            </button>
+                        </div>
+                    ) : (isBuild || isUnicorn) ? (
+                        <div className="flex flex-col items-center justify-center flex-1 text-center">
+                            {isUnicorn ? (
+                                <Rocket className="w-16 h-16 text-purple-500 mb-4" />
+                            ) : (
+                                <Sparkles className="w-16 h-16 text-green-500 mb-4" />
+                            )}
+                            <h3 className="text-xl text-white font-medium mb-2">
+                                {isUnicorn ? 'Unicorn Opportunity' : 'Ready to Build'}
+                            </h3>
+                            <p className="text-neutral-400 max-w-md mb-8">
+                                {isUnicorn
+                                    ? "Exceptional metrics. Immediate execution recommended."
+                                    : "Fundamentals are solid. Proceed to generate MVP specs."}
+                            </p>
+                            <button
+                                onClick={onProceed}
+                                className={`px-8 py-3 text-white rounded-full font-medium transition-colors flex items-center gap-2 ${isUnicorn ? 'bg-purple-600 hover:bg-purple-700' : 'bg-primary-red hover:bg-red-700'
+                                    }`}
+                            >
+                                Start Architect Agent
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ) : (
+                        /* Pivot / Enhance Options (Score 50-69) */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                            {/* Option 1: Enhance */}
+                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-primary-red/50 transition-all duration-300 flex flex-col">
+                                <div className="absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium bg-neutral-800 text-neutral-300">
+                                    Option 1
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-1 mt-1">Enhance</h3>
+                                <p className="text-neutral-400 text-sm mb-4">
+                                    Keep the core idea but refine the feature set to target a specific vertical.
+                                </p>
+
+                                <div className="space-y-2 flex-grow">
+                                    <button
+                                        onClick={onEnhance}
+                                        className="w-full text-left text-xs text-neutral-300 bg-neutral-800/50 hover:bg-neutral-800 p-2.5 rounded-lg transition-colors"
+                                    >
+                                        Enterprise security-focused task manager with advanced compliance features
+                                    </button>
+                                    <button
+                                        onClick={onEnhance}
+                                        className="w-full text-left text-xs text-neutral-300 bg-neutral-800/50 hover:bg-neutral-800 p-2.5 rounded-lg transition-colors"
+                                    >
+                                        AI-powered productivity app with predictive analytics and workflow automation
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Option 2: Pivot (Recommended) */}
+                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-primary-red shadow-[0_0_20px_rgba(220,38,38,0.1)] transition-all duration-300 flex flex-col">
+                                <div className="absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium bg-primary-red text-white">
+                                    Recommended
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-1 mt-1">Pivot</h3>
+                                <p className="text-neutral-400 text-sm mb-4">
+                                    Shift direction to a related problem space with higher demand.
+                                </p>
+
+                                <div className="space-y-2 mb-5 flex-grow">
+                                    <div className="text-sm text-neutral-300 bg-neutral-800/50 p-3 rounded-lg">
+                                        Healthcare appointment scheduling platform with automated insurance verification and patient reminder system
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={onPivot}
+                                    className="w-full py-2.5 rounded-xl bg-primary-red text-white font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    Pivot to This Idea
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </motion.div >
+    );
+}
