@@ -1,0 +1,23 @@
+# URGENT FIX: Analyst Competition Scoring Logic
+# PROBLEM: The Analyst is too lenient. It gives a score of 4/10 to a generic "Phone Selling App" despite the existence of monopolies like eBay and Back Market. It confuses "Large Market" with "Ease of Entry".
+# GOAL: The Analyst must give a Competition score of 1 or 2 (Fatal) if strong Network Effects or Monopolies exist.
+
+## UPDATE `main.py` (Analyst System Prompt)
+
+Find the section where you define the scoring rules and REPLACE the instruction for "Competition" with this **STRICT** logic:
+
+"""
+**SCORING RULE: COMPETITION (The most critical score)**
+You must score this from 0 to 10 based on **WINNABILITY**, not just activity.
+
+* **0-2 (SUICIDE MISSION):** The market has dominant monopolies with strong Network Effects (e.g., Social Networks vs Facebook, Marketplaces vs Amazon/eBay/Airbnb). A new entrant has near-zero chance without a massive differentiator.
+    * *Example:* "Another Dating App", "Phone Selling Marketplace", "YouTube competitor".
+* **3-5 (RED OCEAN):** Crowded with many established players. Requires 10x better product to survive.
+* **6-8 (OPEN MARKET):** Fragmented market, no clear winner, or sleepy incumbents. Good opportunity.
+* **9-10 (BLUE OCEAN):** Brand new category or solving a problem nobody else is solving.
+
+**CRITICAL INSTRUCTION:** If the user suggests a **Marketplace** (connecting buyers and sellers) in a sector already dominated by a giant (like Food Delivery, Second-hand goods, Taxi), you **MUST** give a Competition score between **0 and 2**. Do not be optimistic.
+"""
+
+## EXECUTION
+Update the System Prompt in `main.py` with this text immediately.

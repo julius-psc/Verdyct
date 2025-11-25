@@ -1,0 +1,180 @@
+# PROJECT: VERDYCT - AI Startup Validator & Orchestrator
+# ROLE: Senior Python Backend Engineer
+# STACK: Python, FastAPI, OpenAI (GPT-4o), Pydantic, Tavily API, AsyncIO
+
+## OBJECTIVE
+Build a robust FastAPI backend for "Verdyct", an AI-powered startup validation engine.
+The system orchestrates **4 specialized AI Agents** to analyze a startup idea from every angle: Market, Strategy, Finance, and Product.
+It uses **Real-Time Web Data** (via Tavily) to ground every insight in reality, preventing AI hallucinations.
+
+## ARCHITECTURE & WORKFLOW
+
+The system exposes a main orchestrator endpoint (`/generate-report`) that runs 4 agents in parallel:
+
+### 1. The Analyst Agent (`/analyze`)
+*   **Role:** Market Research & Validation.
+*   **Data:** Fetches real TAM, SAM, CAGR, and Competitors via Tavily.
+*   **Feature:** **Predictive Certainty Score (PCS)**. A deterministic score (0-100) calculated based on Market Size, Growth, Need, and Competition (Ease of Entry).
+*   **Anti-Hallucination:** Every metric must have a `verified_url` from the search results.
+
+### 2. The Spy Agent (`/spy`)
+*   **Role:** Competitive Intelligence & Strategy.
+*   **Data:** Scrapes Reddit, G2, Capterra for competitor complaints and pain points.
+*   **Feature:** Generates a **Strategic Quadrant** placing the idea in a "Blue Ocean" opportunity.
+*   **Anti-Hallucination:** Every competitor and complaint must be verified with a source URL.
+
+### 3. The Financier Agent (`/financier`)
+*   **Role:** Financial Modeling & Pricing.
+*   **Data:** Researches competitor pricing models.
+*   **Feature:** **Dynamic Business Model Detection**. Automatically detects if the idea is SaaS, Marketplace, E-commerce, or Ad-Supported and adapts pricing tiers accordingly.
+*   **Output:** 5-Year Financial Projections (Revenue, CAC, LTV) calculated deterministically in Python.
+
+### 4. The Architect Agent (`/architect`)
+*   **Role:** Product Blueprint & MVP Generation.
+*   **Output:** Technical Stack, User Flow, Brand Kit, and Data Moat strategy.
+*   **Feature:** **One-Click MVP**. Generates production-ready code (React/Tailwind) and provides a deployment link (Lovable.dev / GitHub / Vercel).
+
+---
+
+## KEY FEATURES
+
+### 🛡️ Anti-Hallucination System
+- **URL Verification:** Every single data point (competitor, price, metric, complaint) MUST have a `verified_url` from Tavily.
+- **Strict Filtering:** If the AI cannot find a source URL, the data is discarded.
+- **Result:** 100% Traceable insights.
+
+### 🧠 Predictive Certainty Score (PCS)
+- A deterministic algorithm (not just LLM feeling) to score ideas.
+- **Formula:** Weighted average of Market (20%), Growth (20%), Need (30%), and Competition (30%).
+- **Kill Switch:** If Competition score is < 4 (Saturated/Hard to enter), the total score is capped at 60/100.
+
+### 🚦 Smart Gatekeeper & Rescue Plan
+- **Conditional Logic:** The system runs the Analyst Agent first.
+- **Pass/Fail:**
+  - **PCS < 60:** The idea is rejected. The system STOPS execution (saving API costs) and generates a **Rescue Plan** with "Improve" and "Pivot" strategies.
+  - **PCS >= 60:** The idea is approved. The system proceeds to run the Spy, Financier, and Architect agents for a full report.
+
+### ⚡ Parallel Orchestration
+- The `/generate-report` endpoint uses `asyncio.gather` to run all 4 agents simultaneously.
+- Reduces total wait time from ~4 mins to ~1 min.
+
+---
+
+## SETUP & INSTALLATION
+
+### Prerequisites
+- Python 3.8+
+- OpenAI API key (`gpt-4o-2024-08-06` access required)
+- Tavily API key (for web search)
+- (Optional) GitHub Token & Vercel Token for MVP deployment
+
+### Installation Steps
+
+1. **Clone/Download the project**
+   ```bash
+   cd server
+   ```
+
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment variables**
+   - Copy `.env.example` to `.env`
+   - Add your API keys:
+     ```
+     OPENAI_API_KEY=sk-...
+     TAVILY_API_KEY=tvly-...
+     GITHUB_TOKEN=ghp-... (Optional)
+     VERCEL_API_TOKEN=... (Optional)
+     ```
+
+4. **Start the server**
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+5. **Test the API**
+   - Health check: `GET http://localhost:8000/health`
+   - Full Report: `POST http://localhost:8000/generate-report`
+     ```json
+     {
+       "idea": "Airbnb for swimming pools"
+     }
+     ```
+
+---
+
+## API ENDPOINTS
+
+### POST `/generate-report` (Orchestrator)
+Runs all agents and returns a massive JSON object with keys: `analyst`, `spy`, `financier`, `architect`.
+
+### POST `/analyze`
+Runs only the Analyst Agent (Market Data + PCS Score).
+
+### POST `/spy`
+Runs only the Spy Agent (Competitors + Blue Ocean Strategy).
+
+### POST `/financier`
+Runs only the Financier Agent (Pricing + Projections).
+
+### POST `/architect`
+Runs only the Architect Agent (Blueprint + MVP Code).
+
+---
+
+## TARGET JSON STRUCTURES
+See `models.py` for the exact Pydantic schemas used for validation.
+
+### Complete JSON Template
+
+The response structure is **polymorphic** based on the `status` field.
+
+#### Scenario A: Approved (Full Report)
+```json
+{
+  "report_id": "uuid",
+  "submitted_at": "iso-date",
+  "status": "approved",
+  "pcs_score": 85,
+  "global_summary": "string",
+  "agents": {
+    "analyst": { ... },
+    "spy": { ... },
+    "financier": { ... },
+    "architect": { ... }
+  },
+  "rescue_plan": null
+}
+```
+
+#### Scenario B: Rejected (Rescue Plan)
+```json
+{
+  "report_id": "uuid",
+  "submitted_at": "iso-date",
+  "status": "rejected",
+  "pcs_score": 45,
+  "global_summary": "Idea viability is low...",
+  "agents": {
+    "analyst": { ... },
+    "spy": null,
+    "financier": null,
+    "architect": null
+  },
+  "rescue_plan": {
+    "improve": {
+      "title": "Refine Value Proposition",
+      "description": "Focus on a specific niche.",
+      "ai_suggested_prompt": "AI captioning for true-crime podcasters"
+    },
+    "pivot": {
+      "title": "Explore Adjacent Markets",
+      "description": "Look for similar problems in other industries.",
+      "ai_suggested_prompt": "Marketplace for vintage watch restoration"
+    }
+  }
+}
+```

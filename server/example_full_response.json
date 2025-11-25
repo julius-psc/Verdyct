@@ -1,0 +1,343 @@
+{
+  "report_id": "rep_123456789",
+  "submitted_at": "2025-11-21T14:30:00Z",
+  "status": "approved",
+  "pcs_score": 85,
+  "global_summary": "This project shows strong potential with a high PCS score of 85/100. The market is growing, and the problem urgency is high. However, competition is moderate, and initial customer acquisition might require a focused niche strategy.",
+  "agents": {
+    "analyst": {
+      "title": "Market Analyst",
+      "analysis_for": "AI-Powered Legal Assistant for Startups",
+      "score": 85,
+      "pcs_score": 85,
+      "score_card": {
+        "title": "High Potential",
+        "level": "A",
+        "description": "Strong market indicators with clear demand."
+      },
+      "market_metrics": [
+        {
+          "name": "TAM (Total Addressable Market)",
+          "value": "$25.4 Billion",
+          "change_percentage": "+12%",
+          "note": "Global Legal Tech Market size in 2024.",
+          "verified_url": "https://www.statista.com/statistics/legal-tech-market-size"
+        },
+        {
+          "name": "SAM (Serviceable Addressable Market)",
+          "value": "$4.2 Billion",
+          "change_percentage": "+15%",
+          "note": "Focus on SMBs and Startups in North America & Europe.",
+          "verified_url": "https://www.grandviewresearch.com/industry-analysis/legal-technology-market"
+        },
+        {
+          "name": "CAGR (Compound Annual Growth Rate)",
+          "value": "8.9%",
+          "change_percentage": "Stable",
+          "note": "Expected growth from 2024 to 2030.",
+          "verified_url": "https://www.marketsandmarkets.com/Market-Reports/legal-tech-market"
+        }
+      ],
+      "seo_opportunity": {
+        "title": "SEO Strategy",
+        "subtitle": "High value keywords identified",
+        "high_opportunity_keywords": [
+          {
+            "term": "automated legal compliance for startups",
+            "volume_estimate": "High Interest",
+            "difficulty_level": "Moderate Competition"
+          },
+          {
+            "term": "ai contract review free",
+            "volume_estimate": "Medium Interest",
+            "difficulty_level": "Competitive"
+          },
+          {
+            "term": "startup incorporation checklist ai",
+            "volume_estimate": "Niche",
+            "difficulty_level": "Low entry barrier"
+          }
+        ]
+      },
+      "ideal_customer_persona": {
+        "title": "Target Persona",
+        "subtitle": "The Overwhelmed Founder",
+        "persona_name": "Sarah Jenkins",
+        "persona_role": "Founder & CEO",
+        "persona_department": "Management",
+        "persona_quote": "I spend more time reading contracts than building my product. I'm terrified of missing a clause.",
+        "details": {
+          "age_range": "28-40",
+          "income": "$80k - $150k",
+          "education": "Masters / MBA",
+          "team_size": "5-20 employees"
+        },
+        "pain_points": [
+          {
+            "title": "Fear of Legal Risks",
+            "details": "Worried about being sued or non-compliance."
+          },
+          {
+            "title": "High Cost of Counsel",
+            "details": "Cannot afford $500/hr lawyers for routine questions."
+          }
+        ],
+        "jobs_to_be_done": [
+          "Review NDAs quickly",
+          "Generate employment contracts",
+          "Ensure GDPR compliance"
+        ],
+        "where_to_find": [
+          "LinkedIn Startup Groups",
+          "Product Hunt",
+          "Y Combinator Forums"
+        ]
+      },
+      "analyst_footer": {
+        "verdyct_summary": "The market is ripe for disruption. Traditional legal services are too expensive for the growing number of startups.",
+        "scoring_breakdown": [
+          {
+            "name": "Market Magnitude",
+            "score": 8.5,
+            "max_score": 10
+          },
+          {
+            "name": "Market Momentum",
+            "score": 9.0,
+            "max_score": 10
+          },
+          {
+            "name": "Problem Urgency",
+            "score": 9.5,
+            "max_score": 10
+          },
+          {
+            "name": "Competitive Void",
+            "score": 7.0,
+            "max_score": 10
+          },
+          {
+            "name": "Solution Uniqueness",
+            "score": 8.0,
+            "max_score": 10
+          },
+          {
+            "name": "Technical Feasibility",
+            "score": 8.5,
+            "max_score": 10
+          },
+          {
+            "name": "Macro Risk",
+            "score": 9.0,
+            "max_score": 10
+          }
+        ],
+        "data_confidence_level": "High",
+        "risk_flags": [],
+        "recommendation_title": "Proceed with Confidence",
+        "recommendation_text": "The indicators are green. Focus on building a trust-based brand and ensuring data privacy compliance."
+      }
+    },
+    "spy": {
+      "title": "Competitor Spy",
+      "score": 78,
+      "market_quadrant": {
+        "x_axis": {
+          "label_left": "Low Automation",
+          "label_right": "High Automation"
+        },
+        "y_axis": {
+          "label_bottom": "Expensive",
+          "label_top": "Affordable"
+        },
+        "competitors": [
+          {
+            "name": "LegalZoom",
+            "x_value": 30,
+            "y_value": 40,
+            "quadrant_label": "Traditional Incumbents",
+            "verified_url": "https://www.legalzoom.com"
+          },
+          {
+            "name": "Rocket Lawyer",
+            "x_value": 40,
+            "y_value": 50,
+            "quadrant_label": "Traditional Incumbents",
+            "verified_url": "https://www.rocketlawyer.com"
+          },
+          {
+            "name": "DoNotPay",
+            "x_value": 80,
+            "y_value": 90,
+            "quadrant_label": "Consumer AI",
+            "verified_url": "https://donotpay.com"
+          }
+        ],
+        "strategic_opening": {
+          "label": "Your Opportunity",
+          "x_value": 85,
+          "y_value": 70,
+          "quadrant_label": "B2B AI Specialist"
+        }
+      },
+      "customer_intel": {
+        "title": "Voice of Customer",
+        "subtitle": "What users hate about current solutions",
+        "top_complaints": [
+          {
+            "quote": "It takes 3 days just to get a simple NDA reviewed.",
+            "source": "G2 Crowd Review",
+            "competitor": "Traditional Law Firms",
+            "verified_url": "https://www.g2.com/products/legal-services/reviews"
+          },
+          {
+            "quote": "The subscription is impossible to cancel.",
+            "source": "Reddit /r/startups",
+            "competitor": "LegalZoom",
+            "verified_url": "https://www.reddit.com/r/startups/comments/legalzoom_alternatives"
+          }
+        ],
+        "pain_word_cloud": [
+          { "term": "Expensive", "mentions": 45 },
+          { "term": "Slow", "mentions": 32 },
+          { "term": "Confusing", "mentions": 28 },
+          { "term": "Opaque", "mentions": 15 }
+        ]
+      },
+      "spy_footer": {
+        "ai_analysis_summary": {
+          "title": "Competitor Landscape",
+          "text": "Incumbents are slow and expensive. New AI entrants are mostly consumer-focused (parking tickets, refunds). There is a gap for B2B startup legal ops."
+        },
+        "verdyct_summary": {
+          "title": "The Verdict",
+          "text": "Attack the 'Slow & Expensive' quadrant with 'Instant & Affordable'."
+        },
+        "highlight_boxes": [
+          { "value": "3", "label": "Major Competitors" },
+          { "value": "High", "label": "Disruption Potential" }
+        ]
+      }
+    },
+    "financier": {
+      "title": "Financial Strategist",
+      "score": 82,
+      "pricing_model": {
+        "title": "SaaS Subscription Model",
+        "tiers": [
+          {
+            "name": "Starter",
+            "price": "$29/mo",
+            "features": ["5 Contracts/mo", "Basic AI Review", "Email Support"],
+            "recommended": false,
+            "benchmark_competitor": "Rocket Lawyer",
+            "verified_url": "https://www.rocketlawyer.com/pricing"
+          },
+          {
+            "name": "Growth",
+            "price": "$79/mo",
+            "features": ["Unlimited Contracts", "Advanced Risk Analysis", "Slack Integration"],
+            "recommended": true,
+            "benchmark_competitor": "Atrium (Historical)",
+            "verified_url": "https://techcrunch.com/2020/03/03/atrium-shuts-down"
+          },
+          {
+            "name": "Scale",
+            "price": "$199/mo",
+            "features": ["API Access", "Dedicated Account Manager", "Custom Templates"],
+            "recommended": false,
+            "benchmark_competitor": "Ironclad",
+            "verified_url": "https://ironcladapp.com/pricing"
+          }
+        ]
+      },
+      "profit_engine": {
+        "levers": {
+          "monthly_price": { "value": 79, "min": 29, "max": 199, "step": 10 },
+          "ad_spend": { "value": 2000, "min": 500, "max": 10000, "step": 500 },
+          "conversion_rate": { "value": 2.5, "min": 0.5, "max": 5.0, "step": 0.1 }
+        },
+        "metrics": {
+          "ltv_cac_ratio": "3.5",
+          "status": "Healthy",
+          "estimated_cac": "$150",
+          "estimated_ltv": "$525"
+        }
+      },
+      "revenue_projection": {
+        "projections": [
+          { "year": "Year 1", "revenue": "$150,000" },
+          { "year": "Year 2", "revenue": "$750,000" },
+          { "year": "Year 3", "revenue": "$2,500,000" }
+        ]
+      },
+      "financier_footer": {
+        "verdyct_summary": "Unit economics look strong if CAC stays below $200. The subscription model ensures recurring revenue.",
+        "recommendation_text": "Start with the $79/mo tier to maximize ARPU while staying accessible to funded startups."
+      }
+    },
+    "architect": {
+      "title": "Product Architect",
+      "score": 88,
+      "mvp_status": {
+        "title": "MVP Definition",
+        "status": "Ready to Build",
+        "subtitle": "Core features defined",
+        "mvp_screenshot_url": "https://placehold.co/600x400?text=MVP+Dashboard",
+        "mvp_live_link": "",
+        "mvp_button_text": "View Spec",
+        "build_stats": [
+          { "value": "4 Weeks", "label": "Est. Build Time" },
+          { "value": "$5k", "label": "Est. Cost" }
+        ]
+      },
+      "user_flow": {
+        "title": "Core User Journey",
+        "figma_button_text": "Open Figma",
+        "steps": [
+          { "step": 1, "action": "User uploads PDF contract" },
+          { "step": 2, "action": "AI scans for risky clauses" },
+          { "step": 3, "action": "Dashboard highlights 3 critical risks" },
+          { "step": 4, "action": "User accepts or rejects changes" },
+          { "step": 5, "action": "Clean version exported" }
+        ]
+      },
+      "tech_stack": {
+        "title": "Recommended Stack",
+        "categories": [
+          { "name": "Frontend", "technologies": ["Next.js", "Tailwind CSS", "React Flow"] },
+          { "name": "Backend", "technologies": ["FastAPI", "Python", "PostgreSQL"] },
+          { "name": "AI/ML", "technologies": ["OpenAI GPT-4o", "LangChain", "Pinecone"] },
+          { "name": "Infrastructure", "technologies": ["Vercel", "Supabase", "AWS S3"] }
+        ]
+      },
+      "brand_kit": {
+        "title": "Visual Identity",
+        "project_name": "LegalEase AI",
+        "color_palette": ["#0F172A", "#3B82F6", "#10B981", "#F59E0B"],
+        "typography": [
+          { "use": "Headings", "font": "Inter" },
+          { "use": "Body", "font": "Roboto" }
+        ]
+      },
+      "data_moat": {
+        "title": "Data Strategy",
+        "status": "Critical",
+        "features": [
+          { "title": "Proprietary Dataset", "description": "Fine-tune models on public legal filings." },
+          { "title": "User Feedback Loop", "description": "Every correction improves the model." }
+        ]
+      },
+      "architect_footer": {
+        "verdyct_summary": "Technically feasible with modern LLMs. The main challenge is context window management for large contracts.",
+        "scoring_breakdown": [
+          { "name": "Feasibility", "score": 9, "max_score": 10 },
+          { "name": "Scalability", "score": 8, "max_score": 10 },
+          { "name": "UX Complexity", "score": 7, "max_score": 10 }
+        ],
+        "recommendation_text": "Prioritize the PDF parsing engine accuracy above all else."
+      }
+    }
+  },
+  "rescue_plan": null
+}

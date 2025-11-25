@@ -1,0 +1,126 @@
+{
+    "report_id": "rep_987654321",
+    "submitted_at": "2025-11-21T14:35:00Z",
+    "status": "rejected",
+    "pcs_score": 45,
+    "global_summary": "The analysis indicates significant risks. The market is saturated (Red Ocean), and the growth rate is declining. The Predictive Certainty Score (45/100) is below the threshold for full development. A rescue plan is proposed below.",
+    "agents": {
+        "analyst": {
+            "title": "Market Analyst",
+            "analysis_for": "Generic To-Do List App",
+            "score": 45,
+            "pcs_score": 45,
+            "score_card": {
+                "title": "High Risk",
+                "level": "D",
+                "description": "Saturated market with low entry barriers and dominant incumbents."
+            },
+            "market_metrics": [
+                {
+                    "name": "TAM (Total Addressable Market)",
+                    "value": "$500 Million",
+                    "change_percentage": "+2%",
+                    "note": "Productivity apps market is mature.",
+                    "verified_url": "https://www.statista.com/statistics/productivity-apps-market"
+                },
+                {
+                    "name": "CAGR",
+                    "value": "2.1%",
+                    "change_percentage": "Declining",
+                    "note": "Growth has slowed significantly since 2022.",
+                    "verified_url": "https://www.ibisworld.com/productivity-software"
+                }
+            ],
+            "seo_opportunity": {
+                "title": "SEO Strategy",
+                "subtitle": "Difficult landscape",
+                "high_opportunity_keywords": [
+                    {
+                        "term": "best to do list app 2024",
+                        "volume_estimate": "High Interest",
+                        "difficulty_level": "Very Competitive"
+                    }
+                ]
+            },
+            "ideal_customer_persona": {
+                "title": "Target Persona",
+                "subtitle": "The Procrastinator",
+                "persona_name": "John Doe",
+                "persona_role": "Student",
+                "persona_department": "N/A",
+                "persona_quote": "I have 5 different to-do apps installed.",
+                "details": {
+                    "age_range": "18-25",
+                    "income": "$0 - $20k",
+                    "education": "Undergraduate",
+                    "team_size": "1"
+                },
+                "pain_points": [],
+                "jobs_to_be_done": [],
+                "where_to_find": []
+            },
+            "analyst_footer": {
+                "verdyct_summary": "This is a classic Red Ocean. Competing with Apple Reminders, Todoist, and Notion is extremely difficult without a radical differentiator.",
+                "scoring_breakdown": [
+                    {
+                        "name": "Market Magnitude",
+                        "score": 6.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Market Momentum",
+                        "score": 3.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Problem Urgency",
+                        "score": 4.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Competitive Void",
+                        "score": 2.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Solution Uniqueness",
+                        "score": 2.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Technical Feasibility",
+                        "score": 9.0,
+                        "max_score": 10
+                    },
+                    {
+                        "name": "Macro Risk",
+                        "score": 8.0,
+                        "max_score": 10
+                    }
+                ],
+                "data_confidence_level": "High",
+                "risk_flags": [
+                    "Saturated Market",
+                    "Low Growth"
+                ],
+                "recommendation_title": "Pivot Recommended",
+                "recommendation_text": "Do not proceed with the current idea. Explore the Rescue Plan options."
+            }
+        },
+        "spy": null,
+        "financier": null,
+        "architect": null
+    },
+    "rescue_plan": {
+        "improve": {
+            "title": "Niche Down: The 'Fighter' Path",
+            "description": "Instead of a generic to-do list, focus on a specific high-stakes vertical where failure to complete tasks has real consequences.",
+            "ai_suggested_prompt": "Task management app for ADHD medical students"
+        },
+        "pivot": {
+            "title": "Blue Ocean: The 'Explorer' Path",
+            "description": "Pivot from 'personal productivity' to 'team synchronization' for remote manufacturing teams, where mobile-first coordination is unsolved.",
+            "ai_suggested_prompt": "Mobile coordination platform for factory floor managers"
+        }
+    }
+}
