@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   IconLayoutDashboardFilled,
@@ -14,13 +14,16 @@ import { PieChart, Eye, Hammer, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { fetchProjects, Project as ApiProject } from '../../../lib/api';
+
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   href?: string;
 }
 
-interface Project {
+interface SidebarProject {
+  id: string;
   name: string;
   agents: Array<{
     icon: React.ComponentType<{ className?: string }>;
@@ -28,8 +31,9 @@ interface Project {
   }>;
 }
 
-const PROJECTS: Project[] = [
+const DEFAULT_PROJECTS: SidebarProject[] = [
   {
+    id: 'project-alpha',
     name: 'Project Alpha',
     agents: [
       { icon: PieChart, label: 'The Analyst' },
@@ -39,6 +43,7 @@ const PROJECTS: Project[] = [
     ],
   },
   {
+    id: 'project-beta',
     name: 'Project Beta',
     agents: [
       { icon: PieChart, label: 'The Analyst' },
@@ -48,6 +53,7 @@ const PROJECTS: Project[] = [
     ],
   },
   {
+    id: 'project-gamma',
     name: 'Project Gamma',
     agents: [
       { icon: PieChart, label: 'The Analyst' },
@@ -61,6 +67,27 @@ const PROJECTS: Project[] = [
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(false);
+  const [projects, setProjects] = useState<SidebarProject[]>(DEFAULT_PROJECTS);
+
+  useEffect(() => {
+    async function loadProjects() {
+      const apiProjects = await fetchProjects();
+      if (apiProjects.length > 0) {
+        const sidebarProjects = apiProjects.map(p => ({
+          id: p.id,
+          name: p.name,
+          agents: [
+            { icon: PieChart, label: 'The Analyst' },
+            { icon: Eye, label: 'The Spy' },
+            { icon: Hammer, label: 'The Architect' },
+            { icon: TrendingUp, label: 'The Financier' },
+          ]
+        }));
+        setProjects(sidebarProjects);
+      }
+    }
+    loadProjects();
+  }, []);
 
   const handleProjectsClick = () => {
     if (!isExpanded) {
@@ -172,7 +199,7 @@ export default function Sidebar() {
                   className="overflow-hidden"
                 >
                   <div className="ml-5 mt-1 space-y-2 border-l border-neutral-700 pl-4">
-                    {PROJECTS.map((project, projectIndex) => (
+                    {projects.map((project, projectIndex) => (
                       <ProjectItem
                         key={projectIndex}
                         project={project}
@@ -264,7 +291,7 @@ function NavButton({ icon: Icon, label, isExpanded, href }: NavButtonProps) {
 }
 
 interface ProjectItemProps {
-  project: Project;
+  project: SidebarProject;
 }
 
 function ProjectItem({ project }: ProjectItemProps) {
@@ -296,13 +323,12 @@ function ProjectItem({ project }: ProjectItemProps) {
           >
             <div className="ml-3 mt-1 space-y-1">
               {project.agents.map((agent, index) => {
-                const projectPath = project.name.replace(/\s+/g, '').replace(/^(.)/, (c) => c.toLowerCase());
                 const agentPath = agent.label.replace(/^The\s+/, '').toLowerCase();
 
                 return (
                   <Link
                     key={index}
-                    href={`/${projectPath}/${agentPath}`}
+                    href={`/${project.id}/${agentPath}`}
                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-neutral-500 hover:bg-neutral-800/30 hover:text-neutral-300 transition-all text-xs"
                   >
                     <agent.icon className="w-3.5 h-3.5 shrink-0" />

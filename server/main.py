@@ -98,6 +98,15 @@ async def trigger_cta_verification(project_id: str, session: AsyncSession = Depe
     
     return {"status": "verified", "cta": result}
 
+@app.get("/api/projects", response_model=List[Project])
+async def get_projects(session: AsyncSession = Depends(get_session)):
+    """
+    Get all projects.
+    """
+    statement = select(Project).order_by(Project.created_at.desc())
+    result = await session.exec(statement)
+    return result.all()
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "Verdyct Analyst Agent"}
