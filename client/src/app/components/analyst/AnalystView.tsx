@@ -3,14 +3,97 @@
 import { UploadCloud, TrendingUp, User, Briefcase, MapPin, Sparkles, Search, ShieldCheck } from 'lucide-react';
 import Widget from '../dashboard/Widget';
 
-export default function AnalystView() {
+// Define types based on the backend response
+interface AnalystData {
+    title: string;
+    analysis_for: string;
+    score: number;
+    pcs_score: number;
+    score_card: {
+        title: string;
+        level: string;
+        description: string;
+    };
+    market_metrics: {
+        name: string;
+        value: string;
+        change_percentage: string;
+        note: string;
+    }[];
+    seo_opportunity: {
+        title: string;
+        subtitle: string;
+        high_opportunity_keywords: {
+            term: string;
+            volume_estimate: string;
+            difficulty_level: string;
+        }[];
+    };
+    ideal_customer_persona: {
+        title: string;
+        subtitle: string;
+        persona_name: string;
+        persona_role: string;
+        persona_department: string;
+        persona_quote: string;
+        details: {
+            age_range: string;
+            income: string;
+            education: string;
+            team_size: string;
+        };
+        pain_points: {
+            title: string;
+            details: string;
+        }[];
+        jobs_to_be_done: string[];
+        where_to_find: string[];
+    };
+    analyst_footer: {
+        verdyct_summary: string;
+        scoring_breakdown: {
+            name: string;
+            score: number;
+            max_score: number;
+        }[];
+        data_confidence_level: string;
+        risk_flags: string[];
+        recommendation_title: string;
+        recommendation_text: string;
+    };
+}
+
+interface AnalystViewProps {
+    data?: AnalystData;
+}
+
+export default function AnalystView({ data }: AnalystViewProps) {
+    if (!data) {
+        return (
+            <div className="flex items-center justify-center h-full text-neutral-500">
+                Loading analysis data...
+            </div>
+        );
+    }
+
+    const {
+        analysis_for,
+        score,
+        pcs_score,
+        score_card,
+        market_metrics,
+        seo_opportunity,
+        ideal_customer_persona,
+        analyst_footer
+    } = data;
+
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Analyst</h1>
-                    <p className="text-sm text-neutral-400">Market analysis for: AI eLearning Captioning Tool</p>
+                    <p className="text-sm text-neutral-400">Market analysis for: {analysis_for}</p>
                 </div>
                 <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
                     <UploadCloud className="w-4 h-4" />
@@ -27,11 +110,11 @@ export default function AnalystView() {
                         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between h-full px-2 gap-6 xl:gap-0">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                    <span className="text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tighter">Excellent</span>
-                                    <span className="text-lg lg:text-xl text-emerald-500 font-medium">87/100</span>
+                                    <span className="text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tighter">{score_card.level}</span>
+                                    <span className="text-lg lg:text-xl text-emerald-500 font-medium">{pcs_score}/100</span>
                                 </div>
                                 <p className="text-sm text-neutral-400 mt-3 max-w-md leading-relaxed">
-                                    <strong className="text-white">The Analyst&#39;s Verdyct:</strong> Strong market fundamentals, clear customer need, and exceptional growth potential make this an outstanding opportunity. Proceed with high confidence.
+                                    <strong className="text-white">The Analyst&#39;s Verdyct:</strong> {analyst_footer.verdyct_summary}
                                 </p>
                             </div>
                             <div className="self-center xl:self-auto h-24 w-24 shrink-0 rounded-full border-4 border-emerald-500/20 flex items-center justify-center relative">
@@ -42,71 +125,23 @@ export default function AnalystView() {
                     </Widget>
                 </div>
 
-                {/* Key Metrics Row 1 */}
-                <div className="lg:col-span-1">
-                    <Widget title="TAM">
-                        <div className="flex flex-col justify-between h-full">
-                            <div>
-                                <div className="text-3xl font-semibold text-white">$1.2B</div>
-                                <div className="flex items-center gap-1 text-sm text-emerald-500 mt-1">
-                                    <TrendingUp className="w-4 h-4" />
-                                    <span>+5.1%</span>
+                {/* Key Metrics Rows */}
+                {market_metrics.slice(0, 4).map((metric, index) => (
+                    <div key={index} className="lg:col-span-1">
+                        <Widget title={metric.name}>
+                            <div className="flex flex-col justify-between h-full">
+                                <div>
+                                    <div className="text-3xl font-semibold text-white">{metric.value}</div>
+                                    <div className="flex items-center gap-1 text-sm text-emerald-500 mt-1">
+                                        <TrendingUp className="w-4 h-4" />
+                                        <span>{metric.change_percentage}</span>
+                                    </div>
                                 </div>
+                                <p className="text-xs text-neutral-500 mt-4">{metric.note}</p>
                             </div>
-                            <p className="text-xs text-neutral-500 mt-4">Total Addressable Market</p>
-                        </div>
-                    </Widget>
-                </div>
-
-                <div className="lg:col-span-1">
-                    <Widget title="SAM">
-                        <div className="flex flex-col justify-between h-full">
-                            <div>
-                                <div className="text-3xl font-semibold text-white">$450M</div>
-                                <div className="flex items-center gap-1 text-sm text-emerald-500 mt-1">
-                                    <TrendingUp className="w-4 h-4" />
-                                    <span>+7.3%</span>
-                                </div>
-                            </div>
-                            <p className="text-xs text-neutral-500 mt-4">Serviceable Available Market</p>
-                        </div>
-                    </Widget>
-                </div>
-
-                {/* Key Metrics Row 2 */}
-                <div className="lg:col-span-1">
-                    <Widget title="CAGR">
-                        <div className="flex flex-col justify-between h-full">
-                            <div>
-                                <div className="text-3xl font-semibold text-white">15.2%</div>
-                                <div className="flex items-center gap-1 text-sm text-emerald-500 mt-1">
-                                    <TrendingUp className="w-4 h-4" />
-                                    <span>+1.2%</span>
-                                </div>
-                            </div>
-                            <p className="text-xs text-neutral-500 mt-4">Compound Annual Growth</p>
-                        </div>
-                    </Widget>
-                </div>
-
-                <div className="lg:col-span-1">
-                    <Widget title="Opportunity">
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-neutral-400">SEO Difficulty</span>
-                                <span className="text-emerald-400 font-medium">Low</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-neutral-400">Search Vol</span>
-                                <span className="text-white font-medium">High</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-neutral-400">Intent</span>
-                                <span className="text-white font-medium">Commercial</span>
-                            </div>
-                        </div>
-                    </Widget>
-                </div>
+                        </Widget>
+                    </div>
+                ))}
 
                 {/* Consumer DNA (2x2) */}
                 <div className="lg:col-span-2 lg:row-span-2">
@@ -117,33 +152,29 @@ export default function AnalystView() {
                                     <User className="w-8 h-8 text-neutral-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-white">Ian</h3>
+                                    <h3 className="text-lg font-semibold text-white">{ideal_customer_persona.persona_name}</h3>
                                     <div className="flex items-center gap-2 text-sm text-neutral-400">
                                         <Briefcase className="w-3.5 h-3.5" />
-                                        <span>Instructional Designer</span>
+                                        <span>{ideal_customer_persona.persona_role}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-neutral-400">
                                         <MapPin className="w-3.5 h-3.5" />
-                                        <span>Enterprise L&D</span>
+                                        <span>{ideal_customer_persona.details.team_size}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="p-3 rounded-lg bg-white/5 border border-white/5 italic text-sm text-neutral-300">
-                                &#34;I spend 5 hours a week manually fixing captions. I just want a tool that works.&#34;
+                                &#34;{ideal_customer_persona.persona_quote}&#34;
                             </div>
 
                             <div className="space-y-3">
                                 <h4 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Pain Points</h4>
                                 <div className="space-y-2">
-                                    {[
-                                        "Manual captioning is slow (5+ hrs/week)",
-                                        "Transcription errors hurt credibility",
-                                        "Legal anxiety (WCAG compliance)"
-                                    ].map((point, i) => (
+                                    {ideal_customer_persona.pain_points.map((point, i) => (
                                         <div key={i} className="flex items-center gap-2 text-sm text-neutral-300">
                                             <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                            {point}
+                                            {point.title}
                                         </div>
                                     ))}
                                 </div>
@@ -191,12 +222,16 @@ export default function AnalystView() {
                                 </div>
 
                                 {/* Data Points - Properly sized & spaced */}
-                                {[
-                                    { label: "WCAG\nTool", x: "25%", y: "25%", volume: "18k", size: "large", color: "emerald" },
-                                    { label: "Corp\nAccess", x: "38%", y: "45%", volume: "12k", size: "medium", color: "emerald" },
-                                    { label: "Video\nAPI", x: "72%", y: "32%", volume: "9k", size: "medium", color: "orange" },
-                                    { label: "LMS\nPlugin", x: "30%", y: "72%", volume: "7k", size: "small", color: "blue" },
-                                ].map((item, i) => {
+                                {seo_opportunity.high_opportunity_keywords.map((item, i) => {
+                                    // Simple mapping for demo purposes, ideally coordinates come from backend
+                                    const positions = [
+                                        { x: "25%", y: "25%", color: "emerald" },
+                                        { x: "38%", y: "45%", color: "emerald" },
+                                        { x: "72%", y: "32%", color: "orange" },
+                                        { x: "30%", y: "72%", color: "blue" },
+                                    ];
+                                    const pos = positions[i % positions.length];
+
                                     const sizeClasses = {
                                         large: "w-[72px] h-[72px]",
                                         medium: "w-16 h-16",
@@ -221,32 +256,31 @@ export default function AnalystView() {
                                             border: "border-blue-500/60",
                                             glow: "shadow-blue-500/30",
                                             text: "text-blue-400"
+                                        },
+                                        red: { // Fallback
+                                            bg: "bg-red-500/20",
+                                            border: "border-red-500/60",
+                                            glow: "shadow-red-500/30",
+                                            text: "text-red-400"
                                         }
                                     };
 
-                                    const colors = colorClasses[item.color as keyof typeof colorClasses];
-                                    const size = sizeClasses[item.size as keyof typeof sizeClasses];
+                                    const colors = colorClasses[pos.color as keyof typeof colorClasses] || colorClasses.emerald;
+                                    // Randomize size for visual variety if needed, or map from volume
+                                    const size = sizeClasses.medium;
 
                                     return (
                                         <div
                                             key={i}
                                             className={`absolute ${size} ${colors.bg} ${colors.border} backdrop-blur-sm rounded-full border-2 flex flex-col items-center justify-center gap-0.5 transition-all duration-300 hover:scale-110 hover:shadow-2xl cursor-pointer z-10 group p-2`}
-                                            style={{ left: item.x, top: item.y, transform: 'translate(-50%, -50%)' }}
+                                            style={{ left: pos.x, top: pos.y, transform: 'translate(-50%, -50%)' }}
                                         >
                                             <span className={`text-[10px] font-bold ${colors.text} leading-[1.1] text-center whitespace-pre-line`}>
-                                                {item.label}
+                                                {item.term}
                                             </span>
                                             <span className="text-[9px] text-white/80 font-semibold">
-                                                {item.volume}
+                                                {item.volume_estimate}
                                             </span>
-
-                                            {/* Hover Tooltip */}
-                                            <div className="absolute -top-16 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
-                                                <div className="bg-neutral-950 border border-white/20 rounded-lg px-3 py-2 shadow-xl whitespace-nowrap">
-                                                    <div className="text-xs text-white font-medium">{item.label.replace('\n', ' ')}</div>
-                                                    <div className="text-[10px] text-neutral-400 mt-0.5">Volume: {item.volume}/mo</div>
-                                                </div>
-                                            </div>
                                         </div>
                                     );
                                 })}

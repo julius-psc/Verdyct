@@ -31,43 +31,12 @@ interface SidebarProject {
   }>;
 }
 
-const DEFAULT_PROJECTS: SidebarProject[] = [
-  {
-    id: 'project-alpha',
-    name: 'Project Alpha',
-    agents: [
-      { icon: PieChart, label: 'The Analyst' },
-      { icon: Eye, label: 'The Spy' },
-      { icon: Hammer, label: 'The Architect' },
-      { icon: TrendingUp, label: 'The Financier' },
-    ],
-  },
-  {
-    id: 'project-beta',
-    name: 'Project Beta',
-    agents: [
-      { icon: PieChart, label: 'The Analyst' },
-      { icon: Eye, label: 'The Spy' },
-      { icon: Hammer, label: 'The Architect' },
-      { icon: TrendingUp, label: 'The Financier' },
-    ],
-  },
-  {
-    id: 'project-gamma',
-    name: 'Project Gamma',
-    agents: [
-      { icon: PieChart, label: 'The Analyst' },
-      { icon: Eye, label: 'The Spy' },
-      { icon: Hammer, label: 'The Architect' },
-      { icon: TrendingUp, label: 'The Financier' },
-    ],
-  },
-];
+
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProjectsExpanded, setIsProjectsExpanded] = useState(false);
-  const [projects, setProjects] = useState<SidebarProject[]>(DEFAULT_PROJECTS);
+  const [projects, setProjects] = useState<SidebarProject[]>([]);
 
   useEffect(() => {
     async function loadProjects() {

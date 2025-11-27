@@ -334,6 +334,20 @@ async def architect_blueprint(request: IdeaRequest):
             detail=f"Internal server error: {str(e)}"
         )
 
+@app.get("/api/projects/{project_id}", response_model=Project)
+async def get_project(project_id: str, session: AsyncSession = Depends(get_session)):
+    """
+    Get a single project by ID.
+    """
+    statement = select(Project).where(Project.id == project_id)
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    return project
+
 @app.post("/generate-report", response_model=VerdyctReportResponse)
 async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session)):
     """
@@ -372,12 +386,28 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             # --- PERSISTENCE (REJECTED) ---
             # Save rejected project to DB
             project_id = str(uuid.uuid4())
+            
+            # Construct report for persistence
+            report_data = VerdyctReportResponse(
+                report_id=str(uuid.uuid4()),
+                project_id=project_id,
+                submitted_at=datetime.utcnow().isoformat(),
+                status="rejected",
+                pcs_score=pcs_score,
+                global_summary=f"Idea viability is low (PCS: {pcs_score}). Rescue plan generated.",
+                agents=Agents(
+                    analyst=analyst_res.analyst
+                ),
+                rescue_plan=rescue_plan
+            )
+            
             project = Project(
                 id=project_id,
                 name=f"Rejected: {request.idea[:30]}...",
                 raw_idea=request.idea,
                 pos_score=pcs_score,
-                status="rejected"
+                status="rejected",
+                report_json=report_data.dict()
             )
             session.add(project)
             await session.commit()
@@ -394,17 +424,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             )
             # -----------------------------
             
-            return VerdyctReportResponse(
-                report_id=str(uuid.uuid4()),
-                submitted_at=datetime.utcnow().isoformat(),
-                status="rejected",
-                pcs_score=pcs_score,
-                global_summary=f"Idea viability is low (PCS: {pcs_score}). Rescue plan generated.",
-                agents=Agents(
-                    analyst=analyst_res.analyst
-                ),
-                rescue_plan=rescue_plan
-            )
+            return report_data
             
         else:
             # Scenario B: High Score - GO
@@ -452,13 +472,25 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             except:
                 pass
 
+            # Construct report for persistence
+            report_data = VerdyctReportResponse(
+                report_id=str(uuid.uuid4()),
+                project_id=project_id,
+                submitted_at=datetime.utcnow().isoformat(),
+                status="approved",
+                pcs_score=pcs_score,
+                global_summary=global_summary,
+                agents=agents_data
+            )
+
             project = Project(
                 id=project_id,
                 name=f"Approved: {request.idea[:30]}...",
                 raw_idea=request.idea,
                 pos_score=pcs_score,
                 status="approved",
-                url=architect_res.architect.mvp_status.mvp_live_link
+                url=architect_res.architect.mvp_status.mvp_live_link,
+                report_json=report_data.dict()
             )
             session.add(project)
             await session.commit()
@@ -475,14 +507,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             )
             # -----------------------------
 
-            return VerdyctReportResponse(
-                report_id=str(uuid.uuid4()),
-                submitted_at=datetime.utcnow().isoformat(),
-                status="approved",
-                pcs_score=pcs_score,
-                global_summary=global_summary,
-                agents=agents_data
-            )
+            return report_data
         
     except Exception as e:
         print(f"Orchestrator Error: {e}")

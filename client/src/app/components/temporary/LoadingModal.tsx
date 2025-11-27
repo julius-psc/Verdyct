@@ -49,8 +49,8 @@ function CompactAgentCard({ icon: Icon, title, status, onClick }: CompactAgentCa
         <div className="grow" />
         <div
           className={`text-xs px-2.5 py-1 rounded-full ${isComplete
-              ? 'bg-primary-red/10 text-primary-red'
-              : 'bg-neutral-800 text-neutral-500'
+            ? 'bg-primary-red/10 text-primary-red'
+            : 'bg-neutral-800 text-neutral-500'
             }`}
         >
           {isComplete ? 'Complete' : 'Queued'}
@@ -187,9 +187,10 @@ interface LoadingModalProps {
   onComplete?: () => void;
   stopAfterStep?: number;
   initialStep?: number;
+  isLoading?: boolean;
 }
 
-export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 0 }: LoadingModalProps) {
+export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 0, isLoading = false }: LoadingModalProps) {
   const [step, setStep] = useState(initialStep);
   const [showError, setShowError] = useState(false);
 
@@ -246,13 +247,18 @@ export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 
       return () => clearTimeout(stepTimer);
     }
 
+    // If we are at the last step (The Verdyct) and still loading, pause here
+    if (step === TOTAL_AGENTS - 1 && isLoading) {
+      return;
+    }
+
     // Normal progression
     const stepTimer = setTimeout(() => {
       setStep((s) => s + 1);
     }, STEP_DURATION_MS);
 
     return () => clearTimeout(stepTimer);
-  }, [step, onComplete, stopAfterStep]);
+  }, [step, onComplete, stopAfterStep, isLoading]);
 
   const getAgentStatus = (index: number): 'RUNNING' | 'QUEUED' | 'COMPLETE' => {
     if (step === index) return 'RUNNING';

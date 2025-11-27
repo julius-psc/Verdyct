@@ -17,7 +17,24 @@ interface MetricItem {
 }
 
 export default function MainView() {
-  const [metrics, setMetrics] = useState<MetricItem[]>(METRICS as MetricItem[]);
+  // Initialize with empty/zero values to avoid flashing dummy data
+  const [metrics, setMetrics] = useState<MetricItem[]>([
+    {
+      title: "Active Ventures",
+      value: 0,
+      subtitle: "Loading..."
+    },
+    {
+      title: "Global MSI",
+      value: "-",
+      subtitle: "Portfolio Moat Maturity"
+    },
+    {
+      title: "Avg PCS Score",
+      value: "-",
+      subtitle: "Average Validation Score"
+    }
+  ]);
 
   useEffect(() => {
     async function loadData() {

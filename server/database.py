@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 # ========== CONFIGURATION ==========
 
-DATABASE_URL = "sqlite+aiosqlite:///./verdyct.db"
+DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
 QDRANT_PATH = "./qdrant_db"
 COLLECTION_NAME = "verdyct_ideas"
 

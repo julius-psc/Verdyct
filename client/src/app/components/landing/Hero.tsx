@@ -13,11 +13,36 @@ type FlowState = 'idle' | 'analyzing' | 'decision' | 'building' | 'completed';
 export default function Hero() {
   const [input, setInput] = useState("");
   const [flowState, setFlowState] = useState<FlowState>('idle');
+  const [analysisData, setAnalysisData] = useState<any>(null);
   const router = useRouter();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!input.trim()) return;
+    setAnalysisData(null);
     setFlowState('analyzing');
+
+    try {
+      const response = await fetch('http://localhost:8000/generate-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idea: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Analysis failed');
+      }
+
+      const data = await response.json();
+      console.log("Analysis data received:", data);
+      setAnalysisData(data);
+
+    } catch (error) {
+      console.error("Error analyzing idea:", error);
+      setFlowState('idle'); // Reset on error for now
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -28,7 +53,19 @@ export default function Hero() {
   };
 
   const handleAnalystComplete = () => {
-    setFlowState('decision');
+    console.log("handleAnalystComplete called. Analysis Data:", analysisData);
+    if (analysisData) {
+      if (analysisData.status === 'approved') {
+        // alert(`Redirecting to ${analysisData.project_id}`);
+        router.push(`/${analysisData.project_id}/analyst`);
+      } else {
+        // alert("Decision needed");
+        setFlowState('decision');
+      }
+    } else {
+      // alert("No analysis data found!");
+      setFlowState('idle');
+    }
   };
 
   const handleDecisionAction = () => {
@@ -39,6 +76,7 @@ export default function Hero() {
   const handleRetry = () => {
     setFlowState('idle');
     setInput("");
+    setAnalysisData(null);
   };
 
   const handleBuildComplete = () => {
@@ -59,16 +97,18 @@ export default function Hero() {
         <LoadingModal
           stopAfterStep={0}
           onComplete={handleAnalystComplete}
+          isLoading={!analysisData}
         />
       )}
 
-      {flowState === 'decision' && (
+      {flowState === 'decision' && analysisData && (
         <EnhancePivot
-          score={58} // Demo score for "Pivot/Enhance" state
+          score={analysisData.pcs_score}
           onEnhance={handleDecisionAction}
           onPivot={handleDecisionAction}
           onRetry={handleRetry}
           onProceed={handleDecisionAction}
+          rescuePlan={analysisData.rescue_plan}
         />
       )}
 

@@ -4,22 +4,80 @@ import {
     UploadCloud,
     TrendingUp,
     DollarSign,
-    PieChart,
     Wallet,
-    ArrowUpRight,
-    ArrowDownRight,
-    Coins,
-    CreditCard,
-    Scale,
     Calculator,
     Check,
-    AlertCircle,
     Users
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Widget from '../dashboard/Widget';
 
-export default function FinancierView() {
+// Backend Model Interfaces
+interface PricingTier {
+    name: string;
+    price: string;
+    features: string[];
+    recommended: boolean;
+    benchmark_competitor: string;
+    verified_url: string;
+}
+
+interface PricingModel {
+    title: string;
+    tiers: PricingTier[];
+}
+
+interface LeverValue {
+    value: number;
+    min: number;
+    max: number;
+    step: number;
+}
+
+interface Levers {
+    monthly_price: LeverValue;
+    ad_spend: LeverValue;
+    conversion_rate: LeverValue;
+}
+
+interface Metrics {
+    ltv_cac_ratio: string;
+    status: string;
+    estimated_cac: string;
+    estimated_ltv: string;
+}
+
+interface ProfitEngine {
+    levers: Levers;
+    metrics: Metrics;
+}
+
+interface RevenueProjection {
+    year: string;
+    revenue: string;
+}
+
+interface RevenueProjections {
+    projections: RevenueProjection[];
+}
+
+interface FinancierData {
+    title: string;
+    score: number;
+    pricing_model: PricingModel;
+    profit_engine: ProfitEngine;
+    revenue_projection: RevenueProjections;
+    financier_footer: {
+        verdyct_summary: string;
+        recommendation_text: string;
+    };
+}
+
+interface FinancierViewProps {
+    data?: FinancierData;
+}
+
+export default function FinancierView({ data }: FinancierViewProps) {
     // Interactive sliders state
     const [monthlyPrice, setMonthlyPrice] = useState(19);
     const [adSpend, setAdSpend] = useState(500);
@@ -32,15 +90,21 @@ export default function FinancierView() {
     const [monthsToProfitability, setMonthsToProfitability] = useState(0);
     const [revenueProjections, setRevenueProjections] = useState<number[]>([]);
 
+    useEffect(() => {
+        if (data) {
+            // Initialize sliders from backend data if available
+            setMonthlyPrice(data.profit_engine.levers.monthly_price.value);
+            setAdSpend(data.profit_engine.levers.ad_spend.value);
+            setConversionRate(data.profit_engine.levers.conversion_rate.value);
+        }
+    }, [data]);
+
     // Recalculate metrics when sliders change
     useEffect(() => {
         // CAC = Cost per acquisition
-        // Logic: adSpend / ((adSpend / 100) * conversionRate / 10) -> 1000 / conversionRate
-        // We'll use a slightly more realistic formula that scales with spend efficiency
         const calculatedCAC = (1000 / conversionRate);
 
         // LTV = Customer Lifetime Value (Monthly Price * Average Customer Lifespan in months)
-        // Assuming average customer stays for ~24 months
         const calculatedLTV = monthlyPrice * 24;
 
         // LTV:CAC Ratio
@@ -55,12 +119,7 @@ export default function FinancierView() {
         setMonthsToProfitability(months);
 
         // Dynamic Revenue Projection
-        // Base monthly customers derived from Ad Spend & Efficiency
-        // Multiplier added to simulate organic growth alongside paid
         const baseMonthlyCustomers = Math.max(5, (adSpend * conversionRate) / 20);
-
-        // Growth rate depends on business health (LTV:CAC)
-        // A healthy business grows faster due to reinvestment
         const growthFactor = 1.2 + (ratio > 0 ? Math.min(ratio, 5) * 0.25 : 0);
 
         const projections: number[] = [];
@@ -74,7 +133,22 @@ export default function FinancierView() {
 
     }, [monthlyPrice, adSpend, conversionRate]);
 
+    if (!data) {
+        return (
+            <div className="flex items-center justify-center h-full text-neutral-500">
+                Loading financial analysis...
+            </div>
+        );
+    }
+
+    const { pricing_model, financier_footer } = data;
     const maxProjection = Math.max(...revenueProjections, 1);
+
+    // Identify tiers
+    const recommendedTier = pricing_model.tiers.find(t => t.recommended) || pricing_model.tiers[0];
+    const otherTiers = pricing_model.tiers.filter(t => !t.recommended);
+    const starterTier = otherTiers.length > 0 ? otherTiers[0] : null;
+    const enterpriseTier = otherTiers.length > 1 ? otherTiers[1] : null;
 
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-6">
@@ -82,7 +156,7 @@ export default function FinancierView() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Financier</h1>
-                    <p className="text-sm text-neutral-400">Financial modeling for: AI eLearning Captioning Tool</p>
+                    <p className="text-sm text-neutral-400">Financial Modeling & Pricing Strategy</p>
                 </div>
                 <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
                     <UploadCloud className="w-4 h-4" />
@@ -162,9 +236,7 @@ export default function FinancierView() {
                                     <TrendingUp className="w-3 h-3" />
                                 </div>
                                 <p className="text-xs text-neutral-300 leading-relaxed">
-                                    <strong className="text-white">Verdyct:</strong> {ltvCacRatio >= 3
-                                        ? "Excellent unit economics. You are ready to scale ad spend aggressively."
-                                        : "Unit economics need optimization. Focus on increasing conversion rate before scaling."}
+                                    <strong className="text-white">Verdyct:</strong> {financier_footer.verdyct_summary}
                                 </p>
                             </div>
                         </div>
@@ -173,7 +245,7 @@ export default function FinancierView() {
 
                 {/* 2. Revenue Projection (2x1) - Top Right */}
                 <div className="lg:col-span-2">
-                    <Widget title="5-Year Revenue Projection">
+                    <Widget title="5-Year Revenue Projection (Simulated)">
                         <div className="flex flex-col h-full justify-between">
                             <div className="flex items-end justify-between gap-4 h-32 px-2 pt-4">
                                 {revenueProjections.map((revenue, i) => (
@@ -230,16 +302,19 @@ export default function FinancierView() {
                 <div className="lg:col-span-4">
                     <Widget title="Pricing Strategy" action={<DollarSign className="w-4 h-4 text-neutral-500" />}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
-                            {/* Tier 1 */}
+                            {/* Tier 1 - Starter */}
                             <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/30 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-neutral-400">Starter</span>
+                                        <span className="text-sm font-medium text-neutral-400">{starterTier ? starterTier.name : 'Starter'}</span>
                                     </div>
-                                    <div className="text-2xl font-bold text-white mb-3">Free</div>
+                                    <div className="text-2xl font-bold text-white mb-3">{starterTier ? starterTier.price : 'Free'}</div>
                                     <ul className="space-y-2">
-                                        <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />1 Project Analysis</li>
-                                        <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Basic Export</li>
+                                        {starterTier ? starterTier.features.map((feature, i) => (
+                                            <li key={i} className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{feature}</li>
+                                        )) : (
+                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Basic Features</li>
+                                        )}
                                     </ul>
                                 </div>
                                 <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">Current Plan</button>
@@ -250,28 +325,32 @@ export default function FinancierView() {
                                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</div>
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-emerald-400">Pro</span>
+                                        <span className="text-sm font-medium text-emerald-400">{recommendedTier.name}</span>
                                     </div>
-                                    <div className="text-2xl font-bold text-white mb-3">€19<span className="text-sm font-normal text-neutral-500">/mo</span></div>
+                                    <div className="text-2xl font-bold text-white mb-3">{recommendedTier.price}</div>
+                                    <p className="text-xs text-neutral-300 mb-3">{financier_footer.recommendation_text}</p>
                                     <ul className="space-y-2">
-                                        <li className="text-xs text-neutral-300 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Unlimited Projects</li>
-                                        <li className="text-xs text-neutral-300 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />All AI Agents</li>
-                                        <li className="text-xs text-neutral-300 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Priority Support</li>
+                                        {recommendedTier.features.map((feature, i) => (
+                                            <li key={i} className="text-xs text-neutral-300 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{feature}</li>
+                                        ))}
                                     </ul>
                                 </div>
                                 <button className="w-full mt-4 py-1.5 rounded bg-emerald-500 text-xs font-bold text-black hover:bg-emerald-400 transition-colors">Upgrade to Pro</button>
                             </div>
 
-                            {/* Tier 3 */}
+                            {/* Tier 3 - Enterprise */}
                             <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/30 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-neutral-400">Enterprise</span>
+                                        <span className="text-sm font-medium text-neutral-400">{enterpriseTier ? enterpriseTier.name : 'Enterprise'}</span>
                                     </div>
-                                    <div className="text-2xl font-bold text-white mb-3">Custom</div>
+                                    <div className="text-2xl font-bold text-white mb-3">{enterpriseTier ? enterpriseTier.price : 'Custom'}</div>
                                     <ul className="space-y-2">
-                                        <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />API Access</li>
-                                        <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />SSO & Team Mgmt</li>
+                                        {enterpriseTier ? enterpriseTier.features.map((feature, i) => (
+                                            <li key={i} className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{feature}</li>
+                                        )) : (
+                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Advanced Features</li>
+                                        )}
                                     </ul>
                                 </div>
                                 <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">Contact Sales</button>

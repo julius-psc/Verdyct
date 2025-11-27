@@ -3,12 +3,24 @@
 import { motion } from 'motion/react';
 import { ArrowRight, RefreshCcw, Sparkles, Rocket, AlertTriangle, XCircle } from 'lucide-react';
 
+interface RescueOption {
+    title: string;
+    description: string;
+    ai_suggested_prompt: string;
+}
+
+interface RescuePlan {
+    improve: RescueOption;
+    pivot: RescueOption;
+}
+
 interface EnhancePivotProps {
-    onEnhance: () => void;
-    onPivot: () => void;
+    onEnhance: (prompt: string) => void;
+    onPivot: (prompt: string) => void;
     onRetry: () => void;
     onProceed: () => void; // For high scores
     score?: number;
+    rescuePlan?: RescuePlan;
 }
 
 export default function EnhancePivot({
@@ -16,7 +28,8 @@ export default function EnhancePivot({
     onPivot,
     onRetry,
     onProceed,
-    score = 58 // Default to the "Pivot/Enhance" range for demo
+    score = 58, // Default to the "Pivot/Enhance" range for demo
+    rescuePlan
 }: EnhancePivotProps) {
 
     // Determine state based on score
@@ -174,21 +187,15 @@ export default function EnhancePivot({
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-1 mt-1">Enhance</h3>
                                 <p className="text-neutral-400 text-sm mb-4">
-                                    Keep the core idea but refine the feature set to target a specific vertical.
+                                    {rescuePlan?.improve.description || "Keep the core idea but refine the feature set to target a specific vertical."}
                                 </p>
 
                                 <div className="space-y-2 flex-grow">
                                     <button
-                                        onClick={onEnhance}
+                                        onClick={() => onEnhance(rescuePlan?.improve.ai_suggested_prompt || "")}
                                         className="w-full text-left text-xs text-neutral-300 bg-neutral-800/50 hover:bg-neutral-800 p-2.5 rounded-lg transition-colors"
                                     >
-                                        Enterprise security-focused task manager with advanced compliance features
-                                    </button>
-                                    <button
-                                        onClick={onEnhance}
-                                        className="w-full text-left text-xs text-neutral-300 bg-neutral-800/50 hover:bg-neutral-800 p-2.5 rounded-lg transition-colors"
-                                    >
-                                        AI-powered productivity app with predictive analytics and workflow automation
+                                        {rescuePlan?.improve.ai_suggested_prompt || "Refine idea..."}
                                     </button>
                                 </div>
                             </div>
@@ -200,17 +207,17 @@ export default function EnhancePivot({
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-1 mt-1">Pivot</h3>
                                 <p className="text-neutral-400 text-sm mb-4">
-                                    Shift direction to a related problem space with higher demand.
+                                    {rescuePlan?.pivot.description || "Shift direction to a related problem space with higher demand."}
                                 </p>
 
                                 <div className="space-y-2 mb-5 flex-grow">
                                     <div className="text-sm text-neutral-300 bg-neutral-800/50 p-3 rounded-lg">
-                                        Healthcare appointment scheduling platform with automated insurance verification and patient reminder system
+                                        {rescuePlan?.pivot.ai_suggested_prompt || "Pivot idea..."}
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={onPivot}
+                                    onClick={() => onPivot(rescuePlan?.pivot.ai_suggested_prompt || "")}
                                     className="w-full py-2.5 rounded-xl bg-primary-red text-white font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                                 >
                                     Pivot to This Idea

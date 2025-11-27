@@ -6,7 +6,6 @@ import {
     Figma,
     Palette,
     Lock,
-    Layers,
     Code2,
     Database,
     Cpu,
@@ -15,14 +14,114 @@ import {
     MousePointerClick,
     Copy,
     ShieldCheck,
-    BrainCircuit,
-    Network
+    BrainCircuit
 } from 'lucide-react';
 import { useState } from 'react';
 import Widget from '../dashboard/Widget';
 
-export default function ArchitectView() {
+// Backend Model Interfaces
+interface BuildStat {
+    value: string;
+    label: string;
+}
+
+interface MVPStatus {
+    title: string;
+    status: string;
+    subtitle: string;
+    mvp_screenshot_url: string;
+    mvp_live_link: string;
+    mvp_button_text: string;
+    build_stats: BuildStat[];
+}
+
+interface FlowStep {
+    step: number;
+    action: string;
+}
+
+interface UserFlow {
+    title: string;
+    steps: FlowStep[];
+    figma_button_text: string;
+}
+
+interface TechCategory {
+    name: string;
+    technologies: string[];
+}
+
+interface TechStack {
+    title: string;
+    categories: TechCategory[];
+}
+
+interface TypographyItem {
+    use: string;
+    font: string;
+}
+
+interface BrandKit {
+    title: string;
+    project_name: string;
+    color_palette: string[];
+    typography: TypographyItem[];
+}
+
+interface DataMoatFeature {
+    title: string;
+    description: string;
+}
+
+interface DataMoat {
+    title: string;
+    status: string;
+    features: DataMoatFeature[];
+}
+
+interface ScoringBreakdownItem {
+    name: string;
+    score: number;
+    max_score: number;
+}
+
+interface ArchitectData {
+    title: string;
+    score: number;
+    mvp_status: MVPStatus;
+    user_flow: UserFlow;
+    tech_stack: TechStack;
+    brand_kit: BrandKit;
+    data_moat: DataMoat;
+    architect_footer: {
+        verdyct_summary: string;
+        scoring_breakdown: ScoringBreakdownItem[];
+        recommendation_text: string;
+    };
+}
+
+interface ArchitectViewProps {
+    data?: ArchitectData;
+}
+
+export default function ArchitectView({ data }: ArchitectViewProps) {
     const [isDataMoatActive, setIsDataMoatActive] = useState(false);
+
+    if (!data) {
+        return (
+            <div className="flex items-center justify-center h-full text-neutral-500">
+                Loading architectural blueprint...
+            </div>
+        );
+    }
+
+    const { mvp_status, tech_stack, brand_kit, data_moat, architect_footer } = data;
+
+    // Helper to find specific tech categories
+    const frontendTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('frontend'))?.technologies[0] || 'React';
+    const backendTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('backend'))?.technologies[0] || 'Python';
+    const databaseTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('database'))?.technologies[0] || 'PostgreSQL';
+    const aiTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('ai'))?.technologies || ['OpenAI'];
 
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-6">
@@ -30,7 +129,7 @@ export default function ArchitectView() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Architect</h1>
-                    <p className="text-sm text-neutral-400">Generating assets for: AI eLearning Captioning Tool</p>
+                    <p className="text-sm text-neutral-400">Technical Architecture & MVP Design</p>
                 </div>
                 <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
                     <UploadCloud className="w-4 h-4" />
@@ -55,8 +154,8 @@ export default function ArchitectView() {
                                         <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div>
                                     </div>
                                     <div className="flex-1 flex justify-center">
-                                        <div className="bg-neutral-900 rounded px-3 py-0.5 text-[10px] text-neutral-500 font-mono">
-                                            verdyct.lovable.app/dashboard
+                                        <div className="bg-neutral-900 rounded px-3 py-0.5 text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
+                                            {mvp_status.mvp_live_link || "https://verdyct.lovable.app/dashboard"}
                                         </div>
                                     </div>
                                 </div>
@@ -75,13 +174,13 @@ export default function ArchitectView() {
                             {/* Link Row */}
                             <div className="flex items-center gap-3 p-3 rounded bg-neutral-900 border border-neutral-800">
                                 <div className="flex-1 truncate text-sm text-neutral-400 font-mono">
-                                    https://verdyct.lovable.app/dashboard
+                                    {mvp_status.mvp_live_link || "https://verdyct.lovable.app/dashboard"}
                                 </div>
                                 <button className="p-2 hover:bg-white/5 rounded-md text-neutral-400 hover:text-white transition-colors" title="Copy Link">
                                     <Copy className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => window.open('https://verdyct.lovable.app/dashboard', '_blank')}
+                                    onClick={() => window.open(mvp_status.mvp_live_link || "https://verdyct.lovable.app/dashboard", '_blank')}
                                     className="p-2 hover:bg-white/5 rounded-md text-emerald-500 hover:text-emerald-400 transition-colors" title="Open"
                                 >
                                     <ExternalLink className="w-4 h-4" />
@@ -100,24 +199,10 @@ export default function ArchitectView() {
                                     <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Frontend</h4>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-3 p-2 rounded bg-neutral-900 border border-neutral-800">
-                                            <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold text-xs">N</div>
+                                            <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold text-xs">FE</div>
                                             <div>
-                                                <div className="text-sm text-white font-medium">Next.js 14</div>
-                                                <div className="text-[10px] text-neutral-500">App Router</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3 p-2 rounded bg-neutral-900 border border-neutral-800">
-                                            <div className="w-8 h-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xs">TS</div>
-                                            <div>
-                                                <div className="text-sm text-white font-medium">TypeScript</div>
-                                                <div className="text-[10px] text-neutral-500">Strict Mode</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3 p-2 rounded bg-neutral-900 border border-neutral-800">
-                                            <div className="w-8 h-8 rounded bg-cyan-500 text-white flex items-center justify-center font-bold text-xs">Tw</div>
-                                            <div>
-                                                <div className="text-sm text-white font-medium">Tailwind</div>
-                                                <div className="text-[10px] text-neutral-500">v3.4</div>
+                                                <div className="text-sm text-white font-medium">{frontendTech}</div>
+                                                <div className="text-[10px] text-neutral-500">Framework</div>
                                             </div>
                                         </div>
                                     </div>
@@ -128,15 +213,15 @@ export default function ArchitectView() {
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2 text-sm text-neutral-300">
                                             <Database className="w-4 h-4 text-neutral-500" />
-                                            PostgreSQL + Prisma
+                                            {databaseTech}
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-neutral-300">
                                             <Cpu className="w-4 h-4 text-neutral-500" />
-                                            OpenAI Whisper
+                                            {backendTech}
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-neutral-300">
                                             <Globe className="w-4 h-4 text-neutral-500" />
-                                            Vercel Edge
+                                            {aiTech.join(', ')}
                                         </div>
                                     </div>
                                 </div>
@@ -151,30 +236,20 @@ export default function ArchitectView() {
                         <div className="flex flex-col h-full gap-6">
                             {/* Logo Preview */}
                             <div className="p-6 bg-neutral-900 rounded-lg border border-neutral-800 flex flex-col items-center justify-center gap-2">
-                                <div className="text-2xl font-bold text-white tracking-tight">CaptionAI</div>
-                                <div className="text-[10px] text-neutral-500 uppercase tracking-widest">AI-Powered Learning</div>
+                                <div className="text-2xl font-bold text-white tracking-tight">Logo Concept</div>
+                                <div className="text-[10px] text-neutral-500 uppercase tracking-widest text-center">{brand_kit.project_name}</div>
                             </div>
 
                             {/* Colors */}
                             <div>
                                 <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Palette</h4>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div className="space-y-1">
-                                        <div className="h-10 rounded bg-[#2563EB] border border-white/5"></div>
-                                        <div className="text-[10px] text-neutral-500 font-mono">#2563EB</div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="h-10 rounded bg-[#10B981] border border-white/5"></div>
-                                        <div className="text-[10px] text-neutral-500 font-mono">#10B981</div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="h-10 rounded bg-[#F59E0B] border border-white/5"></div>
-                                        <div className="text-[10px] text-neutral-500 font-mono">#F59E0B</div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <div className="h-10 rounded bg-[#0F172A] border border-white/5"></div>
-                                        <div className="text-[10px] text-neutral-500 font-mono">#0F172A</div>
-                                    </div>
+                                    {brand_kit.color_palette.map((color, i) => (
+                                        <div key={i} className="space-y-1">
+                                            <div className="h-10 rounded border border-white/5" style={{ backgroundColor: color }}></div>
+                                            <div className="text-[10px] text-neutral-500 font-mono">{color}</div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -182,9 +257,9 @@ export default function ArchitectView() {
                             <div>
                                 <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Typography</h4>
                                 <div className="space-y-2 bg-neutral-900 p-3 rounded border border-neutral-800">
-                                    <div className="text-xl font-bold text-white">Inter Bold</div>
-                                    <div className="text-sm text-neutral-300">Inter Regular</div>
-                                    <div className="text-xs text-neutral-500 font-mono">JetBrains Mono</div>
+                                    {brand_kit.typography.map((font, i) => (
+                                        <div key={i} className="text-sm text-white">{font.font} <span className="text-neutral-500">({font.use})</span></div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -222,8 +297,8 @@ export default function ArchitectView() {
                                             <Lock className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-semibold text-white">Proprietary Data Collection</h3>
-                                            <p className="text-xs text-neutral-400 mt-1">Capture user interactions to train custom AI models.</p>
+                                            <h3 className="text-base font-semibold text-white">{data_moat.title}</h3>
+                                            <p className="text-xs text-neutral-400 mt-1">{data_moat.status}</p>
                                         </div>
                                     </div>
 
@@ -237,18 +312,12 @@ export default function ArchitectView() {
                             </div>
 
                             <div className="grid grid-cols-3 gap-4">
-                                <div className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all duration-300 ${isDataMoatActive ? 'bg-neutral-900/80 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]' : 'bg-neutral-900/30 border-neutral-800 opacity-50'}`}>
-                                    <MousePointerClick className={`w-5 h-5 mb-3 ${isDataMoatActive ? 'text-purple-400' : 'text-neutral-600'}`} />
-                                    <span className="text-xs font-medium text-white">Behavior Tracking</span>
-                                </div>
-                                <div className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all duration-300 ${isDataMoatActive ? 'bg-neutral-900/80 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]' : 'bg-neutral-900/30 border-neutral-800 opacity-50'}`}>
-                                    <Database className={`w-5 h-5 mb-3 ${isDataMoatActive ? 'text-purple-400' : 'text-neutral-600'}`} />
-                                    <span className="text-xs font-medium text-white">Custom Dataset</span>
-                                </div>
-                                <div className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all duration-300 ${isDataMoatActive ? 'bg-neutral-900/80 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]' : 'bg-neutral-900/30 border-neutral-800 opacity-50'}`}>
-                                    <BrainCircuit className={`w-5 h-5 mb-3 ${isDataMoatActive ? 'text-purple-400' : 'text-neutral-600'}`} />
-                                    <span className="text-xs font-medium text-white">Model Training</span>
-                                </div>
+                                {data_moat.features.slice(0, 3).map((feature, i) => (
+                                    <div key={i} className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all duration-300 ${isDataMoatActive ? 'bg-neutral-900/80 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]' : 'bg-neutral-900/30 border-neutral-800 opacity-50'}`}>
+                                        <MousePointerClick className={`w-5 h-5 mb-3 ${isDataMoatActive ? 'text-purple-400' : 'text-neutral-600'}`} />
+                                        <span className="text-xs font-medium text-white">{feature.title}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </Widget>

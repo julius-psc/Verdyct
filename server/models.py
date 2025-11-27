@@ -357,6 +357,7 @@ class Agents(BaseModel):
 
 class VerdyctReportResponse(BaseModel):
     report_id: str
+    project_id: str = Field(..., description="The ID of the created project")
     submitted_at: str
     status: str = Field(..., description="'approved' or 'rejected'")
     pcs_score: int
@@ -368,6 +369,8 @@ class VerdyctReportResponse(BaseModel):
 # ========== PIXEL & WATCHDOG MODELS ==========
 
 from sqlmodel import SQLModel, Field as SQLField
+from sqlalchemy import JSON, Column
+from typing import Dict
 from datetime import datetime
 import uuid
 
@@ -396,6 +399,9 @@ class Project(SQLModel, table=True):
     cta_text: Optional[str] = None
     cta_selector: Optional[str] = None
     last_verified: Optional[str] = None
+    
+    # Full Report Storage
+    report_json: Optional[Dict] = SQLField(default=None, sa_column=Column(JSON))
 
 
 
