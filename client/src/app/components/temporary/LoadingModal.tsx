@@ -188,11 +188,13 @@ interface LoadingModalProps {
   stopAfterStep?: number;
   initialStep?: number;
   isLoading?: boolean;
+  status?: string; // 'approved' | 'rejected'
 }
 
-export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 0, isLoading = false }: LoadingModalProps) {
+export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 0, isLoading = false, status }: LoadingModalProps) {
   const [step, setStep] = useState(initialStep);
   const [showError, setShowError] = useState(false);
+  const [completedAgents, setCompletedAgents] = useState<Set<string>>(new Set());
 
   const agents = [
     {
@@ -222,8 +224,54 @@ export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 
     },
   ];
 
+  // Listen for agent-complete events
   useEffect(() => {
-    // If we've reached the total agents, wait and complete
+    const handleAgentComplete = (e: CustomEvent) => {
+      const agentName = e.detail; // 'analyst', 'spy', 'financier', 'architect'
+      console.log("Agent complete event received:", agentName);
+      setCompletedAgents(prev => new Set(prev).add(agentName));
+    };
+
+    window.addEventListener('agent-complete' as any, handleAgentComplete);
+    return () => {
+      window.removeEventListener('agent-complete' as any, handleAgentComplete);
+    };
+  }, []);
+
+  useEffect(() => {
+    // If rejected, we stop immediately after the current step finishes (which should be Analyst)
+    if (status === 'rejected' && !isLoading) {
+      // Wait a moment for the animation to finish/settle then complete
+      const timer = setTimeout(() => {
+        if (onComplete) onComplete();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+
+    // Logic to advance steps based on completion
+    // Agents order: Analyst (0), Spy (1), Architect (2), Financier (3), Verdyct (4)
+    const agentOrder = ['analyst', 'spy', 'architect', 'financier'];
+
+    const currentAgentName = agentOrder[step];
+
+    // If current agent is complete, advance
+    if (currentAgentName && completedAgents.has(currentAgentName)) {
+      // Add a small delay for visual smoothness if needed, or advance immediately
+      const timer = setTimeout(() => {
+        setStep(s => s + 1);
+      }, 1000); // 1 second delay to let user see "Complete" state
+      return () => clearTimeout(timer);
+    }
+
+    // If isLoading is false (meaning everything is done) AND status is NOT rejected, fast forward everything
+    if (!isLoading && status !== 'rejected' && step < TOTAL_AGENTS) {
+      const stepTimer = setTimeout(() => {
+        setStep((s) => s + 1);
+      }, 500);
+      return () => clearTimeout(stepTimer);
+    }
+
+    // If we are at the last step (Verdyct) and waiting for final completion
     if (step >= TOTAL_AGENTS) {
       const finalTimer = setTimeout(() => {
         if (onComplete) onComplete();
@@ -231,34 +279,7 @@ export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 
       return () => clearTimeout(finalTimer);
     }
 
-    // Check if we should stop after the current step
-    if (stopAfterStep !== undefined && step === stopAfterStep) {
-      const stepTimer = setTimeout(() => {
-        // Instead of completing immediately, show error state first
-        setShowError(true);
-
-        // Wait a bit in the error state before actually completing/closing
-        const errorTimer = setTimeout(() => {
-          if (onComplete) onComplete();
-        }, 2000); // Show error for 2 seconds
-
-        return () => clearTimeout(errorTimer);
-      }, STEP_DURATION_MS);
-      return () => clearTimeout(stepTimer);
-    }
-
-    // If we are at the last step (The Verdyct) and still loading, pause here
-    if (step === TOTAL_AGENTS - 1 && isLoading) {
-      return;
-    }
-
-    // Normal progression
-    const stepTimer = setTimeout(() => {
-      setStep((s) => s + 1);
-    }, STEP_DURATION_MS);
-
-    return () => clearTimeout(stepTimer);
-  }, [step, onComplete, stopAfterStep, isLoading]);
+  }, [step, completedAgents, isLoading, onComplete, status]);
 
   const getAgentStatus = (index: number): 'RUNNING' | 'QUEUED' | 'COMPLETE' => {
     if (step === index) return 'RUNNING';
@@ -267,6 +288,7 @@ export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 
   };
 
   const currentAgent = agents[Math.min(step, agents.length - 1)];
+  const currentDuration = isLoading ? STEP_DURATION_MS : 500;
 
   return (
     <motion.div
@@ -285,7 +307,7 @@ export default function LoadingModal({ onComplete, stopAfterStep, initialStep = 
                 icon={currentAgent.icon}
                 title={currentAgent.title}
                 description={currentAgent.description}
-                duration={STEP_DURATION_MS}
+                duration={currentDuration}
                 isError={showError}
               />
             ) : (

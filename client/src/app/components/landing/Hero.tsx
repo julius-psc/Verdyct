@@ -16,8 +16,15 @@ export default function Hero() {
   const [analysisData, setAnalysisData] = useState<any>(null);
   const router = useRouter();
 
-  const handleSubmit = async () => {
-    if (!input.trim()) return;
+  const handleSubmit = async (promptOverride?: string) => {
+    const promptToUse = promptOverride || input;
+    if (!promptToUse.trim()) return;
+
+    // If it's a retry/enhance/pivot, update the input to reflect what's being analyzed
+    if (promptOverride) {
+      setInput(promptOverride);
+    }
+
     setAnalysisData(null);
     setFlowState('analyzing');
 
@@ -27,20 +34,48 @@ export default function Hero() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ idea: input }),
+        body: JSON.stringify({ idea: promptToUse }),
       });
 
       if (!response.ok) {
         throw new Error('Analysis failed');
       }
 
-      const data = await response.json();
-      console.log("Analysis data received:", data);
-      setAnalysisData(data);
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error('No reader available');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              console.log("Stream event:", data);
+
+              if (data.type === 'agent_complete') {
+                window.dispatchEvent(new CustomEvent('agent-complete', { detail: data.agent }));
+              } else if (data.type === 'complete') {
+                setAnalysisData(data.data);
+              } else if (data.type === 'error') {
+                console.error("Stream error:", data.message);
+              }
+            } catch (e) {
+              console.error("Error parsing stream data:", e);
+            }
+          }
+        }
+      }
 
     } catch (error) {
       console.error("Error analyzing idea:", error);
-      setFlowState('idle'); // Reset on error for now
+      setFlowState('idle');
       alert("Something went wrong. Please try again.");
     }
   };
@@ -56,21 +91,18 @@ export default function Hero() {
     console.log("handleAnalystComplete called. Analysis Data:", analysisData);
     if (analysisData) {
       if (analysisData.status === 'approved') {
-        // alert(`Redirecting to ${analysisData.project_id}`);
         router.push(`/${analysisData.project_id}/analyst`);
       } else {
-        // alert("Decision needed");
         setFlowState('decision');
       }
     } else {
-      // alert("No analysis data found!");
       setFlowState('idle');
     }
   };
 
-  const handleDecisionAction = () => {
-    // Whether enhance or pivot, we proceed to build
-    setFlowState('building');
+  const handleDecisionAction = (prompt: string) => {
+    // Re-run analysis with the new prompt (Enhance or Pivot)
+    handleSubmit(prompt);
   };
 
   const handleRetry = () => {
@@ -95,9 +127,10 @@ export default function Hero() {
       {/* Flow Components */}
       {flowState === 'analyzing' && (
         <LoadingModal
-          stopAfterStep={0}
+          stopAfterStep={0} // We can remove this or keep it, but logic inside LoadingModal handles it now
           onComplete={handleAnalystComplete}
           isLoading={!analysisData}
+          status={analysisData?.status}
         />
       )}
 
@@ -107,7 +140,7 @@ export default function Hero() {
           onEnhance={handleDecisionAction}
           onPivot={handleDecisionAction}
           onRetry={handleRetry}
-          onProceed={handleDecisionAction}
+          onProceed={() => { }} // Not used for rejected ideas, but required by prop type
           rescuePlan={analysisData.rescue_plan}
         />
       )}
@@ -168,7 +201,7 @@ export default function Hero() {
 
                 {/* Submit Button */}
                 <button
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit()}
                   disabled={!input.trim()}
                   className="w-10 h-10 rounded-full bg-white hover:bg-white/90 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                 >

@@ -2,7 +2,9 @@ import asyncio
 import uuid
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
+import json
 from models import (
     IdeaRequest, 
     AnalystResponse, 
@@ -348,173 +350,169 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
         
     return project
 
-@app.post("/generate-report", response_model=VerdyctReportResponse)
+@app.post("/generate-report")
 async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session)):
     """
-    ORCHESTRATOR ENDPOINT
-    Runs ALL 4 agents in parallel using asyncio.gather.
-    Returns a combined JSON report with all insights.
+    ORCHESTRATOR ENDPOINT (STREAMING)
+    Runs agents and streams progress updates via SSE.
     """
-    try:
-        # Define wrapper functions to handle individual agent failures gracefully if needed
-        # For now, we let them raise exceptions which will fail the whole request (as per current design)
-        # But we could wrap them in try/except to allow partial success
-        
-        async def run_analyst():
-            return await analyze_idea(request)
-            
-        async def run_spy():
-            return await spy_analysis(request)
-            
-        async def run_financier():
-            return await financier_analysis(request)
-            
-        async def run_architect():
-            return await architect_blueprint(request)
-        
-        # Step 1: The Gatekeeper - Run Analyst First
-        analyst_res = await run_analyst()
-        pcs_score = analyst_res.analyst.pcs_score
-        
-        # Step 2: Conditional Branching
-        if pcs_score < 60:
-            # Scenario A: Low Score - STOP & RESCUE
-            print(f"Gatekeeper: PCS {pcs_score} < 60. Triggering Rescue Plan.")
-            
-            rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst)
-            
-            # --- PERSISTENCE (REJECTED) ---
-            # Save rejected project to DB
-            project_id = str(uuid.uuid4())
-            
-            # Construct report for persistence
-            report_data = VerdyctReportResponse(
-                report_id=str(uuid.uuid4()),
-                project_id=project_id,
-                submitted_at=datetime.utcnow().isoformat(),
-                status="rejected",
-                pcs_score=pcs_score,
-                global_summary=f"Idea viability is low (PCS: {pcs_score}). Rescue plan generated.",
-                agents=Agents(
-                    analyst=analyst_res.analyst
-                ),
-                rescue_plan=rescue_plan
-            )
-            
-            project = Project(
-                id=project_id,
-                name=f"Rejected: {request.idea[:30]}...",
-                raw_idea=request.idea,
-                pos_score=pcs_score,
-                status="rejected",
-                report_json=report_data.dict()
-            )
-            session.add(project)
-            await session.commit()
-            
-            # Save embedding
-            upsert_vector(
-                text=request.idea,
-                metadata={
-                    "project_id": project_id,
-                    "pos_score": pcs_score,
-                    "status": "rejected"
-                },
-                vector_id=project_id
-            )
-            # -----------------------------
-            
-            return report_data
-            
-        else:
-            # Scenario B: High Score - GO
-            print(f"Gatekeeper: PCS {pcs_score} >= 60. Proceeding with full analysis.")
-            
-            # Run remaining agents in parallel
-            spy_res, financier_res, architect_res = await asyncio.gather(
-                run_spy(),
-                run_financier(),
-                run_architect()
-            )
-            
-            # Combine results
-            agents_data = Agents(
-                analyst=analyst_res.analyst,
-                spy=spy_res.spy,
-                financier=financier_res.financier,
-                architect=architect_res.architect
-            )
+    async def event_generator():
+        try:
+            # Helper to run agent and return tag
+            async def run_with_tag(tag, coro):
+                try:
+                    return tag, await coro
+                except Exception as e:
+                    return tag, e
 
-            # Construct global summary
-            global_summary = (
-                f"Market Analysis: {analyst_res.analyst.analyst_footer.verdyct_summary}\n\n"
-                f"Strategic Analysis: {spy_res.spy.spy_footer.verdyct_summary.text}\n\n"
-                f"Financial Analysis: {financier_res.financier.financier_footer.verdyct_summary}\n\n"
-                f"Product Blueprint: {architect_res.architect.architect_footer.verdyct_summary}"
-            )
-
-            # --- PERSISTENCE (APPROVED) ---
-            # Architect returns a project_id in the blueprint usually, but here we might need to extract it
-            # For now, we'll use the one generated by Architect if available, or generate one.
-            # Looking at Architect response, it has 'mvp_url' which contains the prompt, but maybe not the ID explicitly in the response model?
-            # Let's check ArchitectResponse model. It has 'mvp_url' and 'screenshot_url'.
-            # The screenshot URL format is "https://lovable.dev/screenshot/{project_id}.png"
-            # We can extract it from there.
+            # Step 1: Run Analyst
+            yield f"data: {json.dumps({'type': 'status', 'agent': 'analyst', 'status': 'running'})}\n\n"
             
-            project_id = str(uuid.uuid4()) # Default fallback
-            try:
-                if architect_res.architect.mvp_status.mvp_screenshot_url:
-                    # Extract ID from URL
-                    parts = architect_res.architect.mvp_status.mvp_screenshot_url.split('/')
-                    if parts:
-                        filename = parts[-1]
-                        project_id = filename.replace('.png', '')
-            except:
-                pass
-
-            # Construct report for persistence
-            report_data = VerdyctReportResponse(
-                report_id=str(uuid.uuid4()),
-                project_id=project_id,
-                submitted_at=datetime.utcnow().isoformat(),
-                status="approved",
-                pcs_score=pcs_score,
-                global_summary=global_summary,
-                agents=agents_data
-            )
-
-            project = Project(
-                id=project_id,
-                name=f"Approved: {request.idea[:30]}...",
-                raw_idea=request.idea,
-                pos_score=pcs_score,
-                status="approved",
-                url=architect_res.architect.mvp_status.mvp_live_link,
-                report_json=report_data.dict()
-            )
-            session.add(project)
-            await session.commit()
+            # Run Analyst
+            analyst_res = await analyze_idea(request)
+            yield f"data: {json.dumps({'type': 'agent_complete', 'agent': 'analyst'})}\n\n"
             
-            # Save embedding
-            upsert_vector(
-                text=request.idea,
-                metadata={
-                    "project_id": project_id,
-                    "pos_score": pcs_score,
-                    "status": "approved"
-                },
-                vector_id=project_id
-            )
-            # -----------------------------
+            pcs_score = analyst_res.analyst.pcs_score
+            
+            # Step 2: Gatekeeper
+            if pcs_score < 60:
+                # REJECTED
+                yield f"data: {json.dumps({'type': 'log', 'message': f'PCS {pcs_score} < 60. Triggering Rescue Plan.'})}\n\n"
+                
+                rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst)
+                
+                # Persistence (Rejected)
+                project_id = str(uuid.uuid4())
+                report_data = VerdyctReportResponse(
+                    report_id=str(uuid.uuid4()),
+                    project_id=project_id,
+                    submitted_at=datetime.utcnow().isoformat(),
+                    status="rejected",
+                    pcs_score=pcs_score,
+                    global_summary=f"Idea viability is low (PCS: {pcs_score}). Rescue plan generated.",
+                    agents=Agents(analyst=analyst_res.analyst),
+                    rescue_plan=rescue_plan
+                )
+                
+                project = Project(
+                    id=project_id,
+                    name=f"Rejected: {request.idea[:30]}...",
+                    raw_idea=request.idea,
+                    pos_score=pcs_score,
+                    status="rejected",
+                    report_json=report_data.dict()
+                )
+                session.add(project)
+                await session.commit()
+                
+                upsert_vector(
+                    text=request.idea,
+                    metadata={"project_id": project_id, "pos_score": pcs_score, "status": "rejected"},
+                    vector_id=project_id
+                )
+                
+                yield f"data: {json.dumps({'type': 'complete', 'status': 'rejected', 'data': report_data.dict()})}\n\n"
+                return
 
-            return report_data
-        
-    except Exception as e:
-        print(f"Orchestrator Error: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate full report: {str(e)}"
-        )
+            else:
+                # APPROVED
+                yield f"data: {json.dumps({'type': 'log', 'message': f'PCS {pcs_score} >= 60. Proceeding with full analysis.'})}\n\n"
+                
+                # Start parallel agents
+                tasks = [
+                    run_with_tag("spy", spy_analysis(request)),
+                    run_with_tag("financier", financier_analysis(request)),
+                    run_with_tag("architect", architect_blueprint(request))
+                ]
+                
+                results = {}
+                
+                # Process as they complete
+                for coro in asyncio.as_completed(tasks):
+                    tag, result = await coro
+                    if isinstance(result, Exception):
+                        print(f"Error in {tag}: {result}")
+                        # We continue even if one fails, but ideally we should handle it
+                        # For now, we might have missing data in the final report
+                        results[tag] = None 
+                    else:
+                        results[tag] = result
+                        yield f"data: {json.dumps({'type': 'agent_complete', 'agent': tag})}\n\n"
+
+                # Check if we have all results (or handle failures)
+                # Re-construct the specific response objects if needed, or just use what we have
+                # The results[tag] are the Pydantic models (SpyResponse, etc)
+                
+                spy_res = results.get("spy")
+                financier_res = results.get("financier")
+                architect_res = results.get("architect")
+                
+                if not spy_res or not financier_res or not architect_res:
+                     # Handle critical failure if needed, or just proceed with partial
+                     pass
+
+                # Combine results
+                agents_data = Agents(
+                    analyst=analyst_res.analyst,
+                    spy=spy_res.spy if spy_res else None,
+                    financier=financier_res.financier if financier_res else None,
+                    architect=architect_res.architect if architect_res else None
+                )
+
+                # Global Summary
+                global_summary = f"Market Analysis: {analyst_res.analyst.analyst_footer.verdyct_summary}\n\n"
+                if spy_res:
+                    global_summary += f"Strategic Analysis: {spy_res.spy.spy_footer.verdyct_summary.text}\n\n"
+                if financier_res:
+                    global_summary += f"Financial Analysis: {financier_res.financier.financier_footer.verdyct_summary}\n\n"
+                if architect_res:
+                    global_summary += f"Product Blueprint: {architect_res.architect.architect_footer.verdyct_summary}"
+
+                # Persistence (Approved)
+                project_id = str(uuid.uuid4())
+                try:
+                    if architect_res and architect_res.architect.mvp_status.mvp_screenshot_url:
+                        parts = architect_res.architect.mvp_status.mvp_screenshot_url.split('/')
+                        if parts:
+                            project_id = parts[-1].replace('.png', '')
+                except:
+                    pass
+
+                report_data = VerdyctReportResponse(
+                    report_id=str(uuid.uuid4()),
+                    project_id=project_id,
+                    submitted_at=datetime.utcnow().isoformat(),
+                    status="approved",
+                    pcs_score=pcs_score,
+                    global_summary=global_summary,
+                    agents=agents_data
+                )
+
+                project = Project(
+                    id=project_id,
+                    name=f"Approved: {request.idea[:30]}...",
+                    raw_idea=request.idea,
+                    pos_score=pcs_score,
+                    status="approved",
+                    url=architect_res.architect.mvp_status.mvp_live_link if architect_res else None,
+                    report_json=report_data.dict()
+                )
+                session.add(project)
+                await session.commit()
+                
+                upsert_vector(
+                    text=request.idea,
+                    metadata={"project_id": project_id, "pos_score": pcs_score, "status": "approved"},
+                    vector_id=project_id
+                )
+                
+                yield f"data: {json.dumps({'type': 'complete', 'status': 'approved', 'data': report_data.dict()})}\n\n"
+
+        except Exception as e:
+            print(f"Orchestrator Error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 if __name__ == "__main__":
     import uvicorn
