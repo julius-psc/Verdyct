@@ -178,6 +178,21 @@ The idea to analyze is: {idea}
 - If you cannot find a URL that contains the metric data, DO NOT include that metric
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
+**CRITICAL: INPUT VALIDATION (ANTI-NONSENSE RULE)**
+- You must first evaluate if the input `{idea}` is a legitimate business idea or just a test/nonsense input.
+- If the input is:
+    - A single word like "test", "hello", "asdf", "foo"
+    - A random string of characters
+    - A greeting without business context
+    - Clearly NOT a startup idea
+- THEN you **MUST** enforce the following scoring to trigger the "Kill Switches":
+    - **Competitive Void = 0** (Triggers Red Ocean Penalty)
+    - **Market Momentum = 0** (Triggers Dying Market Penalty)
+    - **Macro Risk = 0** (Triggers Regulatory Wall Penalty)
+    - **Problem Urgency = 0**
+- This will ensure the final PCS score is near zero.
+- DO NOT try to "invent" a business meaning for nonsense inputs.
+
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE market metric (TAM, SAM, or CAGR) with a valid verified_url
 - You MUST provide AT LEAST ONE keyword in the SEO opportunity section

@@ -17,6 +17,7 @@ from models import (
     PixelEvent,
     Project
 )
+from auth import verify_token
 from agents.analyst import generate_analysis, search_market_data, generate_rescue_plan
 from agents.spy import generate_spy_analysis, get_competitor_intel
 from agents.financier import generate_financier_analysis, get_pricing_intel
@@ -114,7 +115,7 @@ async def health_check():
     return {"status": "healthy", "service": "Verdyct Analyst Agent"}
 
 @app.post("/analyze", response_model=AnalystResponse)
-async def analyze_idea(request: IdeaRequest):
+async def analyze_idea(request: IdeaRequest, user: dict = Depends(verify_token)):
     """
     Endpoint principal pour analyser une idée de startup.
     Reçoit une idée, recherche des données de marché via Tavily,
@@ -173,7 +174,7 @@ async def analyze_idea(request: IdeaRequest):
         )
 
 @app.post("/spy", response_model=SpyResponse)
-async def spy_analysis(request: IdeaRequest):
+async def spy_analysis(request: IdeaRequest, user: dict = Depends(verify_token)):
     """
     Endpoint pour l'analyse stratégique et concurrentielle (Spy Agent).
     Reçoit une idée, identifie les concurrents et leurs pain points via Tavily,
@@ -233,7 +234,7 @@ async def spy_analysis(request: IdeaRequest):
         )
 
 @app.post("/financier", response_model=FinancierResponse)
-async def financier_analysis(request: IdeaRequest):
+async def financier_analysis(request: IdeaRequest, user: dict = Depends(verify_token)):
     """
     Endpoint pour l'analyse financière (Financier Agent).
     Reçoit une idée, recherche les prix des concurrents via Tavily,
@@ -292,7 +293,7 @@ async def financier_analysis(request: IdeaRequest):
         )
 
 @app.post("/architect", response_model=ArchitectResponse)
-async def architect_blueprint(request: IdeaRequest):
+async def architect_blueprint(request: IdeaRequest, user: dict = Depends(verify_token)):
     """
     Endpoint pour le blueprint technique (Architect Agent).
     Génère un plan technique complet et un MVP fonctionnel.
@@ -351,7 +352,7 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
     return project
 
 @app.post("/generate-report")
-async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session)):
+async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
     """
     ORCHESTRATOR ENDPOINT (STREAMING)
     Runs agents and streams progress updates via SSE.

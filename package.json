@@ -19,5 +19,9 @@
     "license": "ISC",
     "devDependencies": {
         "concurrently": "^8.2.2"
+    },
+    "dependencies": {
+        "@supabase/ssr": "^0.8.0",
+        "@supabase/supabase-js": "^2.86.0"
     }
 }

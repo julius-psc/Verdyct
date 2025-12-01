@@ -5,6 +5,7 @@ import { IconStack2Filled, IconLink, IconArrowUp } from "@tabler/icons-react";
 import { AudioLines } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "../../../utils/supabase/client";
 import LoadingModal from "../temporary/LoadingModal";
 import EnhancePivot from "../temporary/EnhancePivot";
 
@@ -15,6 +16,7 @@ export default function Hero() {
   const [flowState, setFlowState] = useState<FlowState>('idle');
   const [analysisData, setAnalysisData] = useState<any>(null);
   const router = useRouter();
+  const supabase = createClient();
 
   const handleSubmit = async (promptOverride?: string) => {
     const promptToUse = promptOverride || input;
@@ -29,10 +31,18 @@ export default function Hero() {
     setFlowState('analyzing');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push('/login');
+        return;
+      }
+
       const response = await fetch('http://localhost:8000/generate-report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ idea: promptToUse }),
       });

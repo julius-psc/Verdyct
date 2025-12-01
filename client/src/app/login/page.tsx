@@ -1,0 +1,129 @@
+'use client'
+
+import { createClient } from '@/utils/supabase/client'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { IconBrandGoogle, IconLoader2 } from '@tabler/icons-react'
+
+export default function LoginPage() {
+    const supabase = createClient()
+    const router = useRouter()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError(null)
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        })
+
+        if (error) {
+            setError(error.message)
+            setLoading(false)
+        } else {
+            router.push('/dashboard')
+        }
+    }
+
+    return (
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-black">
+            {/* Background Effects */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-black to-black" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-primary-red/20 blur-[120px] rounded-full opacity-20 pointer-events-none" />
+
+            <div className="relative z-10 w-full max-w-md p-6">
+                <div className="mb-8 text-center">
+                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome back</h1>
+                    <p className="text-neutral-400">Continue building your vision with Verdyct</p>
+                </div>
+
+                <div className="bg-neutral-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+                    <form onSubmit={handleLogin} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-neutral-300 mb-1.5">Email</label>
+                            <input
+                                type="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary-red/50 focus:border-transparent transition-all"
+                                placeholder="name@example.com"
+                            />
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="block text-sm font-medium text-neutral-300">Password</label>
+                                <Link href="/forgot-password" className="text-xs text-neutral-500 hover:text-white transition-colors">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                            <input
+                                type="password"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-black/50 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-primary-red/50 focus:border-transparent transition-all"
+                                placeholder="Enter your password"
+                            />
+                        </div>
+
+                        {error && (
+                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-white text-black font-medium py-2.5 rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            {loading ? (
+                                <>
+                                    <IconLoader2 className="w-4 h-4 animate-spin" />
+                                    Logging in...
+                                </>
+                            ) : (
+                                'Log In'
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="mt-6">
+                        <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-white/10"></div>
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                                <span className="px-2 bg-neutral-900/50 text-neutral-500">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            className="mt-4 w-full bg-white/5 border border-white/10 text-white font-medium py-2.5 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <IconBrandGoogle className="w-5 h-5" />
+                            Google
+                        </button>
+                    </div>
+                </div>
+
+                <p className="mt-6 text-center text-sm text-neutral-500">
+                    Don't have an account?{' '}
+                    <Link href="/signup" className="text-white hover:underline font-medium">
+                        Sign up
+                    </Link>
+                </p>
+            </div>
+        </div>
+    )
+}
