@@ -14,9 +14,16 @@ export interface Project {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export async function fetchProjects(): Promise<Project[]> {
+export async function fetchProjects(token?: string): Promise<Project[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/projects`);
+        const headers: HeadersInit = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/projects`, {
+            headers
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch projects');
         }

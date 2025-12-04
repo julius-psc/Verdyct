@@ -6,6 +6,7 @@ import { RequiredActionsWidget, AgentStatusWidget } from './ActionStatusSection'
 import SignalRadar from './SignalRadar';
 import AlgorithmHealth from './AlgorithmHealth';
 import { fetchProjects, Project } from '../../../lib/api';
+import { createClient } from '@/utils/supabase/client';
 
 interface MetricItem {
   title: string;
@@ -38,7 +39,11 @@ export default function MainView() {
 
   useEffect(() => {
     async function loadData() {
-      const data = await fetchProjects();
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const data = await fetchProjects(token);
 
       if (data.length === 0) return;
 

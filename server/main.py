@@ -102,11 +102,11 @@ async def trigger_cta_verification(project_id: str, session: AsyncSession = Depe
     return {"status": "verified", "cta": result}
 
 @app.get("/api/projects", response_model=List[Project])
-async def get_projects(session: AsyncSession = Depends(get_session)):
+async def get_projects(session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
     """
-    Get all projects.
+    Get all projects for the authenticated user.
     """
-    statement = select(Project).order_by(Project.created_at.desc())
+    statement = select(Project).where(Project.user_id == user['sub']).order_by(Project.created_at.desc())
     result = await session.exec(statement)
     return result.all()
 
@@ -366,6 +366,16 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 except Exception as e:
                     return tag, e
 
+            # Step 0: Gatekeeper
+            yield f"data: {json.dumps({'type': 'status', 'agent': 'gatekeeper', 'status': 'running'})}\n\n"
+            
+            from agents.gatekeeper import validate_saas_idea
+            gatekeeper_res = validate_saas_idea(request.idea)
+            
+            if not gatekeeper_res.is_saas:
+                yield f"data: {json.dumps({'type': 'error', 'message': gatekeeper_res.rejection_reason})}\n\n"
+                return
+
             # Step 1: Run Analyst
             yield f"data: {json.dumps({'type': 'status', 'agent': 'analyst', 'status': 'running'})}\n\n"
             
@@ -401,7 +411,8 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     raw_idea=request.idea,
                     pos_score=pcs_score,
                     status="rejected",
-                    report_json=report_data.dict()
+                    report_json=report_data.dict(),
+                    user_id=user['sub']
                 )
                 session.add(project)
                 await session.commit()
@@ -496,7 +507,8 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     pos_score=pcs_score,
                     status="approved",
                     url=architect_res.architect.mvp_status.mvp_live_link if architect_res else None,
-                    report_json=report_data.dict()
+                    report_json=report_data.dict(),
+                    user_id=user['sub']
                 )
                 session.add(project)
                 await session.commit()

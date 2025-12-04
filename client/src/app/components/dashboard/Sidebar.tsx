@@ -15,6 +15,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { fetchProjects, Project as ApiProject } from '../../../lib/api';
+import { createClient } from '@/utils/supabase/client';
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -40,7 +41,11 @@ export default function Sidebar() {
 
   useEffect(() => {
     async function loadProjects() {
-      const apiProjects = await fetchProjects();
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const apiProjects = await fetchProjects(token);
       if (apiProjects.length > 0) {
         const sidebarProjects = apiProjects.map(p => ({
           id: p.id,

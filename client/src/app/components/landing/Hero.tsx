@@ -3,90 +3,49 @@
 import heroBg from "../../../../public/assets/illustrations/hero-bg.png";
 import { IconStack2Filled, IconLink, IconArrowUp } from "@tabler/icons-react";
 import { AudioLines } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../utils/supabase/client";
-import LoadingModal from "../temporary/LoadingModal";
-import EnhancePivot from "../temporary/EnhancePivot";
-
-type FlowState = 'idle' | 'analyzing' | 'decision' | 'building' | 'completed';
 
 export default function Hero() {
   const [input, setInput] = useState("");
-  const [flowState, setFlowState] = useState<FlowState>('idle');
-  const [analysisData, setAnalysisData] = useState<any>(null);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    const checkPendingIdea = async () => {
+      const pendingIdea = localStorage.getItem('pending_idea');
+      if (pendingIdea) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setInput(pendingIdea);
+          localStorage.removeItem('pending_idea');
+          handleSubmit(pendingIdea);
+        }
+      }
+    };
+
+    checkPendingIdea();
+  }, []);
 
   const handleSubmit = async (promptOverride?: string) => {
     const promptToUse = promptOverride || input;
     if (!promptToUse.trim()) return;
 
-    // If it's a retry/enhance/pivot, update the input to reflect what's being analyzed
-    if (promptOverride) {
-      setInput(promptOverride);
-    }
-
-    setAnalysisData(null);
-    setFlowState('analyzing');
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session) {
-        router.push('/login');
+        localStorage.setItem('pending_idea', promptToUse);
+        router.push('/login?next=/analyzing');
         return;
       }
 
-      const response = await fetch('http://localhost:8000/generate-report', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ idea: promptToUse }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Analysis failed');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) throw new Error('No reader available');
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              console.log("Stream event:", data);
-
-              if (data.type === 'agent_complete') {
-                window.dispatchEvent(new CustomEvent('agent-complete', { detail: data.agent }));
-              } else if (data.type === 'complete') {
-                setAnalysisData(data.data);
-              } else if (data.type === 'error') {
-                console.error("Stream error:", data.message);
-              }
-            } catch (e) {
-              console.error("Error parsing stream data:", e);
-            }
-          }
-        }
-      }
+      // If logged in, go straight to analyzing page
+      router.push(`/analyzing?idea=${encodeURIComponent(promptToUse)}`);
 
     } catch (error) {
-      console.error("Error analyzing idea:", error);
-      setFlowState('idle');
-      alert("Something went wrong. Please try again.");
+      console.error("Error checking session:", error);
     }
   };
 
@@ -95,34 +54,6 @@ export default function Hero() {
       e.preventDefault();
       handleSubmit();
     }
-  };
-
-  const handleAnalystComplete = () => {
-    console.log("handleAnalystComplete called. Analysis Data:", analysisData);
-    if (analysisData) {
-      if (analysisData.status === 'approved') {
-        router.push(`/${analysisData.project_id}/analyst`);
-      } else {
-        setFlowState('decision');
-      }
-    } else {
-      setFlowState('idle');
-    }
-  };
-
-  const handleDecisionAction = (prompt: string) => {
-    // Re-run analysis with the new prompt (Enhance or Pivot)
-    handleSubmit(prompt);
-  };
-
-  const handleRetry = () => {
-    setFlowState('idle');
-    setInput("");
-    setAnalysisData(null);
-  };
-
-  const handleBuildComplete = () => {
-    router.push('/dashboard');
   };
 
   return (
@@ -134,34 +65,6 @@ export default function Hero() {
         backgroundPosition: 'center',
       }}
     >
-      {/* Flow Components */}
-      {flowState === 'analyzing' && (
-        <LoadingModal
-          stopAfterStep={0} // We can remove this or keep it, but logic inside LoadingModal handles it now
-          onComplete={handleAnalystComplete}
-          isLoading={!analysisData}
-          status={analysisData?.status}
-        />
-      )}
-
-      {flowState === 'decision' && analysisData && (
-        <EnhancePivot
-          score={analysisData.pcs_score}
-          onEnhance={handleDecisionAction}
-          onPivot={handleDecisionAction}
-          onRetry={handleRetry}
-          onProceed={() => { }} // Not used for rejected ideas, but required by prop type
-          rescuePlan={analysisData.rescue_plan}
-        />
-      )}
-
-      {flowState === 'building' && (
-        <LoadingModal
-          initialStep={1}
-          onComplete={handleBuildComplete}
-        />
-      )}
-
       {/* Content Container */}
       <div className="max-w-3xl w-full flex flex-col items-center text-center space-y-6">
 

@@ -2,13 +2,15 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { IconBrandGoogle, IconLoader2 } from '@tabler/icons-react'
+import { IconBrandGoogle, IconLoader2, IconBrandGithub } from '@tabler/icons-react'
 
 export default function LoginPage() {
     const supabase = createClient()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next') || '/dashboard'
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -28,7 +30,9 @@ export default function LoginPage() {
             setError(error.message)
             setLoading(false)
         } else {
-            router.push('/dashboard')
+            const decodedNext = decodeURIComponent(next);
+            console.log("Redirecting to:", decodedNext);
+            router.push(decodedNext);
         }
     }
 
@@ -109,17 +113,40 @@ export default function LoginPage() {
 
                         <button
                             type="button"
+                            onClick={() => {
+                                supabase.auth.signInWithOAuth({
+                                    provider: 'google',
+                                    options: {
+                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                    },
+                                })
+                            }}
                             className="mt-4 w-full bg-white/5 border border-white/10 text-white font-medium py-2.5 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
                         >
                             <IconBrandGoogle className="w-5 h-5" />
                             Google
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                supabase.auth.signInWithOAuth({
+                                    provider: 'github',
+                                    options: {
+                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                    },
+                                })
+                            }}
+                            className="mt-3 w-full bg-white/5 border border-white/10 text-white font-medium py-2.5 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <IconBrandGithub className="w-5 h-5" />
+                            Github
                         </button>
                     </div>
                 </div>
 
                 <p className="mt-6 text-center text-sm text-neutral-500">
                     Don't have an account?{' '}
-                    <Link href="/signup" className="text-white hover:underline font-medium">
+                    <Link href={`/signup?next=${next}`} className="text-white hover:underline font-medium">
                         Sign up
                     </Link>
                 </p>

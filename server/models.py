@@ -402,6 +402,9 @@ class Project(SQLModel, table=True):
     
     # Full Report Storage
     report_json: Optional[Dict] = SQLField(default=None, sa_column=Column(JSON))
+    
+    # User Ownership
+    user_id: str = SQLField(index=True)
 
 
 

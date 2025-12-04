@@ -2,13 +2,15 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { IconBrandGoogle, IconLoader2 } from '@tabler/icons-react'
+import { IconBrandGoogle, IconLoader2, IconBrandGithub } from '@tabler/icons-react'
 
 export default function SignupPage() {
     const supabase = createClient()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const next = searchParams.get('next') || '/dashboard'
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -23,7 +25,7 @@ export default function SignupPage() {
             email,
             password,
             options: {
-                emailRedirectTo: `${location.origin}/auth/callback`,
+                emailRedirectTo: `${location.origin}/auth/callback?next=${next}`,
             },
         })
 
@@ -34,7 +36,8 @@ export default function SignupPage() {
             // Check if session is established (auto-confirm enabled) or if email confirmation is needed
             // For now, let's assume we might need to show a message or redirect
             alert('Check your email for the confirmation link!')
-            router.push('/login')
+            const decodedNext = decodeURIComponent(next);
+            router.push(`/login?next=${encodeURIComponent(decodedNext)}`)
             setLoading(false)
         }
     }
@@ -111,17 +114,40 @@ export default function SignupPage() {
 
                         <button
                             type="button"
+                            onClick={() => {
+                                supabase.auth.signInWithOAuth({
+                                    provider: 'google',
+                                    options: {
+                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                    },
+                                })
+                            }}
                             className="mt-4 w-full bg-white/5 border border-white/10 text-white font-medium py-2.5 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
                         >
                             <IconBrandGoogle className="w-5 h-5" />
                             Google
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                supabase.auth.signInWithOAuth({
+                                    provider: 'github',
+                                    options: {
+                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                    },
+                                })
+                            }}
+                            className="mt-3 w-full bg-white/5 border border-white/10 text-white font-medium py-2.5 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <IconBrandGithub className="w-5 h-5" />
+                            Github
                         </button>
                     </div>
                 </div>
 
                 <p className="mt-6 text-center text-sm text-neutral-500">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-white hover:underline font-medium">
+                    <Link href={`/login?next=${next}`} className="text-white hover:underline font-medium">
                         Log in
                     </Link>
                 </p>
