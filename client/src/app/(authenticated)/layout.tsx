@@ -1,11 +1,16 @@
-import Sidebar from '../components/dashboard/Sidebar';
-import MainView from '../components/dashboard/MainView';
+'use client';
 
-export default function DashboardPage() {
+import Sidebar from '../components/dashboard/Sidebar';
+
+export default function AuthenticatedLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
         <div className="min-h-screen bg-[#1B1818] text-white flex relative overflow-hidden">
             <Sidebar />
-            <MainView />
+            {children}
         </div>
     );
 }

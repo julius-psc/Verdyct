@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Sidebar from '../../components/dashboard/Sidebar';
-import SpyView from '../../components/spy/SpyView';
+import ArchitectView from '../../../components/architect/ArchitectView';
 
-export default function SpyPage() {
+export default function ArchitectPage() {
     const params = useParams();
-    const [spyData, setSpyData] = useState<any>(null);
+    const [architectData, setArchitectData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,8 +20,8 @@ export default function SpyPage() {
                 }
                 const project = await response.json();
 
-                if (project.report_json && project.report_json.agents && project.report_json.agents.spy) {
-                    setSpyData(project.report_json.agents.spy);
+                if (project.report_json && project.report_json.agents && project.report_json.agents.architect) {
+                    setArchitectData(project.report_json.agents.architect);
                 }
             } catch (error) {
                 console.error("Error fetching project data:", error);
@@ -35,17 +34,14 @@ export default function SpyPage() {
     }, [params.projectId]);
 
     return (
-        <div className="min-h-screen bg-[#1B1818] text-white flex relative overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">
-                {loading ? (
-                    <div className="flex items-center justify-center h-full text-neutral-500">
-                        Loading spy analysis...
-                    </div>
-                ) : (
-                    <SpyView data={spyData} />
-                )}
-            </main>
-        </div>
+        <main className="flex-1 overflow-auto">
+            {loading ? (
+                <div className="flex items-center justify-center h-full text-neutral-500">
+                    Loading architectural blueprint...
+                </div>
+            ) : (
+                <ArchitectView data={architectData} />
+            )}
+        </main>
     );
 }

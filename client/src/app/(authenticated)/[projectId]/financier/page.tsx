@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Sidebar from '../../components/dashboard/Sidebar';
-import FinancierView from '../../components/financier/FinancierView';
+import FinancierView from '../../../components/financier/FinancierView';
 
 export default function FinancierPage() {
     const params = useParams();
@@ -35,17 +34,14 @@ export default function FinancierPage() {
     }, [params.projectId]);
 
     return (
-        <div className="min-h-screen bg-[#1B1818] text-white flex relative overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">
-                {loading ? (
-                    <div className="flex items-center justify-center h-full text-neutral-500">
-                        Loading financial analysis...
-                    </div>
-                ) : (
-                    <FinancierView data={financierData} />
-                )}
-            </main>
-        </div>
+        <main className="flex-1 overflow-auto">
+            {loading ? (
+                <div className="flex items-center justify-center h-full text-neutral-500">
+                    Loading financial analysis...
+                </div>
+            ) : (
+                <FinancierView data={financierData} />
+            )}
+        </main>
     );
 }

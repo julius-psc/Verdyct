@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   IconLayoutDashboardFilled,
-  IconFolderFilled,
+  IconCircleDashedCheck,
+  IconBan,
   IconSettings,
   IconLogout,
   IconChevronLeft,
@@ -124,13 +125,13 @@ export default function Sidebar() {
             />
           ))}
 
-          {/* Projects Section */}
+          {/* Approved Section */}
           <div>
             <button
               onClick={handleProjectsClick}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all"
             >
-              <IconFolderFilled className="w-5 h-5 shrink-0" />
+              <IconCircleDashedCheck className="w-5 h-5 shrink-0" />
               <AnimatePresence>
                 {isExpanded && (
                   <motion.span
@@ -140,7 +141,7 @@ export default function Sidebar() {
                     transition={{ duration: 0.2 }}
                     className="text-sm font-medium whitespace-nowrap overflow-hidden"
                   >
-                    Projects
+                    Approved
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -162,7 +163,7 @@ export default function Sidebar() {
               </AnimatePresence>
             </button>
 
-            {/* Projects Dropdown */}
+            {/* Approved Projects Dropdown */}
             <AnimatePresence>
               {isExpanded && isProjectsExpanded && (
                 <motion.div
@@ -183,6 +184,28 @@ export default function Sidebar() {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          {/* Rejected Section */}
+          <div>
+            <button
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all"
+            >
+              <IconBan className="w-5 h-5 shrink-0" />
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                  >
+                    Rejected
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
           </div>
         </div>
 
