@@ -44,4 +44,3 @@ echo Demarrage du serveur sur http://localhost:8000
 echo Appuyez sur Ctrl+C pour arreter
 echo.
 python -m uvicorn main:app --reload
-
