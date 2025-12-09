@@ -193,6 +193,16 @@ The idea to analyze is: {idea}
 - This will ensure the final PCS score is near zero.
 - DO NOT try to "invent" a business meaning for nonsense inputs.
 
+
+**CRITICAL: "ANTI-GENERIC" SCORING RULE**
+- If the idea is extremely vague, generic, or lacks a specific value proposition (e.g., "A sport app", "A CRM", "Fashion brand", "A social network"), you **MUST** apply the following penalties to ensure the score drops below 10:
+    - **Market Magnitude = 1** (No defined target = No market)
+    - **Competitive Void = 1** (Triggers Red Ocean Penalty)
+    - **Solution Uniqueness = 1**
+    - **Market Momentum = 1** (Triggers Dying Market Penalty) 
+    - **Problem Urgency = 1** (No specific problem = Low urgency)
+- Do NOT give benefit of difference to vague inputs. Treat them as non-viable until proven otherwise by specific details.
+
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE market metric (TAM, SAM, or CAGR) with a valid verified_url
 - You MUST provide AT LEAST ONE keyword in the SEO opportunity section
