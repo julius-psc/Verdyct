@@ -388,7 +388,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             # Step 2: Gatekeeper
             if pcs_score < 60:
                 # REJECTED
-                yield f"data: {json.dumps({'type': 'log', 'message': f'PCS {pcs_score} < 60. Triggering Rescue Plan.'})}\n\n"
+                yield f"data: {json.dumps({'type': 'log', 'message': f'POS {pcs_score} < 60. Triggering Rescue Plan.'})}\n\n"
                 
                 rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst)
                 
@@ -400,7 +400,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     submitted_at=datetime.utcnow().isoformat(),
                     status="rejected",
                     pcs_score=pcs_score,
-                    global_summary=f"Idea viability is low (PCS: {pcs_score}). Rescue plan generated.",
+                    global_summary=f"Idea viability is low (POS: {pcs_score}). Rescue plan generated.",
                     agents=Agents(analyst=analyst_res.analyst),
                     rescue_plan=rescue_plan
                 )
@@ -428,7 +428,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
 
             else:
                 # APPROVED
-                yield f"data: {json.dumps({'type': 'log', 'message': f'PCS {pcs_score} >= 60. Proceeding with full analysis.'})}\n\n"
+                yield f"data: {json.dumps({'type': 'log', 'message': f'POS {pcs_score} >= 60. Proceeding with full analysis.'})}\n\n"
                 
                 # Start parallel agents
                 tasks = [

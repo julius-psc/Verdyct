@@ -101,13 +101,15 @@ export default function Sidebar() {
           transition={{ duration: 0.3 }}
           className="relative h-10 overflow-hidden"
         >
-          <Image
-            src="/assets/brand/logos/default-logo.svg"
-            alt="Verdyct"
-            width={isExpanded ? 120 : 40}
-            height={40}
-            className="object-contain w-full h-full"
-          />
+          <Link href="/" className="block w-full h-full">
+            <Image
+              src="/assets/brand/logos/default-logo.svg"
+              alt="Verdyct"
+              width={isExpanded ? 120 : 40}
+              height={40}
+              className="object-contain w-full h-full"
+            />
+          </Link>
         </motion.div>
       </div>
 

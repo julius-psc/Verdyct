@@ -1,6 +1,5 @@
 "use client"
 
-import heroBg from "../../../../public/assets/illustrations/hero-bg.png";
 import { IconStack2Filled, IconLink, IconArrowUp } from "@tabler/icons-react";
 import { AudioLines } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -60,7 +59,7 @@ export default function Hero() {
     <section
       className="relative min-h-screen flex items-center justify-center px-6 py-20"
       style={{
-        backgroundImage: `url(${heroBg.src})`,
+        backgroundImage: `url('/assets/illustrations/hero-bg.png')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}

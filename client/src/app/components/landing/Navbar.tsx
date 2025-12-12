@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from "motion/react"
-import { IconMoon } from '@tabler/icons-react';
+import { IconMoon, IconLayoutDashboard } from '@tabler/icons-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { User } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/client';
 import logo from "../../../../public/assets/brand/logos/default-logo.svg";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,6 +21,21 @@ export default function Navbar() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkUser();
   }, []);
 
   return (
@@ -40,40 +60,54 @@ export default function Navbar() {
         transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
         {/* Logo - Left */}
-        <div className="flex items-center gap-1">
+        <Link href="/" className="flex items-center gap-1">
           <Image src={logo} alt="Verdyct Logo" className="h-10 w-auto" />
           <span className="text-white font-semibold text-xl">Verdyct</span>
-        </div>
+        </Link>
 
         {/* Nav Links - Center */}
         <div className="flex items-center gap-8">
-          <a
-            href="#home"
+          <Link
+            href="/"
             className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
           >
             Home
-          </a>
-          <a
-            href="#how-it-works"
+          </Link>
+          <Link
+            href="/how-it-works"
             className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
           >
             How it works
-          </a>
-          <a
-            href="#pricing"
+          </Link>
+          <Link
+            href="/pricing"
             className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
           >
             Pricing
-          </a>
+          </Link>
         </div>
 
         {/* Right Side - CTA + Theme Toggle */}
         <div className="flex items-center gap-3">
-          <button
-            className="text-white bg-primary-red px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 hover:opacity-90"
-          >
-            Contact us
-          </button>
+          {!loading && (
+            user ? (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 text-white bg-primary-red px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 hover:opacity-90"
+              >
+                <IconLayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-white bg-primary-red px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 hover:opacity-90"
+              >
+                Login
+              </Link>
+            )
+          )}
+
           <button className="border border-white/20 text-neutral-300 hover:text-white hover:border-white/40 p-2 rounded-full transition-all duration-200 hover:scale-110 active:scale-95">
             <IconMoon className="w-5 h-5" />
           </button>

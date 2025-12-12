@@ -22,22 +22,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#features" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/features" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Features
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/pricing" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Pricing
                 </a>
               </li>
               <li>
-                <a href="#how-it-works" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/how-it-works" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   How it works
                 </a>
               </li>
               <li>
-                <a href="#faq" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/faq" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   FAQ
                 </a>
               </li>
@@ -49,22 +49,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-sm mb-4">Company</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#about" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/about" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   About us
                 </a>
               </li>
               <li>
-                <a href="#careers" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/careers" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Careers
                 </a>
               </li>
               <li>
-                <a href="#blog" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/blog" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/contact" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Contact
                 </a>
               </li>
@@ -76,22 +76,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#privacy" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/privacy" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Privacy
                 </a>
               </li>
               <li>
-                <a href="#terms" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/terms" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Terms
                 </a>
               </li>
               <li>
-                <a href="#security" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/security" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Security
                 </a>
               </li>
               <li>
-                <a href="#cookies" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <a href="/cookies" className="text-neutral-400 hover:text-white transition-colors text-sm">
                   Cookies
                 </a>
               </li>

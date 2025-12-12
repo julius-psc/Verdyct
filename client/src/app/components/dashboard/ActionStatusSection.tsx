@@ -49,11 +49,42 @@ const AGENTS: AgentActivity[] = [
   { agent: 'Financier', icon: TrendingUp, status: 'active', details: 'Active: Project Delta', avgTime: '15m' },
 ];
 
-export function RequiredActionsWidget() {
+export function RequiredActionsWidget({ projects = [] }: { projects?: any[] }) {
+  // Generate actions from projects
+  const actions: ActionItem[] = [];
+
+  projects.forEach((project, idx) => {
+    if (project.status === 'rejected') {
+      actions.push({
+        id: `rejected-${idx}`,
+        type: 'critical',
+        title: `${project.name}`,
+        reason: 'Idea validation failed - Review rescue plan for improvement suggestions',
+        timestamp: new Date(project.created_at).toLocaleDateString(),
+        impact: 'High Impact',
+        suggestedAction: 'View Rescue Plan'
+      });
+    } else if (project.status === 'approved' && idx < 2) {
+      // Show only first 2 approved as info
+      actions.push({
+        id: `approved-${idx}`,
+        type: 'warning',
+        title: `${project.name}`,
+        reason: 'Full analysis complete - Ready for review',
+        timestamp: new Date(project.created_at).toLocaleDateString(),
+        impact: 'Medium Impact',
+        suggestedAction: 'View Report'
+      });
+    }
+  });
+
+  // Fallback if no actions
+  const displayActions = actions.length > 0 ? actions : ACTIONS;
+
   return (
     <Widget title="Required Actions">
       <div className="space-y-3">
-        {ACTIONS.map((item) => (
+        {displayActions.map((item) => (
           <div
             key={item.id}
             className={`group border rounded-xl p-4 transition-all duration-300 ${item.type === 'critical'
@@ -80,16 +111,16 @@ export function RequiredActionsWidget() {
                   <div className="flex items-center gap-2">
                     {item.impact && (
                       <span className={`text-[10px] px-1.5 py-0.5 rounded border ${item.type === 'critical'
-                          ? 'border-red-500/30 text-red-400 bg-red-500/10'
-                          : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
+                        ? 'border-red-500/30 text-red-400 bg-red-500/10'
+                        : 'border-yellow-500/30 text-yellow-400 bg-yellow-500/10'
                         }`}>
                         {item.impact}
                       </span>
                     )}
                   </div>
                   <button className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${item.type === 'critical'
-                      ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                      : 'bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20'
+                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                    : 'bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20'
                     }`}>
                     {item.suggestedAction || 'Resolve Issue'}
                   </button>
@@ -103,11 +134,49 @@ export function RequiredActionsWidget() {
   );
 }
 
-export function AgentStatusWidget() {
+export function AgentStatusWidget({ projects = [] }: { projects?: any[] }) {
+  // Calculate agent activity from projects
+  const agentActivity: AgentActivity[] = [
+    { agent: 'Analyst', icon: PieChart, status: 'queued', details: 'Queued: 0 Projects', avgTime: '12m' },
+    { agent: 'Spy', icon: Eye, status: 'queued', details: 'Queued: 0 Projects', avgTime: '45m' },
+    { agent: 'Architect', icon: Hammer, status: 'queued', details: 'Queued: 0 Projects', avgTime: '28m' },
+    { agent: 'Financier', icon: TrendingUp, status: 'queued', details: 'Queued: 0 Projects', avgTime: '15m' },
+  ];
+
+  // Count completed projects with each agent
+  const completedCount = {
+    analyst: 0,
+    spy: 0,
+    architect: 0,
+    financier: 0
+  };
+
+  projects.forEach(project => {
+    if (project.report_json?.agents) {
+      const agents = project.report_json.agents;
+      if (agents.analyst) completedCount.analyst++;
+      if (agents.spy) completedCount.spy++;
+      if (agents.architect) completedCount.architect++;
+      if (agents.financier) completedCount.financier++;
+    }
+  });
+
+  // Update activity details
+  agentActivity[0].details = `Completed: ${completedCount.analyst} Projects`;
+  agentActivity[1].details = `Completed: ${completedCount.spy} Projects`;
+  agentActivity[2].details = `Completed: ${completedCount.architect} Projects`;
+  agentActivity[3].details = `Completed: ${completedCount.financier} Projects`;
+
+  // Mark as active if there are completed projects
+  if (completedCount.analyst > 0) agentActivity[0].status = 'active';
+  if (completedCount.spy > 0) agentActivity[1].status = 'active';
+  if (completedCount.architect > 0) agentActivity[2].status = 'active';
+  if (completedCount.financier > 0) agentActivity[3].status = 'active';
+
   return (
     <Widget title="Agent Pipeline Status">
       <div className="space-y-3">
-        {AGENTS.map((agent, idx) => {
+        {agentActivity.map((agent, idx) => {
           const Icon = agent.icon;
           return (
             <div

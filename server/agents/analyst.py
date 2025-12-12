@@ -11,9 +11,9 @@ from utils import (
     optimize_query
 )
 
-def calculate_pcs(breakdown: list, confidence_level: str = "Medium") -> int:
+def calculate_pos(breakdown: list, confidence_level: str = "Medium") -> int:
     """
-    Calcule le Predictive Certainty Score (PCS) 2.0.
+    Calcule le Predictive Opportunity Score (POS) 2.0.
     Based on 7 dimensions, Kill Switches, and Data Confidence.
     """
     scores = {}
@@ -190,7 +190,7 @@ The idea to analyze is: {idea}
     - **Market Momentum = 0** (Triggers Dying Market Penalty)
     - **Macro Risk = 0** (Triggers Regulatory Wall Penalty)
     - **Problem Urgency = 0**
-- This will ensure the final PCS score is near zero.
+- This will ensure the final POS score is near zero.
 - DO NOT try to "invent" a business meaning for nonsense inputs.
 
 
@@ -345,10 +345,10 @@ Be realistic and data-driven. Use ONLY the actual research data provided. NEVER 
         # Recréer l'objet avec les données validées
         analysis = AnalystResponse(**analysis_dict)
         
-        # CALCUL DU PCS (Predictive Certainty Score)
+        # CALCUL DU POS (Predictive Opportunity Score)
         # On le fait en Python pour être déterministe
         if analysis.analyst.analyst_footer.scoring_breakdown:
-            pcs = calculate_pcs(
+            pcs = calculate_pos(
                 analysis.analyst.analyst_footer.scoring_breakdown, 
                 confidence_level=confidence_level
             )
@@ -387,7 +387,7 @@ def generate_rescue_plan(idea: str, analyst_data: Analyst) -> RescuePlan:
     s_urgency = next((v for k, v in scores.items() if "urgency" in k or "need" in k), 0)
     
     system_prompt = (
-        f"You are a strategic startup advisor. A startup idea has been analyzed and received a LOW viability score (PCS < 60).\n\n"
+        f"You are a strategic startup advisor. A startup idea has been analyzed and received a LOW viability score (POS < 60).\n\n"
         f"The Idea: {idea}\n\n"
         f"Key Weaknesses Identified:\n"
         f"- Market Magnitude: {s_magnitude}/10\n"

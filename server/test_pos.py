@@ -1,11 +1,11 @@
-from agents.analyst import calculate_pcs
+from agents.analyst import calculate_pos
 from collections import namedtuple
 
 # Mock object for ScoringBreakdown
 Item = namedtuple('Item', ['name', 'score'])
 
-def test_pcs():
-    print("=== Testing PCS 2.0 Logic ===")
+def test_pos():
+    print("=== Testing POS 2.0 Logic ===")
     
     # Test Case 1: Perfect Scenario (Blue Ocean, High Confidence)
     breakdown1 = [
@@ -18,7 +18,7 @@ def test_pcs():
         Item(name="Macro Risk", score=10) # Low risk
     ]
     # Weighted Sum: 15+15+25+20+10+10+5 = 100
-    score1 = calculate_pcs(breakdown1, confidence_level="High")
+    score1 = calculate_pos(breakdown1, confidence_level="High")
     print(f"Test 1 (Perfect): {score1} (Expected: 100)")
     assert score1 == 100
 
@@ -35,7 +35,7 @@ def test_pcs():
     # Base: (10*1.5) + (8*1.5) + (8*2.5) + (2*2.0) + (5*1.0) + (8*1.0) + (8*0.5)
     # 15 + 12 + 20 + 4 + 5 + 8 + 4 = 68
     # Penalty: 68 * 0.6 = 40.8 -> 40
-    score2 = calculate_pcs(breakdown2, confidence_level="High")
+    score2 = calculate_pos(breakdown2, confidence_level="High")
     print(f"Test 2 (Red Ocean): {score2} (Expected: 40)")
     assert score2 == 40
 
@@ -52,19 +52,19 @@ def test_pcs():
     # Base: (5*1.5) + (1*1.5) + (5*2.5) + (5*2.0) + (5*1.0) + (5*1.0) + (5*0.5)
     # 7.5 + 1.5 + 12.5 + 10 + 5 + 5 + 2.5 = 44
     # Penalty: 44 * 0.7 = 30.8 -> 30
-    score3 = calculate_pcs(breakdown3, confidence_level="High")
+    score3 = calculate_pos(breakdown3, confidence_level="High")
     print(f"Test 3 (Dying Market): {score3} (Expected: 30)")
     assert score3 == 30
 
     # Test Case 4: Low Confidence Penalty
     # Same as Test 1 (100 base) but Low Confidence
-    score4 = calculate_pcs(breakdown1, confidence_level="Low")
+    score4 = calculate_pos(breakdown1, confidence_level="Low")
     # 100 * 0.7 = 70
     print(f"Test 4 (Low Confidence): {score4} (Expected: 70)")
     assert score4 == 70
     
     # Test Case 5: Medium Confidence Penalty
-    score5 = calculate_pcs(breakdown1, confidence_level="Medium")
+    score5 = calculate_pos(breakdown1, confidence_level="Medium")
     # 100 * 0.9 = 90
     print(f"Test 5 (Medium Confidence): {score5} (Expected: 90)")
     assert score5 == 90
@@ -72,4 +72,4 @@ def test_pcs():
     print("All tests passed!")
 
 if __name__ == "__main__":
-    test_pcs()
+    test_pos()

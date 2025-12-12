@@ -80,7 +80,7 @@ class Analyst(BaseModel):
     title: str
     analysis_for: str
     score: int
-    pcs_score: int = Field(0, description="Predictive Certainty Score (0-100) calculated deterministically")
+    pcs_score: int = Field(0, description="Predictive Opportunity Score (0-100) calculated deterministically")
     score_card: ScoreCard
     market_metrics: List[MarketMetric] = Field(..., min_length=1, description="At least one market metric required")
     seo_opportunity: SEOOpportunity

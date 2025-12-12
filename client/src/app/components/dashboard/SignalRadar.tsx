@@ -9,16 +9,18 @@ interface SignalPoint {
     baseline: number; // 0-100
 }
 
-const SIGNALS: SignalPoint[] = [
-    { label: 'Scroll Depth', value: 85, baseline: 70 },
-    { label: 'Mouse Velocity', value: 92, baseline: 65 },
-    { label: 'Form Abandon', value: 45, baseline: 40 }, // Lower is better? Assuming normalized 0-100 where higher is "more intense" or "better" depending on metric. Let's assume higher = stronger signal matching success.
-    { label: 'Dwell Time', value: 78, baseline: 75 },
-    { label: 'Rage Clicks', value: 20, baseline: 15 },
-    { label: 'Nav Pattern', value: 88, baseline: 80 },
+interface SignalRadarProps {
+    signals?: SignalPoint[];
+}
+
+const DEFAULT_SIGNALS: SignalPoint[] = [
+    { label: 'Market', value: 0, baseline: 60 },
+    { label: 'Competitive', value: 0, baseline: 60 },
+    { label: 'Financial', value: 0, baseline: 60 },
+    { label: 'Technical', value: 0, baseline: 60 },
 ];
 
-export default function SignalRadar() {
+export default function SignalRadar({ signals = DEFAULT_SIGNALS }: SignalRadarProps) {
     const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
 
     const size = 300;
@@ -36,13 +38,13 @@ export default function SignalRadar() {
     };
 
     const points = useMemo(() => {
-        return SIGNALS.map((s, i) => {
-            const current = getCoordinates(s.value, i, SIGNALS.length);
-            const baselineCoords = getCoordinates(s.baseline, i, SIGNALS.length);
-            const labelPos = getCoordinates(125, i, SIGNALS.length); // Label further out
+        return signals.map((s, i) => {
+            const current = getCoordinates(s.value, i, signals.length);
+            const baselineCoords = getCoordinates(s.baseline, i, signals.length);
+            const labelPos = getCoordinates(125, i, signals.length); // Label further out
             return { ...s, current, baselineCoords, labelPos };
         });
-    }, []);
+    }, [signals]);
 
     const currentPath = useMemo(() => {
         return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.current.x} ${p.current.y}`).join(' ') + ' Z';

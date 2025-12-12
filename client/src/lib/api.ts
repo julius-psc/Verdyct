@@ -10,6 +10,7 @@ export interface Project {
     cta_text?: string;
     cta_selector?: string;
     last_verified?: string;
+    report_json?: any; // Full report with agent data
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';

@@ -1,7 +1,9 @@
 'use client';
 
 import { UploadCloud, TrendingUp, User, Briefcase, MapPin, Sparkles, Search, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 import Widget from '../dashboard/Widget';
+import CardModal from './CardModal';
 
 // Define types based on the backend response
 interface AnalystData {
@@ -13,6 +15,7 @@ interface AnalystData {
         title: string;
         level: string;
         description: string;
+        level_description?: string; // Add optional if needed
     };
     market_metrics: {
         name: string;
@@ -68,6 +71,8 @@ interface AnalystViewProps {
 }
 
 export default function AnalystView({ data }: AnalystViewProps) {
+    const [showCard, setShowCard] = useState(false);
+
     if (!data) {
         return (
             <div className="flex items-center justify-center h-full text-neutral-500">
@@ -95,10 +100,19 @@ export default function AnalystView({ data }: AnalystViewProps) {
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Analyst</h1>
                     <p className="text-sm text-neutral-400">Market analysis for: {analysis_for}</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
-                    <UploadCloud className="w-4 h-4" />
-                    Export Report
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setShowCard(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-emerald-500/20"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Get Verdyct Card
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
+                        <UploadCloud className="w-4 h-4" />
+                        Export Report
+                    </button>
+                </div>
             </div>
 
             {/* Bento Grid Layout */}
@@ -114,7 +128,7 @@ export default function AnalystView({ data }: AnalystViewProps) {
                                     <span className="text-lg lg:text-xl text-emerald-500 font-medium">{pcs_score}/100</span>
                                 </div>
                                 <p className="text-sm text-neutral-400 mt-3 max-w-md leading-relaxed">
-                                    <strong className="text-white">The Analyst&#39;s Verdyct:</strong> {analyst_footer.verdyct_summary}
+                                    <strong className="text-white">The Analyst's Verdyct:</strong> {analyst_footer.verdyct_summary}
                                 </p>
                             </div>
                             <div className="self-center xl:self-auto h-24 w-24 shrink-0 rounded-full border-4 border-emerald-500/20 flex items-center justify-center relative">
@@ -165,7 +179,7 @@ export default function AnalystView({ data }: AnalystViewProps) {
                             </div>
 
                             <div className="p-3 rounded-lg bg-white/5 border border-white/5 italic text-sm text-neutral-300">
-                                &#34;{ideal_customer_persona.persona_quote}&#34;
+                                "{ideal_customer_persona.persona_quote}"
                             </div>
 
                             <div className="space-y-3">
@@ -310,6 +324,17 @@ export default function AnalystView({ data }: AnalystViewProps) {
                 </div>
 
             </div>
+
+            <CardModal
+                isOpen={showCard}
+                onClose={() => setShowCard(false)}
+                data={{
+                    score: pcs_score,
+                    level: score_card.level,
+                    projectName: analysis_for,
+                    summary: analyst_footer.verdyct_summary
+                }}
+            />
         </div>
     );
 }

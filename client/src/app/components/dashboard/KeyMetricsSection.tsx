@@ -30,7 +30,7 @@ export const METRICS = [
     extra: "Target: 9.0 by Q4"
   },
   {
-    title: "Avg PCS Score",
+    title: "Avg POS Score",
     value: "78%",
     trend: undefined,
     subtitle: "Average Validation Score",
