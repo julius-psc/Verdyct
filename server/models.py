@@ -4,8 +4,20 @@ from typing import List, Optional
 
 # ========== REQUEST MODEL ==========
 
+
 class IdeaRequest(BaseModel):
     idea: str = Field(..., description="The startup idea to analyze")
+
+
+class WaitlistRequest(BaseModel):
+    email: str = Field(..., description="Email address to add to waitlist")
+
+
+class ContactRequest(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: str = Field(..., description="Contact email")
+    message: str = Field(..., description="Message content")
 
 
 # ========== ANALYST MODELS ==========
@@ -406,5 +418,5 @@ class Project(SQLModel, table=True):
     # User Ownership
     user_id: str = SQLField(index=True)
 
-
-
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None

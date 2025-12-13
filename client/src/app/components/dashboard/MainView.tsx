@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MetricWidget, METRICS } from './KeyMetricsSection';
-import { RequiredActionsWidget, AgentStatusWidget } from './ActionStatusSection';
+import { MetricWidget } from './KeyMetricsSection';
+import RecentProjectsWidget from './RecentProjectsWidget';
 import SignalRadar from './SignalRadar';
-import AlgorithmHealth from './AlgorithmHealth';
+
 import { fetchProjects, Project } from '../../../lib/api';
 import { createClient } from '@/utils/supabase/client';
 
@@ -172,18 +172,15 @@ export default function MainView() {
             <MetricWidget {...metrics[2]} />
           </div>
 
-          {/* Algorithm Health */}
-          <div className="lg:col-span-1">
-            <AlgorithmHealth />
+
+          {/* Recent Projects - Spanning full width at bottom */}
+          <div className="lg:col-span-4">
+            <RecentProjectsWidget projects={projects} />
           </div>
 
-          {/* Bottom Row - Action Items */}
-          <div className="lg:col-span-2">
-            <RequiredActionsWidget projects={projects} />
-          </div>
-          <div className="lg:col-span-2">
-            <AgentStatusWidget projects={projects} />
-          </div>
+
+
+
         </div>
       </div>
     </main>

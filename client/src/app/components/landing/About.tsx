@@ -48,7 +48,7 @@ export default function About() {
             <div className="absolute top-3 left-3 right-3">
               <h3 className="text-lg font-bold text-white mb-1.5">The Architect</h3>
               <p className="text-sm text-white opacity-70 leading-snug">
-                Sizes your total market, finds your target audience, and reveals the keywords they&apos;re actively searching for.
+                Designs your technical roadmap and builds your <strong>Data Moat</strong>, ensuring your startup remains defensible as it scales.
               </p>
             </div>
           </div>

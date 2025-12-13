@@ -10,34 +10,6 @@ export interface MetricWidgetProps {
   subtitle?: string;
 }
 
-export const METRICS = [
-  {
-    title: "Active Ventures",
-    value: 12,
-    trend: undefined,
-    subtitle: "3 Awaiting Agent Analysis",
-    details: [
-      { label: "Pre-Seed", value: 4, color: "bg-blue-500" },
-      { label: "Seed", value: 6, color: "bg-emerald-500" },
-      { label: "Series A", value: 2, color: "bg-purple-500" }
-    ]
-  },
-  {
-    title: "Global MSI",
-    value: "8.7",
-    trend: 12.5,
-    subtitle: "Portfolio Moat Maturity",
-    extra: "Target: 9.0 by Q4"
-  },
-  {
-    title: "Avg POS Score",
-    value: "78%",
-    trend: undefined,
-    subtitle: "Average Validation Score",
-    extra: "Top: Project Gamma (95%)"
-  }
-];
-
 export function MetricWidget({ title, value, trend, subtitle, details, extra }: any) {
   const isPositive = trend !== undefined && trend >= 0;
   const isPercentage = typeof value === 'string' && value.includes('%');
@@ -78,7 +50,6 @@ export function MetricWidget({ title, value, trend, subtitle, details, extra }: 
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="3"
-                  strokeLinecap="round"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center text-[8px] font-medium text-neutral-500">
@@ -111,15 +82,5 @@ export function MetricWidget({ title, value, trend, subtitle, details, extra }: 
         </div>
       </div>
     </Widget>
-  );
-}
-
-export default function KeyMetricsSection() {
-  return (
-    <>
-      {METRICS.map((metric) => (
-        <MetricWidget key={metric.title} {...metric} />
-      ))}
-    </>
   );
 }

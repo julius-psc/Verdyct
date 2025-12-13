@@ -25,7 +25,7 @@ export default function BlogPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post, index) => (
-                        <Link href={`/blog/${post.slug}`} key={index}>
+                        <Link href={`/blog/${post.slug}`} key={index} className="block h-full">
                             <motion.article
                                 initial={{ opacity: 0, y: 30 }}
                                 animate={{ opacity: 1, y: 0 }}

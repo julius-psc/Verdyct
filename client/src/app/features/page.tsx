@@ -36,7 +36,7 @@ const features = [
         gradient: "from-yellow-500/20 to-amber-500/5",
     },
     {
-        title: "Verdyct Pixel",
+        title: "Pixel JS",
         description: "Our proprietary tracking pixel collects early user intent data, feeding real-world signals back into our prediction engine for dynamic updates.",
         icon: <IconTargetArrow className="w-12 h-12 text-indigo-500" />,
         gradient: "from-indigo-500/20 to-violet-500/5",

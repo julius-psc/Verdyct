@@ -20,7 +20,7 @@ export const posts: Post[] = [
         excerpt: "Recognizing when to change direction is crucial for survival. Here are the red flags to watch for.",
         date: "Dec 12, 2024",
         readTime: "7 min read",
-        image: heroBg,
+        image: '/assets/blog/startup-pivot.jpg',
         content: `
             <p class="lead text-lg text-neutral-300 mb-8">Every founder starts with a vision. But the market has a way of guiding even the most brilliant ideas into new directions. The ability to pivot—to fundamentally change your business model or product direction—is often what separates successful unicorns from failed experiments.</p>
             
@@ -53,7 +53,7 @@ export const posts: Post[] = [
         excerpt: "Deep dive into how our AI calculates the Predictive Opportunity Score and what it means for you.",
         date: "Dec 10, 2024",
         readTime: "10 min read",
-        image: heroBg,
+        image: '/assets/blog/pos-score.jpg',
         content: `
             <p class="lead text-lg text-neutral-300 mb-8">At Verdyct, we don't just guess which startups will succeed. We calculate it. The <strong>Predictive Opportunity Score (POS)</strong> is the engine of our analysis platform, distilling millions of data points into a single metric of potential.</p>
 
@@ -96,7 +96,7 @@ export const posts: Post[] = [
         excerpt: "An analysis of over 10,000 generated reports reveals surprising trends in the AI sector.",
         date: "Nov 28, 2024",
         readTime: "12 min read",
-        image: heroBg,
+        image: '/assets/blog/ai-trends.jpg',
         content: `
             <p class="lead text-lg text-neutral-300 mb-8">2024 was the year of the hype. 2025 is the year of the utility. We analyzed metadata from over 10,000 reports generated on Verdyct to understand where the puck is going. The results show a maturing market that rewards depth over breadth.</p>
 

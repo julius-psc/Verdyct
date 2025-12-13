@@ -1,6 +1,6 @@
 'use client';
 
-import { UploadCloud, TrendingUp, User, Briefcase, MapPin, Sparkles, Search, ShieldCheck } from 'lucide-react';
+import { UploadCloud, TrendingUp, User, Briefcase, MapPin, Sparkles, Search, ShieldCheck, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import Widget from '../dashboard/Widget';
 import CardModal from './CardModal';
@@ -22,6 +22,7 @@ interface AnalystData {
         value: string;
         change_percentage: string;
         note: string;
+        verified_url?: string;
     }[];
     seo_opportunity: {
         title: string;
@@ -145,7 +146,20 @@ export default function AnalystView({ data }: AnalystViewProps) {
                         <Widget title={metric.name}>
                             <div className="flex flex-col justify-between h-full">
                                 <div>
-                                    <div className="text-3xl font-semibold text-white">{metric.value}</div>
+                                    <div className="text-3xl font-semibold text-white flex items-center gap-2">
+                                        {metric.value}
+                                        {metric.verified_url && (
+                                            <a
+                                                href={metric.verified_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-neutral-500 hover:text-emerald-400 transition-colors"
+                                                title="View Source"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                            </a>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-1 text-sm text-emerald-500 mt-1">
                                         <TrendingUp className="w-4 h-4" />
                                         <span>{metric.change_percentage}</span>

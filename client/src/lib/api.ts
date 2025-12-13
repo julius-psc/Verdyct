@@ -34,3 +34,43 @@ export async function fetchProjects(token?: string): Promise<Project[]> {
         return [];
     }
 }
+
+export async function deleteProject(projectId: string, token?: string): Promise<boolean> {
+    try {
+        const headers: HeadersInit = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+            method: 'DELETE',
+            headers
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        return false;
+    }
+}
+
+export async function updateProject(projectId: string, data: { name?: string }, token?: string): Promise<Project | null> {
+    try {
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json'
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Error updating project:', error);
+        return null;
+    }
+}

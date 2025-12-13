@@ -293,20 +293,22 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
 
                                 <div className="relative p-6 flex items-center justify-between z-10">
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-lg transition-colors ${isDataMoatActive ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/20' : 'bg-neutral-800 text-neutral-500'}`}>
+                                        <div className={`p-3 rounded-lg bg-neutral-800 text-neutral-500`}>
                                             <Lock className="w-6 h-6" />
                                         </div>
                                         <div>
                                             <h3 className="text-base font-semibold text-white">{data_moat.title}</h3>
-                                            <p className="text-xs text-neutral-400 mt-1">{data_moat.status}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-medium text-neutral-400">Coming Soon</span>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <button
-                                        onClick={() => setIsDataMoatActive(!isDataMoatActive)}
-                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-neutral-950 ${isDataMoatActive ? 'bg-purple-600' : 'bg-neutral-700'}`}
+                                        disabled
+                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors bg-neutral-800 cursor-not-allowed opacity-50`}
                                     >
-                                        <span className={`${isDataMoatActive ? 'translate-x-6' : 'translate-x-1'} inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm`} />
+                                        <span className={`translate-x-1 inline-block h-5 w-5 transform rounded-full bg-neutral-600 transition-transform shadow-sm`} />
                                     </button>
                                 </div>
                             </div>
@@ -323,7 +325,7 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
                     </Widget>
                 </div>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

@@ -15,7 +15,10 @@ from models import (
     VerdyctReportResponse,
     Agents,
     PixelEvent,
-    Project
+    Project,
+    ProjectUpdate,
+    WaitlistRequest,
+    ContactRequest
 )
 from auth import verify_token
 from agents.analyst import generate_analysis, search_market_data, generate_rescue_plan
@@ -100,6 +103,47 @@ async def trigger_cta_verification(project_id: str, session: AsyncSession = Depe
     await session.commit()
     
     return {"status": "verified", "cta": result}
+
+@app.post("/api/waitlist")
+async def join_waitlist(request: WaitlistRequest):
+    """
+    Add email to Supabase waitlist table.
+    """
+    from auth import supabase
+    
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database connection unavailable")
+        
+    try:
+        data, count = supabase.table("waitlist").insert({"email": request.email}).execute()
+        return {"status": "success", "data": data}
+    except Exception as e:
+        print(f"Waitlist Error: {e}")
+        # Return 200 even on duplicate to avoid leaking info/breaking flow, or handle specifically
+        return {"status": "received"}
+
+@app.post("/api/contact")
+async def submit_contact(request: ContactRequest):
+    """
+    Submit contact form to Supabase.
+    """
+    from auth import supabase
+    
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database connection unavailable")
+        
+    try:
+        payload = {
+            "first_name": request.first_name,
+            "last_name": request.last_name,
+            "email": request.email,
+            "message": request.message
+        }
+        data, count = supabase.table("contact_submissions").insert(payload).execute()
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Contact Form Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit message")
 
 @app.get("/api/projects", response_model=List[Project])
 async def get_projects(session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
@@ -349,6 +393,44 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
         
+    return project
+
+@app.delete("/api/projects/{project_id}")
+async def delete_project(project_id: str, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+    """
+    Delete a project by ID.
+    """
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user['sub'])
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    session.delete(project)
+    await session.commit()
+    
+    return {"status": "deleted", "id": project_id}
+
+@app.patch("/api/projects/{project_id}", response_model=Project)
+async def update_project(project_id: str, update_data: ProjectUpdate, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+    """
+    Update a project by ID (rename).
+    """
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user['sub'])
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if update_data.name is not None:
+        project.name = update_data.name
+        
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
+    
     return project
 
 @app.post("/generate-report")

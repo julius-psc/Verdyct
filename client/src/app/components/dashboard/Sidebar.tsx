@@ -4,18 +4,23 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   IconLayoutDashboardFilled,
-  IconCircleDashedCheck,
-  IconBan,
   IconSettings,
   IconLogout,
-  IconChevronLeft,
   IconChevronRight,
+  IconCircleDashedCheck,
+  IconBan,
+  IconUser,
+  IconDotsVertical,
+  IconTrash,
+  IconEdit,
+  IconCheck,
+  IconX,
 } from '@tabler/icons-react';
 import { PieChart, Eye, Hammer, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { fetchProjects, Project as ApiProject } from '../../../lib/api';
+import { fetchProjects, updateProject, deleteProject } from '../../../lib/api';
 import { createClient } from '@/utils/supabase/client';
 
 interface NavItem {
@@ -27,292 +32,308 @@ interface NavItem {
 interface SidebarProject {
   id: string;
   name: string;
+  status: string;
   agents: Array<{
     icon: React.ComponentType<{ className?: string }>;
     label: string;
   }>;
 }
 
-
-
 export default function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isProjectsExpanded, setIsProjectsExpanded] = useState(false);
-  const [projects, setProjects] = useState<SidebarProject[]>([]);
+  const [approvedProjects, setApprovedProjects] = useState<SidebarProject[]>([]);
+  const [rejectedProjects, setRejectedProjects] = useState<SidebarProject[]>([]);
+
+  const [loading, setLoading] = useState(false);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    const apiProjects = await fetchProjects(token);
+    if (apiProjects.length > 0) {
+      const sidebarProjects = apiProjects.map(p => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        agents: [
+          { icon: PieChart, label: 'The Analyst' },
+          { icon: Eye, label: 'The Spy' },
+          { icon: Hammer, label: 'The Architect' },
+          { icon: TrendingUp, label: 'The Financier' },
+        ]
+      }));
+
+      setApprovedProjects(sidebarProjects.filter(p => p.status === 'approved'));
+      setRejectedProjects(sidebarProjects.filter(p => p.status === 'rejected'));
+    } else {
+      setApprovedProjects([]);
+      setRejectedProjects([]);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    async function loadProjects() {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      const apiProjects = await fetchProjects(token);
-      if (apiProjects.length > 0) {
-        const sidebarProjects = apiProjects.map(p => ({
-          id: p.id,
-          name: p.name,
-          agents: [
-            { icon: PieChart, label: 'The Analyst' },
-            { icon: Eye, label: 'The Spy' },
-            { icon: Hammer, label: 'The Architect' },
-            { icon: TrendingUp, label: 'The Financier' },
-          ]
-        }));
-        setProjects(sidebarProjects);
-      }
-    }
     loadProjects();
   }, []);
-
-  const handleProjectsClick = () => {
-    if (!isExpanded) {
-      setIsExpanded(true);
-    }
-    setIsProjectsExpanded(!isProjectsExpanded);
-  };
 
   const topNavItems: NavItem[] = [
     { icon: IconLayoutDashboardFilled, label: 'Dashboard', href: '/dashboard' },
   ];
 
   const bottomNavItems: NavItem[] = [
+    { icon: IconUser, label: 'Profile', href: '/profile' },
     { icon: IconSettings, label: 'Settings', href: '/settings' },
     { icon: IconLogout, label: 'Log Out', href: '/logout' },
   ];
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{
-        width: isExpanded ? 280 : 72,
-      }}
-      transition={{
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      }}
-      className="relative h-screen bg-[#1B1818] border-r border-neutral-800 flex flex-col"
-    >
+    <aside className="w-72 h-screen bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0">
       {/* Logo Section */}
-      <div className="h-16 flex items-center justify-center border-b border-neutral-800 px-4">
-        <motion.div
-          animate={{
-            width: isExpanded ? 120 : 40,
-          }}
-          transition={{ duration: 0.3 }}
-          className="relative h-10 overflow-hidden"
-        >
-          <Link href="/" className="block w-full h-full">
-            <Image
-              src="/assets/brand/logos/default-logo.svg"
-              alt="Verdyct"
-              width={isExpanded ? 120 : 40}
-              height={40}
-              className="object-contain w-full h-full"
-            />
-          </Link>
-        </motion.div>
+      <div className="h-16 flex items-center px-6 border-b border-neutral-800">
+        <Link href="/" className="flex items-center gap-3">
+          <Image
+            src="/assets/brand/logos/default-logo.svg"
+            alt="Verdyct"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+          />
+          <span className="text-xl font-bold text-white tracking-tight">Verdyct</span>
+        </Link>
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 flex flex-col px-3 py-4 overflow-y-auto">
+      <nav className="flex-1 flex flex-col px-4 py-6 overflow-y-auto custom-scrollbar">
         {/* Top Navigation Items */}
-        <div className="space-y-1">
+        <div className="space-y-1 mb-8">
           {topNavItems.map((item) => (
-            <NavButton
+            <Link
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              isExpanded={isExpanded}
-              href={item.href}
-            />
+              href={item.href || '#'}
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+            >
+              <item.icon className="w-5 h-5 text-neutral-500" />
+              {item.label}
+            </Link>
           ))}
-
-          {/* Approved Section */}
-          <div>
-            <button
-              onClick={handleProjectsClick}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all"
-            >
-              <IconCircleDashedCheck className="w-5 h-5 shrink-0" />
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                  >
-                    Approved
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0, rotate: 0 }}
-                    animate={{
-                      opacity: 1,
-                      rotate: isProjectsExpanded ? 90 : 0,
-                    }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="ml-auto"
-                  >
-                    <IconChevronRight className="w-4 h-4" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
-
-            {/* Approved Projects Dropdown */}
-            <AnimatePresence>
-              {isExpanded && isProjectsExpanded && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                  className="overflow-hidden"
-                >
-                  <div className="ml-5 mt-1 space-y-2 border-l border-neutral-700 pl-4">
-                    {projects.map((project, projectIndex) => (
-                      <ProjectItem
-                        key={projectIndex}
-                        project={project}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Rejected Section */}
-          <div>
-            <button
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all"
-            >
-              <IconBan className="w-5 h-5 shrink-0" />
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                  >
-                    Rejected
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          </div>
         </div>
 
+        {/* Approved Section */}
+        {approvedProjects.length > 0 && (
+          <div className="mb-8">
+            <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+              Approved Ventures
+            </h3>
+            <div className="space-y-2">
+              {approvedProjects.map((project) => (
+                <ProjectItem key={project.id} project={project} type="approved" refreshProjects={loadProjects} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Rejected Section */}
+        {rejectedProjects.length > 0 && (
+          <div className="mb-8">
+            <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+              Rejected Ventures
+            </h3>
+            <div className="space-y-2">
+              {rejectedProjects.map((project) => (
+                <ProjectItem key={project.id} project={project} type="rejected" refreshProjects={loadProjects} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Bottom Navigation Items */}
-        <div className="mt-auto space-y-1 pt-4 border-t border-neutral-800">
+        <div className="mt-auto pt-6 border-t border-neutral-800 space-y-1">
           {bottomNavItems.map((item) => (
-            <NavButton
+            <Link
               key={item.label}
-              icon={item.icon}
-              label={item.label}
-              isExpanded={isExpanded}
-              href={item.href}
-            />
+              href={item.href || '#'}
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+            >
+              <item.icon className="w-5 h-5 text-neutral-500" />
+              {item.label}
+            </Link>
           ))}
         </div>
       </nav>
-
-      {/* Expand/Collapse Button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center hover:bg-neutral-700 transition-colors"
-        aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-      >
-        <motion.div
-          animate={{ rotate: isExpanded ? 0 : 180 }}
-          transition={{ duration: 0.3 }}
-        >
-          <IconChevronLeft className="w-4 h-4 text-neutral-400" />
-        </motion.div>
-      </button>
-    </motion.aside>
-  );
-}
-
-interface NavButtonProps {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  isExpanded: boolean;
-  href?: string;
-}
-
-function NavButton({ icon: Icon, label, isExpanded, href }: NavButtonProps) {
-  const content = (
-    <>
-      <Icon className="w-5 h-5 shrink-0" />
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={{ duration: 0.2 }}
-            className="text-sm font-medium whitespace-nowrap overflow-hidden mr-auto"
-          >
-            {label}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </>
-  );
-
-  const className = "w-full flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-neutral-400 hover:bg-neutral-800/50 hover:text-white transition-all";
-
-  if (href) {
-    return (
-      <Link href={href} className={className} title={!isExpanded ? label : undefined}>
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      className={className}
-      title={!isExpanded ? label : undefined}
-    >
-      {content}
-    </button>
+    </aside>
   );
 }
 
 interface ProjectItemProps {
   project: SidebarProject;
+  type: 'approved' | 'rejected';
+  refreshProjects: () => void;
 }
 
-function ProjectItem({ project }: ProjectItemProps) {
+function ProjectItem({ project, type, refreshProjects }: ProjectItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(project.name);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const handleRename = async () => {
+    if (!editName.trim() || editName === project.name) {
+      setIsEditing(false);
+      return;
+    }
+
+    setActionLoading(true);
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (token) {
+      const success = await updateProject(project.id, { name: editName }, token);
+      if (success) {
+        refreshProjects();
+      }
+    }
+    setActionLoading(false);
+    setIsEditing(false);
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      setActionLoading(true);
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (token) {
+        const success = await deleteProject(project.id, token);
+        if (success) {
+          refreshProjects();
+        }
+      }
+      setActionLoading(false);
+    }
+  };
 
   return (
-    <div>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-neutral-400 hover:bg-neutral-800/30 hover:text-white transition-all text-sm"
+    <div className="relative group/item">
+      <div
+        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all group ${isExpanded || isEditing ? 'bg-neutral-800 text-white' : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
+          }`}
       >
-        <motion.div
-          animate={{ rotate: isExpanded ? 90 : 0 }}
-          transition={{ duration: 0.2 }}
+        {/* Status Indicator */}
+        <div
+          onClick={() => !isEditing && setIsExpanded(!isExpanded)}
+          className={`shrink-0 cursor-pointer ${isEditing ? 'opacity-50' : ''}`}
         >
-          <IconChevronRight className="w-3 h-3" />
-        </motion.div>
-        <span className="font-medium">{project.name}</span>
-      </button>
+          {type === 'approved' ? (
+            <div className={`w-1.5 h-1.5 rounded-full ${isExpanded ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-neutral-600 group-hover:bg-green-500/50'}`} />
+          ) : (
+            <div className={`w-1.5 h-1.5 rounded-full ${isExpanded ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-neutral-600 group-hover:bg-red-500/50'}`} />
+          )}
+        </div>
+
+        {/* Name / Input */}
+        <div className="flex-1 min-w-0">
+          {isEditing ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full bg-black/50 border border-neutral-700 rounded px-1.5 py-0.5 text-xs text-white focus:outline-none focus:border-neutral-500"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleRename();
+                  if (e.key === 'Escape') {
+                    setEditName(project.name);
+                    setIsEditing(false);
+                  }
+                }}
+              />
+              <button onClick={handleRename} className="p-0.5 hover:text-green-400 text-neutral-500">
+                <IconCheck className="w-3 h-3" />
+              </button>
+              <button onClick={() => { setEditName(project.name); setIsEditing(false); }} className="p-0.5 hover:text-red-400 text-neutral-500">
+                <IconX className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-sm font-medium truncate w-full text-left cursor-pointer"
+            >
+              {project.name}
+            </div>
+          )}
+        </div>
+
+        {/* Chevron / Actions */}
+        {!isEditing && (
+          <div className="flex items-center">
+            {/* 3 dots menu trigger - only visible on hover or if menu open */}
+            <div className="relative">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(!isMenuOpen);
+                }}
+                className={`p-1 rounded-md text-neutral-500 hover:text-white hover:bg-neutral-700 transition-colors ${isMenuOpen ? 'opacity-100 text-white' : 'opacity-0 group-hover/item:opacity-100'}`}
+              >
+                <IconDotsVertical className="w-4 h-4" />
+              </button>
+
+              {/* Context Menu */}
+              {isMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 w-32 bg-[#252525] border border-neutral-800 rounded-lg shadow-xl z-20 py-1 overflow-hidden">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        setIsEditing(true);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center gap-2"
+                    >
+                      <IconEdit className="w-3 h-3" />
+                      Rename
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsMenuOpen(false);
+                        handleDelete();
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2"
+                    >
+                      <IconTrash className="w-3 h-3" />
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <motion.div
+              animate={{ rotate: isExpanded ? 90 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-neutral-600 group-hover:text-neutral-400 cursor-pointer ml-1"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              <IconChevronRight className="w-4 h-4" />
+            </motion.div>
+          </div>
+        )}
+      </div>
 
       <AnimatePresence>
-        {isExpanded && (
+        {isExpanded && !isEditing && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
@@ -320,17 +341,16 @@ function ProjectItem({ project }: ProjectItemProps) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="ml-3 mt-1 space-y-1">
+            <div className="ml-3 mt-1 pl-3 border-l border-neutral-800 space-y-0.5 py-1">
               {project.agents.map((agent, index) => {
                 const agentPath = agent.label.replace(/^The\s+/, '').toLowerCase();
-
                 return (
                   <Link
                     key={index}
                     href={`/${project.id}/${agentPath}`}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-neutral-500 hover:bg-neutral-800/30 hover:text-neutral-300 transition-all text-xs"
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm text-neutral-500 hover:text-white hover:bg-neutral-800/30 transition-colors"
                   >
-                    <agent.icon className="w-3.5 h-3.5 shrink-0" />
+                    <agent.icon className="w-4 h-4 shrink-0 opacity-70" />
                     <span>{agent.label}</span>
                   </Link>
                 );

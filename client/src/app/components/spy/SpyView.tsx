@@ -1,6 +1,6 @@
 'use client';
 
-import { UploadCloud, Search, TrendingUp, AlertCircle, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { UploadCloud, Search, TrendingUp, AlertCircle, CheckCircle2, XCircle, ArrowRight, ExternalLink } from 'lucide-react';
 import Widget from '../dashboard/Widget';
 
 // Backend Model Interfaces
@@ -32,6 +32,7 @@ interface SpyData {
       quote: string;
       source: string;
       competitor: string;
+      verified_url?: string;
     }[];
     pain_word_cloud: {
       term: string;
@@ -215,7 +216,20 @@ export default function SpyView({ data }: SpyViewProps) {
                     <p className="text-xs text-neutral-300 leading-relaxed mb-2">"{complaint.quote}"</p>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-neutral-500 truncate max-w-[100px]">{complaint.competitor}</span>
-                      <span className="text-[10px] text-neutral-600">{complaint.source}</span>
+                      <span className="text-[10px] text-neutral-600 flex items-center gap-1">
+                        {complaint.source}
+                        {complaint.verified_url && (
+                          <a
+                            href={complaint.verified_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-neutral-500 hover:text-emerald-400 transition-colors"
+                            title="View Source"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </span>
                     </div>
                   </div>
                 ))}

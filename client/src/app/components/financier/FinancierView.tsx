@@ -7,7 +7,8 @@ import {
     Wallet,
     Calculator,
     Check,
-    Users
+    Users,
+    ExternalLink
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Widget from '../dashboard/Widget';
@@ -306,7 +307,14 @@ export default function FinancierView({ data }: FinancierViewProps) {
                             <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/30 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-neutral-400">{starterTier ? starterTier.name : 'Starter'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-neutral-400">{starterTier ? starterTier.name : 'Starter'}</span>
+                                            {starterTier?.verified_url && (
+                                                <a href={starterTier.verified_url} target="_blank" rel="noopener noreferrer" className="text-neutral-600 hover:text-emerald-400">
+                                                    <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="text-2xl font-bold text-white mb-3">{starterTier ? starterTier.price : 'Free'}</div>
                                     <ul className="space-y-2">
@@ -325,7 +333,14 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</div>
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-emerald-400">{recommendedTier.name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-emerald-400">{recommendedTier.name}</span>
+                                            {recommendedTier?.verified_url && (
+                                                <a href={recommendedTier.verified_url} target="_blank" rel="noopener noreferrer" className="text-emerald-500/50 hover:text-emerald-400">
+                                                    <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="text-2xl font-bold text-white mb-3">{recommendedTier.price}</div>
                                     <p className="text-xs text-neutral-300 mb-3">{financier_footer.recommendation_text}</p>
@@ -342,7 +357,14 @@ export default function FinancierView({ data }: FinancierViewProps) {
                             <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/30 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
-                                        <span className="text-sm font-medium text-neutral-400">{enterpriseTier ? enterpriseTier.name : 'Enterprise'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-medium text-neutral-400">{enterpriseTier ? enterpriseTier.name : 'Enterprise'}</span>
+                                            {enterpriseTier?.verified_url && (
+                                                <a href={enterpriseTier.verified_url} target="_blank" rel="noopener noreferrer" className="text-neutral-600 hover:text-emerald-400">
+                                                    <ExternalLink className="w-3 h-3" />
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="text-2xl font-bold text-white mb-3">{enterpriseTier ? enterpriseTier.price : 'Custom'}</div>
                                     <ul className="space-y-2">

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from "motion/react"
-import { IconMoon, IconLayoutDashboard } from '@tabler/icons-react';
+import { motion, AnimatePresence } from "motion/react"
+import { IconMoon, IconLayoutDashboard, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
@@ -13,6 +13,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,13 +92,69 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {!loading && (
             user ? (
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 text-white bg-primary-red px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 hover:opacity-90"
-              >
-                <IconLayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  onBlur={() => setTimeout(() => setIsProfileOpen(false), 200)}
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700/50 hover:border-neutral-700 rounded-full transition-all duration-200"
+                >
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
+                    {user.email?.[0].toUpperCase() || 'U'}
+                  </div>
+                  <IconChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {isProfileOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-56 bg-[#1B1818] border border-neutral-800 rounded-xl shadow-xl overflow-hidden py-1"
+                    >
+                      <div className="px-4 py-3 border-b border-neutral-800">
+                        <p className="text-sm text-white font-medium truncate">{user.email}</p>
+                        <p className="text-xs text-neutral-500">Plan: Free</p>
+                      </div>
+
+                      <div className="p-1">
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                          <IconLayoutDashboard className="w-4 h-4" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                          <IconUser className="w-4 h-4" />
+                          Profile
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                          <IconSettings className="w-4 h-4" />
+                          Settings
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-neutral-800 p-1">
+                        <Link
+                          href="/logout"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                        >
+                          <IconLogout className="w-4 h-4" />
+                          Log Out
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             ) : (
               <Link
                 href="/login"
