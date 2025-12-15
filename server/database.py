@@ -184,3 +184,26 @@ def search_similar(text: str, n_results: int = 5) -> List[Dict]:
     except Exception as e:
         print(f"⚠️ Vector search failed: {e}")
         return []
+
+def delete_vector(vector_id: str):
+    """
+    Delete a vector by ID from Qdrant.
+    """
+    if not _vector_db_available:
+        return
+
+    client = get_qdrant_client()
+    if not client:
+        return
+        
+    try:
+        from qdrant_client.http import models
+        client.delete(
+            collection_name=COLLECTION_NAME,
+            points_selector=models.PointIdsList(
+                points=[vector_id]
+            )
+        )
+        print(f"✅ Vector deleted for project: {vector_id}")
+    except Exception as e:
+        print(f"⚠️ Vector delete failed: {e}")

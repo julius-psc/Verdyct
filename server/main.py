@@ -27,8 +27,8 @@ from agents.financier import generate_financier_analysis, get_pricing_intel
 from agents.architect import generate_architect_blueprint
 from agents.architect import generate_architect_blueprint
 from agents.watchdog import verify_cta
-from database import init_db, get_session, upsert_vector
-from sqlmodel import select
+from database import init_db, get_session, upsert_vector, delete_vector
+from sqlmodel import select, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
@@ -145,11 +145,17 @@ async def submit_contact(request: ContactRequest):
         print(f"Contact Form Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to submit message")
 
+from fastapi import Response
+
 @app.get("/api/projects", response_model=List[Project])
-async def get_projects(session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+async def get_projects(response: Response, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
     """
     Get all projects for the authenticated user.
     """
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    
     statement = select(Project).where(Project.user_id == user['sub']).order_by(Project.created_at.desc())
     result = await session.exec(statement)
     return result.all()
@@ -400,6 +406,7 @@ async def delete_project(project_id: str, session: AsyncSession = Depends(get_se
     """
     Delete a project by ID.
     """
+    # Verify ownership first
     statement = select(Project).where(Project.id == project_id, Project.user_id == user['sub'])
     result = await session.exec(statement)
     project = result.first()
@@ -407,10 +414,18 @@ async def delete_project(project_id: str, session: AsyncSession = Depends(get_se
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
         
-    session.delete(project)
-    await session.commit()
-    
-    return {"status": "deleted", "id": project_id}
+    try:
+        # Delete from SQL
+        await session.delete(project)
+        await session.commit()
+        
+        # Delete from Vector DB
+        delete_vector(project_id)
+        
+        return {"status": "deleted", "id": project_id}
+    except Exception as e:
+        print(f"Delete Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.patch("/api/projects/{project_id}", response_model=Project)
 async def update_project(project_id: str, update_data: ProjectUpdate, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
@@ -489,7 +504,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 
                 project = Project(
                     id=project_id,
-                    name=f"Rejected: {request.idea[:30]}...",
+                    name=f"{request.idea[:30]}...",
                     raw_idea=request.idea,
                     pos_score=pcs_score,
                     status="rejected",
@@ -584,7 +599,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
 
                 project = Project(
                     id=project_id,
-                    name=f"Approved: {request.idea[:30]}...",
+                    name=f"{request.idea[:30]}...",
                     raw_idea=request.idea,
                     pos_score=pcs_score,
                     status="approved",

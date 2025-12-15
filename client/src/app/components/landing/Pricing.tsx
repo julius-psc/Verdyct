@@ -7,7 +7,7 @@ import Link from 'next/link';
 export default function Pricing() {
 
   return (
-    <section id="pricing" className="py-20 px-4">
+    <section id="pricing" className="py-20 px-4 bg-[#1B1818]">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
@@ -30,7 +30,8 @@ export default function Pricing() {
             </div>
             <p className="text-sm text-neutral-300 mb-6">Perfect to get a taste</p>
 
-            <button className="w-full bg-neutral-800 border border-neutral-700 text-neutral-300 rounded-full py-3 text-sm hover:bg-neutral-700 transition-colors duration-200">
+
+            <button className="w-full bg-white text-black font-semibold rounded-lg py-3 text-sm hover:bg-neutral-200 transition-colors duration-200">
               Start Free
             </button>
 
@@ -62,16 +63,15 @@ export default function Pricing() {
           </div>
 
           {/* Starter Card - HIGHLIGHTED */}
-          {/* Starter Card - HIGHLIGHTED */}
-          <div className="bg-neutral-800/50 border-2 border-primary-red rounded-3xl p-8 min-h-[600px] flex flex-col relative overflow-hidden">
+          <div className="bg-neutral-800/50 border border-primary-red/50 rounded-3xl p-8 min-h-[600px] flex flex-col relative overflow-hidden ring-1 ring-primary-red/20 shadow-2xl shadow-primary-red/5">
             {/* Launch Ribbon */}
-            <div className="absolute top-5 right-[-2px] bg-yellow-500 text-black text-xs font-bold px-3 py-1 rotate-3 shadow-lg z-10">
-              -50% LAUNCH OFFER
+            <div className="absolute top-5 right-5 px-3 py-1 bg-primary-red/20 text-primary-red text-xs font-bold rounded-full border border-primary-red/20">
+              50% Launch Offer
             </div>
 
             <div className="flex flex-col items-start gap-1 mb-3">
               <div className="text-base font-medium text-white">Starter</div>
-              <div className="px-2.5 py-0.5 bg-primary-red rounded-full text-xs text-white">
+              <div className="px-2.5 py-0.5 bg-neutral-800 rounded-full text-xs text-white border border-white/10">
                 Launch Feb 1st
               </div>
             </div>
@@ -84,7 +84,7 @@ export default function Pricing() {
             </div>
             <p className="text-sm text-neutral-300 mb-6">Deep dive into 5 ideas</p>
 
-            <Link href="/waitlist" className="w-full bg-primary-red text-white rounded-full py-3 text-sm hover:opacity-90 transition-all duration-200 hover:scale-105 text-center font-medium">
+            <Link href="/waitlist" className="w-full bg-primary-red text-white font-semibold rounded-lg py-3 text-sm hover:bg-red-600 transition-colors duration-200 text-center">
               Join Waitlist
             </Link>
 
@@ -114,13 +114,13 @@ export default function Pricing() {
           {/* Startup Card */}
           <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-3xl p-8 min-h-[600px] flex flex-col relative overflow-hidden">
             {/* Launch Ribbon */}
-            <div className="absolute top-5 right-[-2px] bg-yellow-500 text-black text-xs font-bold px-3 py-1 rotate-3 shadow-lg z-10">
-              -50% LAUNCH OFFER
+            <div className="absolute top-5 right-5 px-3 py-1 bg-neutral-800 text-neutral-400 text-xs font-bold rounded-full border border-neutral-700">
+              50% Launch Offer
             </div>
 
             <div className="flex flex-col items-start gap-1 mb-3">
               <div className="text-base font-medium text-white">Startup</div>
-              <div className="px-2.5 py-0.5 bg-neutral-700 rounded-full text-xs text-white">
+              <div className="px-2.5 py-0.5 bg-neutral-800 rounded-full text-xs text-white border border-white/10">
                 Launch Feb 1st
               </div>
             </div>
@@ -133,7 +133,7 @@ export default function Pricing() {
             </div>
             <p className="text-sm text-neutral-300 mb-6">For serious founders</p>
 
-            <Link href="/waitlist" className="w-full bg-neutral-800 border border-neutral-700 text-white rounded-full py-3 text-sm hover:bg-neutral-700 transition-colors duration-200 text-center font-medium">
+            <Link href="/waitlist" className="w-full bg-neutral-800 text-white font-semibold rounded-lg py-3 text-sm border border-neutral-700 hover:bg-neutral-700 transition-colors duration-200 text-center">
               Join Waitlist
             </Link>
 
@@ -164,3 +164,4 @@ export default function Pricing() {
     </section>
   );
 }
+

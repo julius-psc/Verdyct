@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "motion/react"
-import { IconMoon, IconLayoutDashboard, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
+import { IconLayoutDashboard, IconUser, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
@@ -67,28 +67,28 @@ export default function Navbar() {
         </Link>
 
         {/* Nav Links - Center */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md">
           <Link
             href="/"
-            className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+            className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
           >
             Home
           </Link>
           <Link
-            href="/how-it-works"
-            className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+            href="#how-it-works"
+            className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
           >
             How it works
           </Link>
           <Link
-            href="/pricing"
-            className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm font-medium"
+            href="#pricing"
+            className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
           >
             Pricing
           </Link>
         </div>
 
-        {/* Right Side - CTA + Theme Toggle */}
+        {/* Right Side - CTA */}
         <div className="flex items-center gap-3">
           {!loading && (
             user ? (
@@ -98,7 +98,7 @@ export default function Navbar() {
                   onBlur={() => setTimeout(() => setIsProfileOpen(false), 200)}
                   className="flex items-center gap-2 pl-1 pr-3 py-1 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700/50 hover:border-neutral-700 rounded-full transition-all duration-200"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-white text-xs font-bold border border-white/10">
                     {user.email?.[0].toUpperCase() || 'U'}
                   </div>
                   <IconChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
@@ -158,16 +158,12 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="text-white bg-primary-red px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 hover:opacity-90"
+                className="text-black bg-white/90 hover:bg-white px-5 py-2 rounded-full text-sm font-medium transition-all duration-200"
               >
                 Login
               </Link>
             )
           )}
-
-          <button className="border border-white/20 text-neutral-300 hover:text-white hover:border-white/40 p-2 rounded-full transition-all duration-200 hover:scale-110 active:scale-95">
-            <IconMoon className="w-5 h-5" />
-          </button>
         </div>
       </motion.div>
     </motion.nav>

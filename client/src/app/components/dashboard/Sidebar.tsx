@@ -15,10 +15,15 @@ import {
   IconEdit,
   IconCheck,
   IconX,
+  IconPlus,
+  IconLink,
+  IconArrowUp,
+  IconAlertTriangle
 } from '@tabler/icons-react';
-import { PieChart, Eye, Hammer, TrendingUp } from 'lucide-react';
+import { PieChart, Eye, Hammer, TrendingUp, AudioLines } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { fetchProjects, updateProject, deleteProject } from '../../../lib/api';
 import { createClient } from '@/utils/supabase/client';
@@ -27,6 +32,8 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   href?: string;
+  onClick?: () => void;
+  variant?: 'default' | 'primary';
 }
 
 interface SidebarProject {
@@ -42,8 +49,12 @@ interface SidebarProject {
 export default function Sidebar() {
   const [approvedProjects, setApprovedProjects] = useState<SidebarProject[]>([]);
   const [rejectedProjects, setRejectedProjects] = useState<SidebarProject[]>([]);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
+  const [newProjectInput, setNewProjectInput] = useState("");
+  const [projectToDelete, setProjectToDelete] = useState<SidebarProject | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const loadProjects = async () => {
     setLoading(true);
@@ -78,91 +89,274 @@ export default function Sidebar() {
     loadProjects();
   }, []);
 
+  const handleNewProjectSubmit = () => {
+    if (!newProjectInput.trim()) return;
+    router.push(`/analyzing?idea=${encodeURIComponent(newProjectInput)}`);
+    setIsNewProjectModalOpen(false);
+    setNewProjectInput("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleNewProjectSubmit();
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete) return;
+
+    // Optimistic UI update: Remove immediately
+    setApprovedProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
+    setRejectedProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
+
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (token) {
+      const success = await deleteProject(projectToDelete.id, token);
+      if (success) {
+        // Success: Keep optimistic update. Do NOT reload to avoid race conditions.
+        // The item is already gone from the UI.
+      } else {
+        // If failed, revert (reload truth)
+        await loadProjects();
+        alert("Failed to delete project");
+      }
+    }
+    setProjectToDelete(null);
+  };
+
   const topNavItems: NavItem[] = [
     { icon: IconLayoutDashboardFilled, label: 'Dashboard', href: '/dashboard' },
+    {
+      icon: IconPlus,
+      label: 'New Project',
+      onClick: () => setIsNewProjectModalOpen(true),
+      variant: 'default'
+    },
   ];
 
   const bottomNavItems: NavItem[] = [
-    { icon: IconUser, label: 'Profile', href: '/profile' },
     { icon: IconSettings, label: 'Settings', href: '/settings' },
     { icon: IconLogout, label: 'Log Out', href: '/logout' },
   ];
 
   return (
-    <aside className="w-72 h-screen bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0">
-      {/* Logo Section */}
-      <div className="h-16 flex items-center px-6 border-b border-neutral-800">
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/assets/brand/logos/default-logo.svg"
-            alt="Verdyct"
-            width={32}
-            height={32}
-            className="w-8 h-8 object-contain"
-          />
-          <span className="text-xl font-bold text-white tracking-tight">Verdyct</span>
-        </Link>
-      </div>
-
-      {/* Main Navigation */}
-      <nav className="flex-1 flex flex-col px-4 py-6 overflow-y-auto custom-scrollbar">
-        {/* Top Navigation Items */}
-        <div className="space-y-1 mb-8">
-          {topNavItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href || '#'}
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
-            >
-              <item.icon className="w-5 h-5 text-neutral-500" />
-              {item.label}
-            </Link>
-          ))}
+    <>
+      <aside className="w-72 h-full bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0">
+        {/* Logo Section */}
+        <div className="h-16 flex items-center px-6 border-b border-neutral-800">
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/assets/brand/logos/default-logo.svg"
+              alt="Verdyct"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+            />
+            <span className="text-xl font-bold text-white tracking-tight">Verdyct</span>
+          </Link>
         </div>
 
-        {/* Approved Section */}
-        {approvedProjects.length > 0 && (
-          <div className="mb-8">
-            <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-              Approved Ventures
-            </h3>
-            <div className="space-y-2">
-              {approvedProjects.map((project) => (
-                <ProjectItem key={project.id} project={project} type="approved" refreshProjects={loadProjects} />
-              ))}
-            </div>
+        {/* Main Navigation */}
+        <nav className="flex-1 flex flex-col px-4 py-6 overflow-y-auto custom-scrollbar">
+          {/* Top Navigation Items */}
+          <div className="space-y-1 mb-8">
+            {topNavItems.map((item) => (
+              item.href ? (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+                >
+                  <item.icon className="w-5 h-5 text-neutral-500" />
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.label}
+                  onClick={item.onClick}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+                >
+                  <item.icon className="w-5 h-5 text-neutral-500" />
+                  {item.label}
+                </button>
+              )
+            ))}
           </div>
-        )}
 
-        {/* Rejected Section */}
-        {rejectedProjects.length > 0 && (
-          <div className="mb-8">
-            <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-              Rejected Ventures
-            </h3>
-            <div className="space-y-2">
-              {rejectedProjects.map((project) => (
-                <ProjectItem key={project.id} project={project} type="rejected" refreshProjects={loadProjects} />
-              ))}
+          {/* Approved Section */}
+          {approvedProjects.length > 0 && (
+            <div className="mb-8">
+              <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+                Approved Ventures
+              </h3>
+              <div className="space-y-2">
+                {approvedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    type="approved"
+                    refreshProjects={loadProjects}
+                    onDeleteClick={() => setProjectToDelete(project)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Bottom Navigation Items */}
-        <div className="mt-auto pt-6 border-t border-neutral-800 space-y-1">
-          {bottomNavItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href || '#'}
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+          {/* Rejected Section */}
+          {rejectedProjects.length > 0 && (
+            <div className="mb-8">
+              <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+                Rejected Ventures
+              </h3>
+              <div className="space-y-2">
+                {rejectedProjects.map((project) => (
+                  <ProjectItem
+                    key={project.id}
+                    project={project}
+                    type="rejected"
+                    refreshProjects={loadProjects}
+                    onDeleteClick={() => setProjectToDelete(project)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Navigation Items */}
+          <div className="mt-auto pt-6 border-t border-neutral-800 space-y-1">
+            {bottomNavItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href || '#'}
+                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+              >
+                <item.icon className="w-5 h-5 text-neutral-500" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      </aside>
+
+      {/* New Project Modal */}
+      <AnimatePresence>
+        {isNewProjectModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNewProjectModalOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-2xl z-10"
             >
-              <item.icon className="w-5 h-5 text-neutral-500" />
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
-    </aside>
+              <div className="relative bg-[#1B1818] rounded-3xl border border-white/10 p-4 flex flex-col gap-3 shadow-2xl">
+                {/* Textarea */}
+                <textarea
+                  placeholder="Describe your idea..."
+                  className="w-full bg-transparent text-white placeholder:text-white/40 resize-none outline-none text-base p-2"
+                  rows={3}
+                  value={newProjectInput}
+                  onChange={(e) => setNewProjectInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  autoFocus
+                />
+
+                {/* Bottom Controls */}
+                <div className="flex items-center justify-between relative z-20">
+                  {/* Left: Attach Button (Disabled) */}
+                  <button disabled className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-white/5 text-white/30 cursor-not-allowed group relative transition-colors">
+                    <IconLink className="w-4 h-4" />
+                    <span className="text-sm font-medium">Attach</span>
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 border border-white/10 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">
+                      Coming Soon
+                    </div>
+                  </button>
+
+                  {/* Right: Action Buttons */}
+                  <div className="flex items-center gap-2">
+                    <button disabled className="w-10 h-10 rounded-full bg-white/5 border border-white/5 text-white/30 flex items-center justify-center cursor-not-allowed group relative transition-colors">
+                      <AudioLines className="w-5 h-5" />
+                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 border border-white/10 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">
+                        Coming Soon
+                      </div>
+                    </button>
+
+                    {/* Submit Button */}
+                    <button
+                      onClick={handleNewProjectSubmit}
+                      disabled={!newProjectInput.trim()}
+                      className="w-10 h-10 rounded-full bg-white hover:bg-white/90 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    >
+                      <IconArrowUp className="w-5 h-5 text-black" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {projectToDelete && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setProjectToDelete(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-md z-10 bg-[#1B1818] border border-neutral-800 rounded-2xl p-6 shadow-2xl"
+            >
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <IconAlertTriangle className="w-6 h-6 text-red-500" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-white">Delete Project?</h3>
+                  <p className="text-sm text-neutral-400">
+                    This will permanently delete <span className="text-white font-medium">"{projectToDelete.name}"</span> and all associated data. This action cannot be undone.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 w-full mt-4">
+                  <button
+                    onClick={() => setProjectToDelete(null)}
+                    className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -170,9 +364,10 @@ interface ProjectItemProps {
   project: SidebarProject;
   type: 'approved' | 'rejected';
   refreshProjects: () => void;
+  onDeleteClick: () => void;
 }
 
-function ProjectItem({ project, type, refreshProjects }: ProjectItemProps) {
+function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -198,23 +393,6 @@ function ProjectItem({ project, type, refreshProjects }: ProjectItemProps) {
     }
     setActionLoading(false);
     setIsEditing(false);
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
-      setActionLoading(true);
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (token) {
-        const success = await deleteProject(project.id, token);
-        if (success) {
-          refreshProjects();
-        }
-      }
-      setActionLoading(false);
-    }
   };
 
   return (
@@ -308,7 +486,7 @@ function ProjectItem({ project, type, refreshProjects }: ProjectItemProps) {
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsMenuOpen(false);
-                        handleDelete();
+                        onDeleteClick();
                       }}
                       className="w-full text-left px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2"
                     >

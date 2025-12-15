@@ -1,111 +1,131 @@
 import Image from "next/image";
 import logo from "../../../../public/assets/brand/logos/default-logo.svg";
+import Link from "next/link";
+import { IconBrandTwitter, IconBrandGithub, IconBrandLinkedin } from "@tabler/icons-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-neutral-800">
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Logo and Description */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center gap-1 mb-4">
-              <Image src={logo} alt="Verdyct Logo" className="h-10 w-auto" />
-              <span className="text-white font-semibold text-xl">Verdyct</span>
-            </div>
-            <p className="text-neutral-400 text-sm leading-relaxed max-w-sm">
-              Empowering entrepreneurs to validate, predict, and launch successful startups through data-driven insights and intelligent analysis.
+    <footer className="w-full border-t border-white/5 bg-[#1B1818]">
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8">
+          {/* Logo and Description - Spans 2 columns */}
+          <div className="lg:col-span-2 pr-8">
+            <Link href="/" className="flex items-center gap-2 mb-6 inline-block">
+              <Image src={logo} alt="Verdyct Logo" className="h-8 w-auto" />
+              <span className="text-white font-bold text-lg tracking-tight">Verdyct</span>
+            </Link>
+            <p className="text-neutral-400 text-sm leading-relaxed mb-8 max-w-sm">
+              The AI-powered co-founder for your next big idea. analyze markets, predict success, and execute 10x faster.
             </p>
+            <div className="flex items-center gap-4">
+              <a href="#" className="p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-200">
+                <IconBrandTwitter className="w-4 h-4" />
+              </a>
+              <a href="#" className="p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-200">
+                <IconBrandGithub className="w-4 h-4" />
+              </a>
+              <a href="#" className="p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-200">
+                <IconBrandLinkedin className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Product Column */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
-            <ul className="space-y-3">
+            <h3 className="text-white font-medium text-sm mb-6">Product</h3>
+            <ul className="space-y-4">
               <li>
-                <a href="/features" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="#about" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Features
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/pricing" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="#pricing" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/how-it-works" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="#how-it-works" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   How it works
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/faq" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="#faq" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   FAQ
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Company Column */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-4">Company</h3>
-            <ul className="space-y-3">
+            <h3 className="text-white font-medium text-sm mb-6">Company</h3>
+            <ul className="space-y-4">
               <li>
-                <a href="/about" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/about" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   About us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/careers" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/careers" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Careers
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/blog" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/blog" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Blog
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contact" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/contact" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Legal Column */}
           <div>
-            <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
-            <ul className="space-y-3">
+            <h3 className="text-white font-medium text-sm mb-6">Legal</h3>
+            <ul className="space-y-4">
               <li>
-                <a href="/privacy" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/privacy" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Privacy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/terms" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/terms" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Terms
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/security" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/security" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Security
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/cookies" className="text-neutral-400 hover:text-white transition-colors text-sm">
+                <Link href="/cookies" className="text-neutral-300 hover:text-white transition-colors duration-200 text-sm">
                   Cookies
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-neutral-800">
-          <p className="text-neutral-500 text-sm text-center">
-            © {new Date().getFullYear()} Verdyct. All rights reserved.
+        <div className="mt-20 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-neutral-500 text-xs">
+            © {new Date().getFullYear()} Verdyct Inc. All rights reserved.
           </p>
+          <div className="flex gap-8">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="text-neutral-500 text-xs">All systems operational</span>
+            </span>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
+

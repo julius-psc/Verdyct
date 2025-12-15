@@ -7,7 +7,7 @@ export default function CTA() {
     <section className="w-full py-24 flex justify-center items-center">
       <div className="w-[90%] rounded-3xl px-16 py-20 flex flex-col items-center justify-center text-center relative overflow-hidden">
         <Image
-          src="/assets/illustrations/hero-bg.png"
+          src="/assets/illustrations/hero-bg.svg"
           alt=""
           fill
           className="object-cover"

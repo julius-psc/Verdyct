@@ -3,7 +3,7 @@
 import PageWrapper from "@/app/components/landing/PageWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { IconMail, IconCheck, IconArrowRight, IconSparkles } from "@tabler/icons-react";
+import { IconMail, IconCheck, IconArrowRight, IconLoader2 } from "@tabler/icons-react";
 import confetti from 'canvas-confetti';
 
 export default function WaitlistPage() {
@@ -26,15 +26,14 @@ export default function WaitlistPage() {
             if (res.ok) {
                 setStatus("success");
                 confetti({
-                    particleCount: 100,
+                    particleCount: 150,
                     spread: 70,
-                    origin: { y: 0.6 }
+                    origin: { y: 0.6 },
+                    colors: ['#EF4444', '#ffffff']
                 });
             } else {
-                // Even if fails, we might show success to user or just silently fail in this mock-ish stage
-                // But better to at least check
                 console.error("Failed to join waitlist");
-                setStatus("idle"); // reset or show error state 
+                setStatus("idle");
             }
         } catch (err) {
             console.error(err);
@@ -44,80 +43,77 @@ export default function WaitlistPage() {
 
     return (
         <PageWrapper>
-            <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 relative overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-red/10 rounded-full blur-[100px] pointer-events-none" />
-
+            <div className="min-h-[70vh] flex flex-col items-center justify-center px-6 relative overflow-hidden">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative z-10 max-w-xl w-full text-center"
+                    className="relative z-10 max-w-lg w-full text-center"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-primary-red text-sm font-medium mb-8">
-                        <IconSparkles className="w-4 h-4" />
-                        <span>Launching February 1st</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-white mb-8">
+                        <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
+                        Access opening February 1st
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight">
-                        Join the <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">
-                            Revolution.
-                        </span>
+                    <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+                        Get early access.
                     </h1>
 
-                    <p className="text-xl text-neutral-400 mb-12">
-                        Get 50% off for life when we launch. <br />
-                        Be the first to know when spots open.
+                    <p className="text-xl text-neutral-400 mb-12 font-light leading-relaxed">
+                        Join the waitlist to secure your spot and lock in <span className="text-white font-medium">50% off for life.</span>
                     </p>
 
                     <AnimatePresence mode="wait">
                         {status === 'success' ? (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="bg-green-500/10 border border-green-500/20 text-green-400 p-6 rounded-2xl flex flex-col items-center gap-3"
+                                className="bg-[#1B1818] border border-white/10 p-8 rounded-2xl flex flex-col items-center gap-4 shadow-2xl"
                             >
-                                <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                                    <IconCheck className="w-6 h-6" />
+                                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/10">
+                                    <IconCheck className="w-6 h-6 text-white" />
                                 </div>
-                                <h3 className="text-xl font-bold text-white">You're on the list!</h3>
-                                <p className="text-sm opacity-80">We'll notify you as soon as we're ready.</p>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-2">You're on the list.</h3>
+                                    <p className="text-neutral-400 text-sm">We'll be in touch soon.</p>
+                                </div>
                             </motion.div>
                         ) : (
                             <motion.form
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                exit={{ opacity: 0, y: -10 }}
                                 onSubmit={handleSubmit}
-                                className="relative max-w-md mx-auto"
+                                className="w-full max-w-md mx-auto space-y-4"
                             >
-                                <div className="relative group">
-                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-red-500 to-orange-600 rounded-full opacity-30 group-hover:opacity-50 blur transition duration-200" />
-                                    <div className="relative flex items-center bg-[#1B1818] rounded-full p-1.5 border border-neutral-800">
-                                        <div className="pl-4 text-neutral-500">
-                                            <IconMail className="w-5 h-5" />
-                                        </div>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="Enter your email address..."
-                                            className="w-full bg-transparent border-none focus:ring-0 text-white placeholder-neutral-500 px-3 py-2"
-                                            required
-                                            disabled={status === 'loading'}
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={status === 'loading'}
-                                            className="bg-primary-red hover:bg-red-600 text-white px-6 py-2.5 rounded-full font-medium transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                        >
-                                            {status === 'loading' ? 'Joining...' : 'Join Now'}
-                                            {!status && <IconArrowRight className="w-4 h-4" />}
-                                        </button>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <IconMail className="w-5 h-5 text-neutral-500" />
                                     </div>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="name@company.com"
+                                        className="w-full bg-[#1B1818] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white placeholder-neutral-500 focus:outline-none focus:border-white/20 transition-colors"
+                                        required
+                                        disabled={status === 'loading'}
+                                    />
                                 </div>
-                                <p className="text-xs text-neutral-500 mt-4">
-                                    No spam. Unsubscribe anytime.
+                                <button
+                                    type="submit"
+                                    disabled={status === 'loading'}
+                                    className="w-full bg-white text-black font-bold h-14 rounded-xl hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    {status === 'loading' ? (
+                                        <IconLoader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Join Waitlist <IconArrowRight className="w-5 h-5" />
+                                        </>
+                                    )}
+                                </button>
+                                <p className="text-xs text-neutral-500 text-center">
+                                    Strictly no spam. Unsubscribe at any time.
                                 </p>
                             </motion.form>
                         )}

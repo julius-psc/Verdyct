@@ -15,9 +15,9 @@ export default function PageWrapper({ children, className = "", hideFooter = fal
         <div className="bg-[#1B1818] min-h-screen flex flex-col relative overflow-x-hidden">
             {/* Global Background Layer */}
             <div
-                className="fixed inset-0 z-0 pointer-events-none opacity-40 mix-blend-color-dodge"
+                className="fixed inset-0 z-0 pointer-events-none"
                 style={{
-                    backgroundImage: `url('/assets/illustrations/hero-bg.png')`,
+                    backgroundImage: `url('/assets/illustrations/hero-bg.svg')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'top center',
                     backgroundRepeat: 'no-repeat'
@@ -27,18 +27,20 @@ export default function PageWrapper({ children, className = "", hideFooter = fal
             {/* Gradient Overlay for depth */}
             <div className="fixed inset-0 z-0 bg-gradient-to-b from-transparent via-[#1B1818]/50 to-[#1B1818] pointer-events-none" />
 
-            <Navbar />
+            <div className="relative z-10 flex flex-col min-h-screen">
+                <Navbar />
 
-            <motion.main
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className={`flex-grow pt-32 relative z-10 w-full ${className}`}
-            >
-                {children}
-            </motion.main>
+                <motion.main
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className={`flex-grow pt-32 w-full ${className}`}
+                >
+                    {children}
+                </motion.main>
 
-            {!hideFooter && <Footer />}
+                {!hideFooter && <Footer />}
+            </div>
         </div>
     );
 }

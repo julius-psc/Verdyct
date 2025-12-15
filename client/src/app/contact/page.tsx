@@ -2,158 +2,79 @@
 
 import PageWrapper from "@/app/components/landing/PageWrapper";
 import { motion } from "motion/react";
-import { IconBrandLinkedin, IconBrandTwitter, IconMail, IconMapPin } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconMail, IconBrandTwitter, IconMapPin } from "@tabler/icons-react";
 
 export default function ContactPage() {
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle');
-    const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        message: ''
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setStatus('loading');
-
-        try {
-            const res = await fetch('http://localhost:8000/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (res.ok) {
-                setStatus('success');
-            } else {
-                setStatus('idle');
-                alert('Something went wrong. Please try again.');
-            }
-        } catch (e) {
-            console.error(e);
-            setStatus('idle');
-            alert('Something went wrong. Please try again.');
-        }
-    }
-
     return (
         <PageWrapper>
-            <div className="max-w-7xl mx-auto px-6 mb-24">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-                    {/* Info Side */}
+            <div className="max-w-4xl mx-auto px-6 py-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
                     <motion.div
-                        initial={{ opacity: 0, x: -50 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.7 }}
+                        transition={{ duration: 0.5 }}
                     >
-                        <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 tracking-tight">
-                            Let&apos;s <span className="text-primary-red">talk</span>.
-                        </h1>
-                        <p className="text-xl text-neutral-400 mb-12 max-w-md leading-relaxed">
-                            Have questions about specific features? Need a custom enterprise plan? We&apos;re here to help.
+                        <h1 className="text-5xl font-bold text-white mb-8">Get in touch</h1>
+                        <p className="text-lg text-neutral-400 mb-12 leading-relaxed">
+                            Have a question about Verdyct? Interested in a partnership? Or just want to say hello? we are all ears.
                         </p>
 
-                        <div className="space-y-8">
-                            <div className="flex items-start gap-6">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-primary-red">
-                                    <IconMail className="w-6 h-6" />
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4 text-white">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                    <IconMail className="w-5 h-5 text-neutral-300" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white mb-1">Email</h3>
-                                    <p className="text-neutral-400">hello@verdyct.com</p>
+                                    <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold">Email</p>
+                                    <a href="mailto:hello@verdyct.com" className="text-lg hover:text-primary-red transition-colors">hello@verdyct.com</a>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-6">
-                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 text-primary-red">
-                                    <IconMapPin className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-white mb-1">Office</h3>
-                                    <p className="text-neutral-400">123 Market St<br />San Francisco, CA 94103</p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="mt-16 flex gap-4">
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
-                                <IconBrandTwitter className="w-5 h-5" />
-                            </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
-                                <IconBrandLinkedin className="w-5 h-5" />
-                            </a>
+                            <div className="flex items-center gap-4 text-white">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                    <IconBrandTwitter className="w-5 h-5 text-neutral-300" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold">Twitter</p>
+                                    <a href="https://twitter.com/verdyct" target="_blank" rel="noopener noreferrer" className="text-lg hover:text-primary-red transition-colors">@verdyct</a>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 text-white">
+                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                                    <IconMapPin className="w-5 h-5 text-neutral-300" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold">HQ</p>
+                                    <span className="text-lg text-neutral-300">London, United Kingdom</span>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
 
-                    {/* Form Side */}
                     <motion.div
-                        initial={{ opacity: 0, x: 50 }}
+                        initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.7, delay: 0.2 }}
-                        className="bg-white/5 rounded-3xl p-10 border border-white/10 backdrop-blur-md"
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="bg-[#1B1818] p-8 rounded-3xl border border-white/5"
                     >
-                        {status === 'success' ? (
-                            <div className="h-full flex flex-col items-center justify-center text-center py-20">
-                                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-6 text-green-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                                </div>
-                                <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
-                                <p className="text-neutral-400">We'll get back to you shortly.</p>
+                        <form className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Name</label>
+                                <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-red/50 transition-colors" placeholder="Jane Doe" />
                             </div>
-                        ) : (
-                            <form className="space-y-6" onSubmit={handleSubmit}>
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-400 mb-2">First Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.first_name}
-                                            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-red transition-colors"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-400 mb-2">Last Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.last_name}
-                                            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-red transition-colors"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-400 mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-red transition-colors"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-400 mb-2">Message</label>
-                                    <textarea
-                                        rows={4}
-                                        required
-                                        value={formData.message}
-                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-red transition-colors resize-none"
-                                    ></textarea>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={status === 'loading'}
-                                    className="w-full bg-primary-red text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                    {status === 'loading' ? 'Sending...' : 'Send Message'}
-                                </button>
-                            </form>
-                        )}
+                            <div>
+                                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Email</label>
+                                <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-red/50 transition-colors" placeholder="jane@example.com" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-widest mb-2">Message</label>
+                                <textarea rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary-red/50 transition-colors" placeholder="How can we help?" />
+                            </div>
+                            <button type="button" className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-neutral-200 transition-colors">
+                                Send Message
+                            </button>
+                        </form>
                     </motion.div>
                 </div>
             </div>

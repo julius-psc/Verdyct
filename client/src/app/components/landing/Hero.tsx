@@ -59,7 +59,7 @@ export default function Hero() {
     <section
       className="relative min-h-screen flex items-center justify-center px-6 py-20"
       style={{
-        backgroundImage: `url('/assets/illustrations/hero-bg.png')`,
+        backgroundImage: `url('/assets/illustrations/hero-bg.svg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -97,18 +97,25 @@ export default function Hero() {
             />
 
             {/* Bottom Controls */}
-            <div className="flex items-center justify-between">
-              {/* Left: Attach Button */}
-              <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-transparent hover:bg-white/5 transition-colors">
-                <IconLink className="w-4 h-4 text-white/70" />
-                <span className="text-sm font-medium text-white/70">Attach</span>
+            <div className="flex items-center justify-between relative z-20">
+              {/* Left: Attach Button (Disabled) */}
+              <button disabled className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-white/5 text-white/30 cursor-not-allowed group relative transition-colors">
+                <IconLink className="w-4 h-4" />
+                <span className="text-sm font-medium">Attach</span>
+                {/* Tooltip */}
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 border border-white/10 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">
+                  Coming Soon
+                </div>
               </button>
 
               {/* Right: Action Buttons */}
               <div className="flex items-center gap-2">
-                {/* Audio Button */}
-                <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center transition-colors">
-                  <AudioLines className="w-5 h-5 text-white/70" />
+                {/* Audio Button (Disabled) */}
+                <button disabled className="w-10 h-10 rounded-full bg-white/5 border border-white/5 text-white/30 flex items-center justify-center cursor-not-allowed group relative transition-colors">
+                  <AudioLines className="w-5 h-5" />
+                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 border border-white/10 text-xs text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">
+                    Coming Soon
+                  </div>
                 </button>
 
                 {/* Submit Button */}

@@ -36,9 +36,11 @@ export default function AuthenticatedLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[#1B1818] text-white flex relative overflow-hidden">
+        <div className="h-screen w-screen bg-[#1B1818] text-white flex overflow-hidden">
             <Sidebar />
-            {children}
+            <div className="flex-1 h-full overflow-y-auto w-full relative">
+                {children}
+            </div>
         </div>
     );
 }

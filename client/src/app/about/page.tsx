@@ -2,54 +2,66 @@
 
 import PageWrapper from "@/app/components/landing/PageWrapper";
 import { motion } from "motion/react";
+import Image from "next/image";
 
 export default function AboutPage() {
     return (
         <PageWrapper>
-            <div className="w-full min-h-screen flex flex-col items-center justify-center py-20 relative overflow-hidden">
-                {/* Background Element for flair */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary-red/10 blur-[100px] rounded-full pointer-events-none" />
-
-                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <motion.h1
+            <div className="max-w-6xl mx-auto px-6 py-20">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.7 }}
-                        className="text-5xl md:text-7xl font-bold text-white mb-12"
+                        transition={{ duration: 0.5 }}
                     >
-                        We are <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-red to-orange-500">Issa & Julius</span>.
-                    </motion.h1>
-
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.7 }}
-                        className="space-y-8 text-xl md:text-2xl text-neutral-300 leading-relaxed font-light"
-                    >
-                        <p>
-                            Two ambitious students who noticed a pattern.
-                        </p>
-
-                        <p>
-                            In the age of AI, the number of startups has exploded. Everyone is a founder now.
-                            But let's be honest... <br />
-                            <span className="text-white font-semibold">Most of them are trash.</span>
-                        </p>
-
-                        <p className="text-lg md:text-xl text-neutral-400">
-                            We saw brilliant people build products for months, only to launch to silence.
-                            The problem wasn't the code—it was the market.
-                        </p>
-
-                        <div className="pt-8">
-                            <p className="text-2xl font-medium text-white mb-4">
-                                Verdyct is our answer.
+                        <h1 className="text-5xl font-bold text-white mb-8 tracking-tight">
+                            Building the <span className="text-primary-red">AI Architect</span> for modern founders.
+                        </h1>
+                        <div className="space-y-6 text-lg text-neutral-300 font-light leading-relaxed">
+                            <p>
+                                The startup landscape is noisy. Every day, thousands of ideas are born, but few survive the first contact with reality.
                             </p>
-                            <p className="text-lg text-neutral-400">
-                                We built this to stop the waste. To kill bad ideas before they kill your time.
+                            <p>
+                                We built Verdyct to solve the "Founder's Blindness"—the tendency to fall in love with a solution before understanding the problem.
+                            </p>
+                            <p>
+                                Our mission is simple: <strong>Kill bad ideas fast. Scale good ideas faster.</strong>
                             </p>
                         </div>
                     </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.7, delay: 0.2 }}
+                        className="relative"
+                    >
+                        <div className="aspect-square rounded-2xl overflow-hidden bg-neutral-900 border border-white/5 relative">
+                            {/* Placeholder for team/office image - using a gradient pattern for now */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-neutral-800 to-neutral-900" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-neutral-700 font-mono text-xs uppercase tracking-widest">
+                                    [Verdyct HQ]
+                                </span>
+                            </div>
+                        </div>
+                        {/* Decorative elements */}
+                        <div className="absolute -z-10 top-10 -right-10 w-full h-full border border-white/5 rounded-2xl" />
+                        <div className="absolute -z-10 -bottom-10 -left-10 w-full h-full border border-white/5 rounded-2xl" />
+                    </motion.div>
+                </div>
+
+                <div className="mt-32">
+                    <h2 className="text-3xl font-bold text-white mb-12 text-center">The Team</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+                        {['Julius Peschard', 'Issa'].map((name, i) => (
+                            <div key={i} className="bg-white/5 border border-white/5 rounded-xl p-6 text-center hover:border-white/10 transition-colors">
+                                <div className="w-24 h-24 bg-neutral-800 rounded-full mx-auto mb-4 border border-white/10" />
+                                <h3 className="text-white font-medium text-lg">{name}</h3>
+                                <p className="text-primary-red text-sm">Co-Founder</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </PageWrapper>

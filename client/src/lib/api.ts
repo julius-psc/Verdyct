@@ -22,8 +22,13 @@ export async function fetchProjects(token?: string): Promise<Project[]> {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/projects`, {
-            headers
+        const response = await fetch(`${API_BASE_URL}/api/projects?t=${new Date().getTime()}`, {
+            headers: {
+                ...headers,
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
+            cache: 'no-store'
         });
         if (!response.ok) {
             throw new Error('Failed to fetch projects');
