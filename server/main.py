@@ -579,13 +579,6 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
 
                 # Persistence (Approved)
                 project_id = str(uuid.uuid4())
-                try:
-                    if architect_res and architect_res.architect.mvp_status.mvp_screenshot_url:
-                        parts = architect_res.architect.mvp_status.mvp_screenshot_url.split('/')
-                        if parts:
-                            project_id = parts[-1].replace('.png', '')
-                except:
-                    pass
 
                 report_data = VerdyctReportResponse(
                     report_id=str(uuid.uuid4()),

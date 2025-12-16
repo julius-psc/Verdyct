@@ -76,40 +76,37 @@ export const VerdyctCard = React.forwardRef<HTMLDivElement, VerdyctCardProps>(({
         <div
             ref={ref}
             className={cn(
-                "relative overflow-hidden flex flex-col items-center text-center font-sans select-none",
-                "w-[340px] h-[600px]",
+                "w-[400px] h-[640px] relative overflow-hidden flex flex-col items-center justify-between text-white font-sans rounded-[32px]",
                 theme.bg,
                 mini ? "scale-50 origin-top-left" : ""
             )}
         >
-            {/* Background Gradient Mesh */}
-            <div className={cn("absolute inset-0 bg-gradient-to-b opacity-100", theme.gradient)} />
+            {/* Background Gradient Mesh - Minimalist */}
+            <div className={cn("absolute inset-0 bg-gradient-to-b opacity-80", theme.gradient)} />
 
-            {/* Noise Texture */}
-            <div className="absolute inset-0 opacity-30 mix-blend-overlay" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
-            }} />
+            {/* Subtle Vignette instead of Noise */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
 
             {/* Content Container */}
-            <div className="relative z-10 flex flex-col items-center justify-between w-full h-full p-8">
+            <div className="relative z-10 flex flex-col items-center justify-between w-full h-full p-8 text-center">
 
                 {/* Header */}
                 <div className="w-full flex justify-between items-end border-b border-white/10 pb-4">
-                    <div>
+                    <div className="text-left">
                         <span className="font-black tracking-widest text-xs text-neutral-500 block mb-1">EVALUATION</span>
                         <div className="flex items-center gap-2">
                             <span className="font-bold tracking-tighter text-lg text-white">VERDYCT.AI</span>
                         </div>
                     </div>
-                    <span className="text-[10px] font-mono text-neutral-600">{new Date().toLocaleDateString()}</span>
+                    <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-widest">{new Date().toLocaleDateString()}</span>
                 </div>
 
                 {/* Main Content Center */}
                 <div className="flex-1 flex flex-col items-center justify-center w-full relative">
 
                     {/* Project Name */}
-                    <div className="mb-8 w-full">
-                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none break-words line-clamp-2 px-2" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                    <div className="mb-8 w-full flex justify-center">
+                        <h1 className="text-3xl font-black text-white tracking-tighter uppercase leading-none break-words line-clamp-2 px-2 text-center" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
                             {projectName}
                         </h1>
                     </div>
@@ -145,8 +142,8 @@ export const VerdyctCard = React.forwardRef<HTMLDivElement, VerdyctCardProps>(({
 
             </div>
 
-            {/* Border Glow */}
-            <div className={cn("absolute inset-0 border-[6px] opacity-50 pointer-events-none", theme.border)} />
+            {/* Border Glow - Fixed corner clipping */}
+            <div className={cn("absolute inset-0 border-[6px] opacity-50 pointer-events-none rounded-[32px]", theme.border)} />
         </div>
     );
 });

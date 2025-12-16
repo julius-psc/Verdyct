@@ -131,10 +131,6 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Architect</h1>
                     <p className="text-sm text-neutral-400">Technical Architecture & MVP Design</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
-                    <UploadCloud className="w-4 h-4" />
-                    Export Assets
-                </button>
             </div>
 
             {/* Main Grid */}
@@ -190,19 +186,26 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
                     </Widget>
                 </div>
 
-                {/* 2. Tech Stack (1x2) */}
-                <div className="lg:col-span-1 lg:row-span-2">
+                {/* 2. Tech Stack (2x2) - Expanded & Detailed */}
+                <div className="lg:col-span-2 lg:row-span-2">
                     <Widget title="Tech Stack" action={<Code2 className="w-4 h-4 text-neutral-500" />}>
                         <div className="flex flex-col h-full gap-6">
-                            <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-8">
                                 <div>
                                     <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Frontend</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3 p-2 rounded bg-neutral-900 border border-neutral-800">
-                                            <div className="w-8 h-8 rounded bg-white text-black flex items-center justify-center font-bold text-xs">FE</div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+                                            <div className="w-10 h-10 rounded bg-[#61DAFB] text-black flex items-center justify-center font-bold text-xs">Re</div>
                                             <div>
                                                 <div className="text-sm text-white font-medium">{frontendTech}</div>
-                                                <div className="text-[10px] text-neutral-500">Framework</div>
+                                                <div className="text-[10px] text-neutral-500">Core Framework</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+                                            <div className="w-10 h-10 rounded bg-black border border-neutral-700 text-white flex items-center justify-center font-bold text-xs">Next</div>
+                                            <div>
+                                                <div className="text-sm text-white font-medium">Next.js 14</div>
+                                                <div className="text-[10px] text-neutral-500">App Router</div>
                                             </div>
                                         </div>
                                     </div>
@@ -210,19 +213,38 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
 
                                 <div>
                                     <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Backend & AI</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-2 text-sm text-neutral-300">
-                                            <Database className="w-4 h-4 text-neutral-500" />
-                                            {databaseTech}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+                                            <div className="w-10 h-10 rounded bg-[#3776AB] text-white flex items-center justify-center font-bold text-xs">Py</div>
+                                            <div>
+                                                <div className="text-sm text-white font-medium">{backendTech}</div>
+                                                <div className="text-[10px] text-neutral-500">API Server</div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-neutral-300">
-                                            <Cpu className="w-4 h-4 text-neutral-500" />
-                                            {backendTech}
+                                        <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-900 border border-neutral-800">
+                                            <div className="w-10 h-10 rounded bg-[#00A67E] text-white flex items-center justify-center font-bold text-xs">OAI</div>
+                                            <div>
+                                                <div className="text-sm text-white font-medium">OpenAI GPT-4o</div>
+                                                <div className="text-[10px] text-neutral-500">LLM Engine</div>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-sm text-neutral-300">
-                                            <Globe className="w-4 h-4 text-neutral-500" />
-                                            {aiTech.join(', ')}
-                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-auto pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Database</h4>
+                                    <div className="flex items-center gap-2 text-sm text-neutral-300">
+                                        <Database className="w-4 h-4 text-neutral-600" />
+                                        {databaseTech} <span className="text-neutral-600">/ Supabase</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Deployment</h4>
+                                    <div className="flex items-center gap-2 text-sm text-neutral-300">
+                                        <UploadCloud className="w-4 h-4 text-neutral-600" />
+                                        Vercel <span className="text-neutral-600">+ Railway</span>
                                     </div>
                                 </div>
                             </div>
@@ -230,101 +252,39 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
                     </Widget>
                 </div>
 
-                {/* 3. Brand Kit (1x2) */}
-                <div className="lg:col-span-1 lg:row-span-2">
-                    <Widget title="Brand Identity" action={<Palette className="w-4 h-4 text-neutral-500" />}>
-                        <div className="flex flex-col h-full gap-6">
-                            {/* Logo Preview */}
-                            <div className="p-6 bg-neutral-900 rounded-lg border border-neutral-800 flex flex-col items-center justify-center gap-2">
-                                <div className="text-2xl font-bold text-white tracking-tight">Logo Concept</div>
-                                <div className="text-[10px] text-neutral-500 uppercase tracking-widest text-center">{brand_kit.project_name}</div>
-                            </div>
-
-                            {/* Colors */}
-                            <div>
-                                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Palette</h4>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {brand_kit.color_palette.map((color, i) => (
-                                        <div key={i} className="space-y-1">
-                                            <div className="h-10 rounded border border-white/5" style={{ backgroundColor: color }}></div>
-                                            <div className="text-[10px] text-neutral-500 font-mono">{color}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Typography */}
-                            <div>
-                                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">Typography</h4>
-                                <div className="space-y-2 bg-neutral-900 p-3 rounded border border-neutral-800">
-                                    {brand_kit.typography.map((font, i) => (
-                                        <div key={i} className="text-sm text-white">{font.font} <span className="text-neutral-500">({font.use})</span></div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </Widget>
-                </div>
-
-                {/* 4. User Flow (2x1) - Placeholder */}
+                {/* 3. User Journey (2x1) - Standardized Coming Soon */}
                 <div className="lg:col-span-2">
                     <Widget title="User Journey" action={<Figma className="w-4 h-4 text-neutral-500" />}>
-                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/30 rounded-lg border border-dashed border-neutral-800">
-                            <div className="w-16 h-16 bg-neutral-800 rounded-full flex items-center justify-center mb-4">
-                                <Figma className="w-8 h-8 text-neutral-600" />
+                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-neutral-800 relative overflow-hidden group">
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-800 border border-white/5 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
+
+                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                                <Figma className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
                             </div>
-                            <h3 className="text-lg font-medium text-white mb-2">Figma Integration Coming Soon</h3>
-                            <p className="text-sm text-neutral-500 text-center max-w-sm">
-                                We are working on a direct integration to visualize your AI-generated user flows directly within the dashboard.
+                            <h3 className="text-base font-medium text-white mb-1">Figma Integration</h3>
+                            <p className="text-xs text-neutral-500 text-center max-w-xs">
+                                Visualise your AI-generated user flows directly within the dashboard.
                             </p>
                         </div>
                     </Widget>
                 </div>
 
-                {/* 5. Data Moat (2x1) - Revamped */}
+                {/* 4. Data Moat (2x1) - Standardized Coming Soon */}
                 <div className="lg:col-span-2">
-                    <Widget title="Data Moat Configuration" action={<ShieldCheck className="w-4 h-4 text-purple-500" />}>
-                        <div className="flex flex-col h-full gap-6">
-                            <div className={`relative overflow-hidden rounded-xl border transition-all duration-500 ${isDataMoatActive ? 'bg-purple-900/20 border-purple-500/30' : 'bg-neutral-900 border-neutral-800'}`}>
-                                {/* Background Effect */}
-                                {isDataMoatActive && (
-                                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(168,85,247,0.2),transparent_70%)]" />
-                                )}
+                    <Widget title="Data Moat Configuration" action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
+                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-neutral-800 relative overflow-hidden group">
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-800 border border-white/5 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
 
-                                <div className="relative p-6 flex items-center justify-between z-10">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-3 rounded-lg bg-neutral-800 text-neutral-500`}>
-                                            <Lock className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-base font-semibold text-white">{data_moat.title}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] font-medium text-neutral-400">Coming Soon</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        disabled
-                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors bg-neutral-800 cursor-not-allowed opacity-50`}
-                                    >
-                                        <span className={`translate-x-1 inline-block h-5 w-5 transform rounded-full bg-neutral-600 transition-transform shadow-sm`} />
-                                    </button>
-                                </div>
+                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                                <Lock className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
                             </div>
-
-                            <div className="grid grid-cols-3 gap-4">
-                                {data_moat.features.slice(0, 3).map((feature, i) => (
-                                    <div key={i} className={`flex flex-col items-center text-center p-4 rounded-xl border transition-all duration-300 ${isDataMoatActive ? 'bg-neutral-900/80 border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.05)]' : 'bg-neutral-900/30 border-neutral-800 opacity-50'}`}>
-                                        <MousePointerClick className={`w-5 h-5 mb-3 ${isDataMoatActive ? 'text-purple-400' : 'text-neutral-600'}`} />
-                                        <span className="text-xs font-medium text-white">{feature.title}</span>
-                                    </div>
-                                ))}
-                            </div>
+                            <h3 className="text-base font-medium text-white mb-1">Data Strategy</h3>
+                            <p className="text-xs text-neutral-500 text-center max-w-xs">
+                                Advanced configuration for data retention and competitive moat building.
+                            </p>
                         </div>
                     </Widget>
                 </div>
-
             </div >
         </div >
     );

@@ -7,6 +7,7 @@ import {
   IconSettings,
   IconLogout,
   IconChevronRight,
+  IconChevronLeft,
   IconCircleDashedCheck,
   IconBan,
   IconUser,
@@ -18,7 +19,8 @@ import {
   IconPlus,
   IconLink,
   IconArrowUp,
-  IconAlertTriangle
+  IconAlertTriangle,
+  IconLoader2
 } from '@tabler/icons-react';
 import { PieChart, Eye, Hammer, TrendingUp, AudioLines } from 'lucide-react';
 import Image from 'next/image';
@@ -52,6 +54,9 @@ export default function Sidebar() {
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [newProjectInput, setNewProjectInput] = useState("");
   const [projectToDelete, setProjectToDelete] = useState<SidebarProject | null>(null);
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -106,7 +111,7 @@ export default function Sidebar() {
   const confirmDelete = async () => {
     if (!projectToDelete) return;
 
-    // Optimistic UI update: Remove immediately
+    // Optimistic UI update
     setApprovedProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
     setRejectedProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
 
@@ -116,11 +121,7 @@ export default function Sidebar() {
 
     if (token) {
       const success = await deleteProject(projectToDelete.id, token);
-      if (success) {
-        // Success: Keep optimistic update. Do NOT reload to avoid race conditions.
-        // The item is already gone from the UI.
-      } else {
-        // If failed, revert (reload truth)
+      if (!success) {
         await loadProjects();
         alert("Failed to delete project");
       }
@@ -145,9 +146,19 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-72 h-full bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0">
+      <aside
+        className={`${isCollapsed ? 'w-20' : 'w-72'} h-full bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300 ease-in-out relative`}
+      >
+        {/* Collapse Toggle Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-8 z-50 w-6 h-6 bg-neutral-800 border border-neutral-700 rounded-full flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+        >
+          {isCollapsed ? <IconChevronRight className="w-4 h-4" /> : <IconChevronLeft className="w-4 h-4" />}
+        </button>
+
         {/* Logo Section */}
-        <div className="h-16 flex items-center px-6 border-b border-neutral-800">
+        <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-6'} border-b border-neutral-800 transition-all`}>
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="/assets/brand/logos/default-logo.svg"
@@ -156,12 +167,16 @@ export default function Sidebar() {
               height={32}
               className="w-8 h-8 object-contain"
             />
-            <span className="text-xl font-bold text-white tracking-tight">Verdyct</span>
+            {!isCollapsed && (
+              <span className="text-xl font-bold text-white tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
+                Verdyct
+              </span>
+            )}
           </Link>
         </div>
 
         {/* Main Navigation */}
-        <nav className="flex-1 flex flex-col px-4 py-6 overflow-y-auto custom-scrollbar">
+        <nav className="flex-1 flex flex-col px-3 py-6 overflow-y-auto custom-scrollbar overflow-x-hidden">
           {/* Top Navigation Items */}
           <div className="space-y-1 mb-8">
             {topNavItems.map((item) => (
@@ -169,19 +184,21 @@ export default function Sidebar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  <item.icon className="w-5 h-5 text-neutral-500" />
-                  {item.label}
+                  <item.icon className="w-5 h-5 text-neutral-500 shrink-0" />
+                  {!isCollapsed && <span>{item.label}</span>}
                 </Link>
               ) : (
                 <button
                   key={item.label}
                   onClick={item.onClick}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+                  title={isCollapsed ? item.label : undefined}
                 >
-                  <item.icon className="w-5 h-5 text-neutral-500" />
-                  {item.label}
+                  <item.icon className="w-5 h-5 text-neutral-500 shrink-0" />
+                  {!isCollapsed && <span>{item.label}</span>}
                 </button>
               )
             ))}
@@ -190,9 +207,13 @@ export default function Sidebar() {
           {/* Approved Section */}
           {approvedProjects.length > 0 && (
             <div className="mb-8">
-              <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-                Approved Ventures
-              </h3>
+              {!isCollapsed && (
+                <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 animate-in fade-in duration-300">
+                  Approved Ventures
+                </h3>
+              )}
+              {isCollapsed && <div className="h-4 border-b border-neutral-800 mb-4 mx-2" />}
+
               <div className="space-y-2">
                 {approvedProjects.map((project) => (
                   <ProjectItem
@@ -201,6 +222,9 @@ export default function Sidebar() {
                     type="approved"
                     refreshProjects={loadProjects}
                     onDeleteClick={() => setProjectToDelete(project)}
+                    isCollapsed={isCollapsed}
+                    isExpanded={expandedProjectId === project.id}
+                    onToggle={() => setExpandedProjectId(expandedProjectId === project.id ? null : project.id)}
                   />
                 ))}
               </div>
@@ -210,9 +234,12 @@ export default function Sidebar() {
           {/* Rejected Section */}
           {rejectedProjects.length > 0 && (
             <div className="mb-8">
-              <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
-                Rejected Ventures
-              </h3>
+              {!isCollapsed && (
+                <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 animate-in fade-in duration-300">
+                  Rejected Ventures
+                </h3>
+              )}
+
               <div className="space-y-2">
                 {rejectedProjects.map((project) => (
                   <ProjectItem
@@ -221,6 +248,9 @@ export default function Sidebar() {
                     type="rejected"
                     refreshProjects={loadProjects}
                     onDeleteClick={() => setProjectToDelete(project)}
+                    isCollapsed={isCollapsed}
+                    isExpanded={expandedProjectId === project.id}
+                    onToggle={() => setExpandedProjectId(expandedProjectId === project.id ? null : project.id)}
                   />
                 ))}
               </div>
@@ -233,10 +263,11 @@ export default function Sidebar() {
               <Link
                 key={item.label}
                 href={item.href || '#'}
-                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors"
+                className={`flex items-center gap-3 px-3 py-2 text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800/50 rounded-lg transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+                title={isCollapsed ? item.label : undefined}
               >
-                <item.icon className="w-5 h-5 text-neutral-500" />
-                {item.label}
+                <item.icon className="w-5 h-5 text-neutral-500 shrink-0" />
+                {!isCollapsed && <span>{item.label}</span>}
               </Link>
             ))}
           </div>
@@ -365,10 +396,12 @@ interface ProjectItemProps {
   type: 'approved' | 'rejected';
   refreshProjects: () => void;
   onDeleteClick: () => void;
+  isCollapsed: boolean;
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
-function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+function ProjectItem({ project, type, refreshProjects, onDeleteClick, isCollapsed, isExpanded, onToggle }: ProjectItemProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(project.name);
@@ -395,6 +428,24 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectI
     setIsEditing(false);
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="w-full flex justify-center py-2 group relative">
+        <Link href={`/${project.id}/analyst`} className="shrink-0 cursor-pointer">
+          {type === 'approved' ? (
+            <div className="w-3 h-3 rounded-full bg-neutral-600 group-hover:bg-green-500 transition-colors" />
+          ) : (
+            <div className="w-3 h-3 rounded-full bg-neutral-600 group-hover:bg-red-500 transition-colors" />
+          )}
+        </Link>
+        {/* Tooltip */}
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 px-2 py-1 bg-neutral-800 border border-white/10 text-xs text-white rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-50">
+          {project.name}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative group/item">
       <div
@@ -403,7 +454,7 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectI
       >
         {/* Status Indicator */}
         <div
-          onClick={() => !isEditing && setIsExpanded(!isExpanded)}
+          onClick={() => !isEditing && onToggle()}
           className={`shrink-0 cursor-pointer ${isEditing ? 'opacity-50' : ''}`}
         >
           {type === 'approved' ? (
@@ -440,7 +491,7 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectI
             </div>
           ) : (
             <div
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => onToggle()}
               className="text-sm font-medium truncate w-full text-left cursor-pointer"
             >
               {project.name}
@@ -502,7 +553,7 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick }: ProjectI
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={{ duration: 0.2 }}
               className="text-neutral-600 group-hover:text-neutral-400 cursor-pointer ml-1"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => onToggle()}
             >
               <IconChevronRight className="w-4 h-4" />
             </motion.div>

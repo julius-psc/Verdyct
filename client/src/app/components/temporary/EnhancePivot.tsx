@@ -140,14 +140,13 @@ export default function EnhancePivot({
 
                     {isKill ? (
                         <div className="flex flex-col items-center justify-center flex-1 text-center">
-                            <XCircle className="w-16 h-16 text-neutral-700 mb-4" />
-                            <h3 className="text-xl text-white font-medium mb-2">Hard Stop</h3>
-                            <p className="text-neutral-400 max-w-md mb-8">
-                                The analysis suggests this idea has fatal flaws. It is not recommended to proceed.
+                            <h3 className="text-2xl text-white font-light tracking-tight mb-2">Hard Stop</h3>
+                            <p className="text-neutral-400 max-w-md mb-8 font-light">
+                                The analysis suggests this idea has fundamental flaws. We recommend exploring other opportunities.
                             </p>
                             <button
                                 onClick={onRetry}
-                                className="px-6 py-3 bg-white text-black rounded-full font-medium hover:bg-neutral-200 transition-colors flex items-center gap-2"
+                                className="px-6 py-3 bg-white text-black rounded-full text-sm font-medium hover:bg-neutral-200 transition-colors flex items-center gap-2"
                             >
                                 <RefreshCcw className="w-4 h-4" />
                                 Try Another Idea
@@ -155,26 +154,26 @@ export default function EnhancePivot({
                         </div>
                     ) : (isBuild || isUnicorn) ? (
                         <div className="flex flex-col items-center justify-center flex-1 text-center">
-                            {isUnicorn ? (
-                                <Rocket className="w-16 h-16 text-purple-500 mb-4" />
-                            ) : (
-                                <Sparkles className="w-16 h-16 text-green-500 mb-4" />
-                            )}
-                            <h3 className="text-xl text-white font-medium mb-2">
-                                {isUnicorn ? 'Unicorn Opportunity' : 'Ready to Build'}
-                            </h3>
-                            <p className="text-neutral-400 max-w-md mb-8">
+                            <div className="mb-6 relative">
+                                <div className="absolute inset-0 bg-primary-red/20 blur-2xl rounded-full" />
+                                <h3 className="text-4xl md:text-5xl text-white font-bold tracking-tighter relative z-10">
+                                    {isUnicorn ? 'Unicorn Potential' : 'Ready to Build'}
+                                </h3>
+                            </div>
+
+                            <p className="text-neutral-400 max-w-md mb-10 text-lg font-light leading-relaxed">
                                 {isUnicorn
-                                    ? "Exceptional metrics. Immediate execution recommended."
-                                    : "Fundamentals are solid. Proceed to generate MVP specs."}
+                                    ? "Exceptional metrics detected. Immediate execution is strongly recommended."
+                                    : "Fundamentals are solid. You are cleared to generate the MVP architecture."}
                             </p>
+
                             <button
                                 onClick={onProceed}
-                                className={`px-8 py-3 text-white rounded-full font-medium transition-colors flex items-center gap-2 ${isUnicorn ? 'bg-purple-600 hover:bg-purple-700' : 'bg-primary-red hover:bg-red-700'
+                                className={`px-10 py-4 text-white rounded-full font-medium text-lg transition-all transform hover:scale-105 shadow-2xl flex items-center gap-3 ${isUnicorn ? 'bg-purple-600 hover:bg-purple-700 shadow-purple-900/20' : 'bg-primary-red hover:bg-red-700 shadow-red-900/20'
                                     }`}
                             >
                                 Start Architect Agent
-                                <ArrowRight className="w-4 h-4" />
+                                <ArrowRight className="w-5 h-5" />
                             </button>
                         </div>
                     ) : (

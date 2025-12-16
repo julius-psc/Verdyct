@@ -159,10 +159,6 @@ export default function FinancierView({ data }: FinancierViewProps) {
                     <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Financier</h1>
                     <p className="text-sm text-neutral-400">Financial Modeling & Pricing Strategy</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
-                    <UploadCloud className="w-4 h-4" />
-                    Export Model
-                </button>
             </div>
 
             {/* Main Grid */}
@@ -248,22 +244,30 @@ export default function FinancierView({ data }: FinancierViewProps) {
                 <div className="lg:col-span-2">
                     <Widget title="5-Year Revenue Projection (Simulated)">
                         <div className="flex flex-col h-full justify-between">
-                            <div className="flex items-end justify-between gap-4 h-32 px-2 pt-4">
-                                {revenueProjections.map((revenue, i) => (
-                                    <div key={i} className="flex-1 flex flex-col justify-end group cursor-pointer h-full">
-                                        <div className="w-full relative flex items-end">
+                            <div className="flex items-end justify-between h-32 gap-2 mt-8 px-2">
+                                {revenueProjections.map((amount, i) => {
+                                    // Calculate height percentage, ensure at least 4% for visibility if non-zero
+                                    const percentage = maxProjection > 0 ? (amount / maxProjection) * 100 : 0;
+                                    const barHeight = Math.max(percentage, 4); // Min height 4%
+
+                                    return (
+                                        <div key={i} className="flex flex-col items-center gap-2 group w-full relative h-full justify-end">
+                                            {/* Bar containing tooltip */}
                                             <div
-                                                className="w-full bg-emerald-500/40 border-t border-x border-emerald-500/50 rounded-t-sm transition-all duration-500 ease-out group-hover:bg-emerald-500/60"
-                                                style={{ height: `${Math.max(4, (revenue / maxProjection) * 100)}%` }}
+                                                className="w-full bg-emerald-500/20 border border-emerald-500/30 rounded-t-sm relative group-hover:bg-emerald-500 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
+                                                style={{ height: `${barHeight}%` }}
                                             >
-                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-neutral-900 border border-neutral-800 px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 shadow-xl">
-                                                    €{revenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                                {/* Tooltip */}
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-neutral-900 border border-neutral-800 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                                                    €{amount.toLocaleString(undefined, { maximumFractionDigits: 0, notation: 'compact' })}
                                                 </div>
                                             </div>
+
+                                            {/* X Axis Label */}
+                                            <div className="text-[10px] text-neutral-500 font-medium shrink-0">Yr {i + 1}</div>
                                         </div>
-                                        <div className="text-[10px] text-neutral-500 text-center mt-2 border-t border-white/5 pt-2 w-full">Yr {i + 1}</div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </div>
                     </Widget>

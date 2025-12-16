@@ -7,6 +7,7 @@ import AnalystView from '../../../components/analyst/AnalystView';
 export default function AnalystPage() {
     const params = useParams();
     const [analystData, setAnalystData] = useState<any>(null);
+    const [allAgentsData, setAllAgentsData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,8 +21,11 @@ export default function AnalystPage() {
                 }
                 const project = await response.json();
 
-                if (project.report_json && project.report_json.agents && project.report_json.agents.analyst) {
-                    setAnalystData(project.report_json.agents.analyst);
+                if (project.report_json && project.report_json.agents) {
+                    setAllAgentsData(project.report_json.agents);
+                    if (project.report_json.agents.analyst) {
+                        setAnalystData(project.report_json.agents.analyst);
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching project data:", error);
@@ -40,7 +44,7 @@ export default function AnalystPage() {
                     Loading analysis...
                 </div>
             ) : (
-                <AnalystView data={analystData} />
+                <AnalystView data={analystData} fullReport={allAgentsData} />
             )}
         </main>
     );
