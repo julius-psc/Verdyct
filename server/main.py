@@ -586,7 +586,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     pos_score=pcs_score,
                     status="rejected",
                     report_json=report_data.dict(),
-                    user_id=user['sub']
+                    user_id=user_payload['sub']
                 )
                 session.add(project)
                 await session.commit()
@@ -607,7 +607,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 # Credit Check & Deduction Logic
                 # Only check/deduct for 'full' analysis
                 if request.analysis_type == 'full':
-                    user_payload, user_token = user
+                    # user_payload and user_token are available from closure
                     user_id = user_payload['sub']
                     
                     # Create authenticated client for this request to respect RLS
