@@ -256,7 +256,7 @@ async def analyze_idea(request: IdeaRequest, user: dict = Depends(verify_token))
         )
 
 @app.post("/spy", response_model=SpyResponse)
-async def spy_analysis(request: IdeaRequest, user: dict = Depends(verify_token)):
+async def spy_analysis(request: IdeaRequest, user: tuple = Depends(verify_token)):
     """
     Endpoint pour l'analyse stratégique et concurrentielle (Spy Agent).
     Reçoit une idée, identifie les concurrents et leurs pain points via Tavily,
@@ -316,7 +316,7 @@ async def spy_analysis(request: IdeaRequest, user: dict = Depends(verify_token))
         )
 
 @app.post("/financier", response_model=FinancierResponse)
-async def financier_analysis(request: IdeaRequest, user: dict = Depends(verify_token)):
+async def financier_analysis(request: IdeaRequest, user: tuple = Depends(verify_token)):
     """
     Endpoint pour l'analyse financière (Financier Agent).
     Reçoit une idée, recherche les prix des concurrents via Tavily,
@@ -375,7 +375,7 @@ async def financier_analysis(request: IdeaRequest, user: dict = Depends(verify_t
         )
 
 @app.post("/architect", response_model=ArchitectResponse)
-async def architect_blueprint(request: IdeaRequest, user: dict = Depends(verify_token)):
+async def architect_blueprint(request: IdeaRequest, user: tuple = Depends(verify_token)):
     """
     Endpoint pour le blueprint technique (Architect Agent).
     Génère un plan technique complet et un MVP fonctionnel.
@@ -433,13 +433,25 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
         
     return project
 
+@app.get("/api/projects", response_model=List[Project])
+async def list_projects(session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
+    """
+    List all projects for the authenticated user.
+    """
+    user_payload, _ = user
+    statement = select(Project).where(Project.user_id == user_payload['sub']).order_by(Project.created_at.desc())
+    result = await session.exec(statement)
+    projects = result.all()
+    return projects
+
 @app.delete("/api/projects/{project_id}")
-async def delete_project(project_id: str, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+async def delete_project(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
     """
     Delete a project by ID.
     """
+    user_payload, _ = user
     # Verify ownership first
-    statement = select(Project).where(Project.id == project_id, Project.user_id == user['sub'])
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user_payload['sub'])
     result = await session.exec(statement)
     project = result.first()
     
@@ -460,11 +472,12 @@ async def delete_project(project_id: str, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.patch("/api/projects/{project_id}", response_model=Project)
-async def update_project(project_id: str, update_data: ProjectUpdate, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+async def update_project(project_id: str, update_data: ProjectUpdate, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
     """
     Update a project by ID (rename).
     """
-    statement = select(Project).where(Project.id == project_id, Project.user_id == user['sub'])
+    user_payload, _ = user
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user_payload['sub'])
     result = await session.exec(statement)
     project = result.first()
     

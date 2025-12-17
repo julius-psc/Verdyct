@@ -1,0 +1,10 @@
+@app.get("/api/projects", response_model=List[Project])
+async def list_projects(session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
+    """
+    List all projects for the authenticated user.
+    """
+    user_payload, _ = user
+    statement = select(Project).where(Project.user_id == user_payload['sub']).order_by(Project.created_at.desc())
+    result = await session.exec(statement)
+    projects = result.all()
+    return projects
