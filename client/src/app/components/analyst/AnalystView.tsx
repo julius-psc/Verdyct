@@ -292,6 +292,44 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                                 <div className="absolute bottom-12 right-12 text-[11px] font-semibold text-red-500/40 uppercase tracking-wide">
                                     Avoid
                                 </div>
+
+                                {/* Data Points */}
+                                <div className="absolute inset-10 w-[calc(100%-80px)] h-[calc(100%-80px)] pointer-events-none">
+                                    {seo_opportunity.high_opportunity_keywords.map((kw, i) => {
+                                        // Helper to map qualitative values to percentages
+                                        const getVal = (str: string) => {
+                                            const s = str.toLowerCase();
+                                            if (s.includes('very high') || s.includes('high') || s.includes('huge')) return 85;
+                                            if (s.includes('medium') || s.includes('moderate')) return 50;
+                                            if (s.includes('low') || s.includes('small') || s.includes('easy')) return 15;
+                                            return 50; // default
+                                        };
+                                        const getDiff = (str: string) => {
+                                            const s = str.toLowerCase();
+                                            if (s.includes('very high') || s.includes('hard') || s.includes('competitive')) return 85;
+                                            if (s.includes('medium') || s.includes('moderate')) return 50;
+                                            if (s.includes('low') || s.includes('easy')) return 15;
+                                            return 50;
+                                        };
+
+                                        const y = 100 - getVal(kw.volume_estimate); // Invert Y (0 is top)
+                                        const x = getDiff(kw.difficulty_level);
+
+                                        return (
+                                            <div
+                                                key={i}
+                                                className="absolute w-3 h-3 rounded-full bg-emerald-400 border border-white shadow-[0_0_10px_rgba(52,211,153,0.5)] transform -translate-x-1/2 -translate-y-1/2 hover:scale-150 transition-transform cursor-help pointer-events-auto group"
+                                                style={{ top: `${y}%`, left: `${x}%` }}
+                                            >
+                                                {/* Tooltip */}
+                                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-black border border-neutral-700 rounded text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                                                    <div className="font-bold">{kw.term}</div>
+                                                    <div className="text-[10px] text-neutral-400">Vol: {kw.volume_estimate} | Diff: {kw.difficulty_level}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </Widget>
