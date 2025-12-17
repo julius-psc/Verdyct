@@ -146,17 +146,57 @@ export default function Sidebar() {
     { icon: IconLogout, label: 'Log Out', href: '/logout' },
   ];
 
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Mobile drawer toggle
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        setIsMobileOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
-      <aside
-        className={`${isCollapsed ? 'w-20' : 'w-72'} h-full bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300 ease-in-out relative`}
+      <button
+        className="md:hidden fixed top-4 left-4 z-40 p-2 bg-[#1B1818] border border-white/10 rounded-lg text-white"
+        onClick={() => setIsMobileOpen(true)}
       >
-        {/* Collapse Toggle Button */}
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
+      </button>
+
+      {/* Backdrop for mobile */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`
+            fixed md:relative top-0 left-0 h-full z-50 bg-[#1B1818] border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300 ease-in-out
+            ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            ${isCollapsed ? 'w-20' : 'w-72'}
+        `}
+      >
+        {/* Collapse Toggle Button (Desktop only) */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-8 z-50 w-6 h-6 bg-neutral-800 border border-neutral-700 rounded-full flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+          className="hidden md:flex absolute -right-3 top-8 z-50 w-6 h-6 bg-neutral-800 border border-neutral-700 rounded-full items-center justify-center text-neutral-400 hover:text-white transition-colors"
         >
           {isCollapsed ? <IconChevronRight className="w-4 h-4" /> : <IconChevronLeft className="w-4 h-4" />}
+        </button>
+
+        {/* Close Button (Mobile only) */}
+        <button
+          onClick={() => setIsMobileOpen(false)}
+          className="md:hidden absolute right-4 top-4 text-neutral-400 hover:text-white"
+        >
+          <IconX className="w-6 h-6" />
         </button>
 
         {/* Logo Section */}

@@ -55,9 +55,12 @@ export default function Navbar() {
     checkUser();
   }, []);
 
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 z-20 flex justify-center px-4 py-6"
+      className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 py-6"
       initial={false}
       animate={{
         paddingTop: isScrolled ? '1rem' : '1.5rem',
@@ -65,25 +68,36 @@ export default function Navbar() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       <motion.div
-        className="flex items-center justify-between px-3 py-2"
+        className="flex flex-col md:flex-row items-center justify-between px-4 py-2 relative"
         initial={false}
         animate={{
-          width: isScrolled ? '60%' : '100%',
-          backgroundColor: isScrolled ? 'rgba(0, 0, 0, 0.4)' : 'transparent',
-          backdropFilter: isScrolled ? 'blur(8px)' : 'blur(0px)',
-          border: isScrolled ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid transparent',
-          borderRadius: isScrolled ? '1rem' : '0rem',
+          width: isScrolled ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '95%' : '60%') : '100%',
+          backgroundColor: isScrolled || isMobileMenuOpen ? 'rgba(0, 0, 0, 0.8)' : 'transparent',
+          backdropFilter: isScrolled || isMobileMenuOpen ? 'blur(12px)' : 'blur(0px)',
+          border: isScrolled || isMobileMenuOpen ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid transparent',
+          borderRadius: isScrolled || isMobileMenuOpen ? '1rem' : '0rem',
+          height: isMobileMenuOpen ? 'auto' : undefined,
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
       >
-        {/* Logo - Left */}
-        <Link href="/" className="flex items-center gap-1">
-          <Image src={logo} alt="Verdyct Logo" className="h-10 w-auto" />
-          <span className="text-white font-semibold text-xl">Verdyct</span>
-        </Link>
+        <div className="w-full md:w-auto flex items-center justify-between">
+          {/* Logo - Left */}
+          <Link href="/" className="flex items-center gap-1">
+            <Image src={logo} alt="Verdyct Logo" className="h-8 md:h-10 w-auto" />
+            <span className="text-white font-semibold text-lg md:text-xl">Verdyct</span>
+          </Link>
 
-        {/* Nav Links - Center */}
-        <div className="flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md">
+          {/* Mobile Menu Toggle */}
+          <button
+            className="md:hidden text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <IconChevronDown className="rotate-180" /> : <IconChevronDown />}
+          </button>
+        </div>
+
+        {/* Nav Links - Center (Desktop) */}
+        <div className="hidden md:flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md absolute left-1/2 -translate-x-1/2">
           <Link
             href="/"
             className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
@@ -104,8 +118,8 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Right Side - CTA */}
-        <div className="flex items-center gap-3">
+        {/* Right Side - CTA (Desktop) */}
+        <div className="hidden md:flex items-center gap-3">
           {!loading && (
             user ? (
               <div className="relative">
@@ -127,7 +141,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-[#1B1818] border border-neutral-800 rounded-xl shadow-xl overflow-hidden py-1"
+                      className="absolute right-0 top-full mt-2 w-56 bg-[#1B1818] border border-neutral-800 rounded-xl shadow-xl overflow-hidden py-1 z-50"
                     >
                       <div className="px-4 py-3 border-b border-neutral-800">
                         <p className="text-sm text-white font-medium truncate">{user.email}</p>
@@ -138,34 +152,26 @@ export default function Navbar() {
                       </div>
 
                       <div className="p-1">
-                        <Link
-                          href="/dashboard"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-                        >
+                        <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
                           <IconLayoutDashboard className="w-4 h-4" />
                           Dashboard
                         </Link>
-                        <Link
-                          href="/profile"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-                        >
+                        <Link href="/profile" className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
                           <IconUser className="w-4 h-4" />
                           Profile
                         </Link>
-                        <Link
-                          href="/settings"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
-                        >
+                        <Link href="/settings" className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
                           <IconSettings className="w-4 h-4" />
                           Settings
+                        </Link>
+                        <Link href="/legal" className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-300 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors">
+                          <span className="w-4 text-center">⚖️</span>
+                          Legal
                         </Link>
                       </div>
 
                       <div className="border-t border-neutral-800 p-1">
-                        <Link
-                          href="/logout"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
-                        >
+                        <Link href="/logout" className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
                           <IconLogout className="w-4 h-4" />
                           Log Out
                         </Link>
@@ -184,6 +190,40 @@ export default function Navbar() {
             )
           )}
         </div>
+
+        {/* Mobile Menu Content */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="w-full md:hidden flex flex-col gap-4 pt-6 pb-2 border-t border-white/10 mt-4"
+            >
+              <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-neutral-300 hover:text-white font-medium py-2">Home</Link>
+              <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-neutral-300 hover:text-white font-medium py-2">How it works</Link>
+              <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-neutral-300 hover:text-white font-medium py-2">Pricing</Link>
+
+              <div className="h-px bg-white/10 my-1" />
+
+              {!loading && (
+                user ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-xs text-neutral-500 mb-2">Signed in as {user.email}</div>
+                    <Link href="/dashboard" className="flex items-center gap-2 text-white py-2"><IconLayoutDashboard className="w-4 h-4" /> Dashboard</Link>
+                    <Link href="/settings" className="flex items-center gap-2 text-white py-2"><IconSettings className="w-4 h-4" /> Settings</Link>
+                    <Link href="/logout" className="flex items-center gap-2 text-red-400 py-2"><IconLogout className="w-4 h-4" /> Log Out</Link>
+                  </div>
+                ) : (
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="bg-white text-black text-center py-3 rounded-lg font-bold mt-2">
+                    Login / Sign Up
+                  </Link>
+                )
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </motion.div>
     </motion.nav>
   );

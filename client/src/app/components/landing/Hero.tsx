@@ -79,12 +79,12 @@ export default function Hero() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight">
           We know what works.
         </h1>
 
         {/* Subheading */}
-        <p className="text-lg md:text-xl text-white/70 max-w-2xl">
+        <p className="text-base md:text-xl text-white/70 max-w-2xl">
           Stop building what nobody wants. We predict your idea&apos;s success and give you the plan to launch.
         </p>
 
@@ -102,7 +102,7 @@ export default function Hero() {
             />
 
             {/* Analysis Type Toggle */}
-            <div className="flex items-center gap-4 px-2">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4 px-2">
               <label className={`flex items-center gap-2 cursor-pointer transition-opacity ${analysisType === 'small' ? 'opacity-100' : 'opacity-50'}`}>
                 <input
                   type="radio"
