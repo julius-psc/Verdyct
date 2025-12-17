@@ -440,6 +440,12 @@ The startup idea to analyze is: {idea}
 - The data moat strategy should be specific and actionable
 - All lists must have at least the minimum required items
 
+**LANGUAGE INSTRUCTION:**
+- You must detect the language of the user's input idea (e.g., French, Spanish, German).
+- All textual content in your JSON response (titles, descriptions, step names, feature titles, etc.) **MUST** be in the **SAME language** as the input idea.
+- Do not translate the field names (keys) of the JSON structure, only the values.
+- If the idea is in English, output in English. If in French, output in French.
+
 Generate a comprehensive blueprint that a development team could use to build the MVP."""
 
     try:

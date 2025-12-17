@@ -43,7 +43,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Security(security))
             algorithms=["HS256"],
             audience="authenticated" # Optional: check audience if needed
         )
-        return payload
+        return payload, token
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=401,

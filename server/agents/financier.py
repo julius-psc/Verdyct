@@ -212,6 +212,12 @@ Analyze the idea and categorize it into one of these types:
 - If you cannot find a URL that contains the pricing, DO NOT include that tier
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
+**LANGUAGE INSTRUCTION:**
+- You must detect the language of the user's input idea (e.g., French, Spanish, German).
+- All textual content in your JSON response (titles, feature names, statuses, summaries, etc.) **MUST** be in the **SAME language** as the input idea.
+- Do not translate the field names (keys) of the JSON structure, only the values.
+- If the idea is in English, output in English. If in French, output in French.
+
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE pricing tier with a valid verified_url
 - You MUST provide all 3 levers (monthly_price, ad_spend, conversion_rate)

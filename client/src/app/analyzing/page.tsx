@@ -14,6 +14,7 @@ export default function AnalyzingPage() {
     const [analysisData, setAnalysisData] = useState<any>(null);
     const [flowState, setFlowState] = useState<'analyzing' | 'decision' | 'completed'>('analyzing');
     const [idea, setIdea] = useState<string | null>(null);
+    const [showCreditError, setShowCreditError] = useState(false);
 
     useEffect(() => {
         const init = async () => {
@@ -32,15 +33,18 @@ export default function AnalyzingPage() {
 
             // Session exists, proceed with idea retrieval
             const ideaParam = searchParams.get('idea');
+            const typeParam = searchParams.get('type') || 'small';
             if (ideaParam) {
                 setIdea(ideaParam);
-                startAnalysis(ideaParam, session.access_token);
+                startAnalysis(ideaParam, session.access_token, typeParam);
             } else {
                 const storedIdea = localStorage.getItem('pending_idea');
+                const storedType = localStorage.getItem('pending_type') || 'small';
                 if (storedIdea) {
                     setIdea(storedIdea);
                     localStorage.removeItem('pending_idea');
-                    startAnalysis(storedIdea, session.access_token);
+                    localStorage.removeItem('pending_type');
+                    startAnalysis(storedIdea, session.access_token, storedType);
                 } else {
                     router.push('/');
                 }
@@ -50,7 +54,7 @@ export default function AnalyzingPage() {
         init();
     }, [searchParams]);
 
-    const startAnalysis = async (promptToUse: string, token: string) => {
+    const startAnalysis = async (promptToUse: string, token: string, analysisType: string = 'small') => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
             const response = await fetch(`${apiUrl}/generate-report`, {
@@ -59,7 +63,7 @@ export default function AnalyzingPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ idea: promptToUse }),
+                body: JSON.stringify({ idea: promptToUse, analysis_type: analysisType }),
             });
 
             if (response.status === 401) {
@@ -97,8 +101,12 @@ export default function AnalyzingPage() {
                                 setAnalysisData(data.data);
                             } else if (data.type === 'error') {
                                 console.error("Stream error:", data.message);
-                                alert(data.message);
-                                router.push('/');
+                                if (data.message.includes('Insufficient credits')) {
+                                    setShowCreditError(true);
+                                } else {
+                                    alert(data.message);
+                                    router.push('/');
+                                }
                             }
                         } catch (e) {
                             console.error("Error parsing stream data:", e);
@@ -143,12 +151,50 @@ export default function AnalyzingPage() {
 
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
-            {flowState === 'analyzing' && (
+            {flowState === 'analyzing' && !showCreditError && (
                 <LoadingModal
                     onComplete={handleAnalystComplete}
                     isLoading={!analysisData}
                     status={analysisData?.status}
                 />
+            )}
+
+            {showCreditError && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+                    <div className="max-w-md w-full bg-[#1B1818] border border-white/10 rounded-2xl p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
+                        {/* Background Glow */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-red-500/10 blur-[100px] pointer-events-none" />
+
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 ring-1 ring-red-500/20">
+                                <span className="text-3xl">⚠️</span>
+                            </div>
+
+                            <h1 className="text-2xl font-bold text-white mb-2">Out of Credits</h1>
+                            <p className="text-neutral-400 text-sm leading-relaxed mb-6">
+                                Oops! You don't have enough credits for a <strong>Full Analysis</strong>.
+                                <br />
+                                You need <strong>1 credit</strong> to unlock all agents.
+                            </p>
+
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={() => router.push('/')} // Ideally go to settings/billing
+                                    className="w-full py-3 bg-white hover:bg-neutral-200 text-black font-semibold rounded-lg transition-colors"
+                                >
+                                    Get More Credits
+                                </button>
+
+                                <button
+                                    onClick={() => router.push('/')}
+                                    className="w-full py-3 bg-transparent hover:bg-white/5 text-neutral-400 font-medium rounded-lg border border-white/10 transition-colors"
+                                >
+                                    Return Home
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {flowState === 'decision' && analysisData && (

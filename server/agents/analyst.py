@@ -178,6 +178,12 @@ The idea to analyze is: {idea}
 - If you cannot find a URL that contains the metric data, DO NOT include that metric
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
+**LANGUAGE INSTRUCTION:**
+- You must detect the language of the user's input idea (e.g., French, Spanish, German).
+- All textual content in your JSON response (titles, descriptions, summaries, recommendations, etc.) **MUST** be in the **SAME language** as the input idea.
+- Do not translate the field names (keys) of the JSON structure, only the values.
+- If the idea is in English, output in English. If in French, output in French.
+
 **CRITICAL: INPUT VALIDATION (ANTI-NONSENSE RULE)**
 - You must first evaluate if the input `{idea}` is a legitimate business idea or just a test/nonsense input.
 - If the input is:
@@ -402,7 +408,8 @@ def generate_rescue_plan(idea: str, analyst_data: Analyst) -> RescuePlan:
         f"   - Suggest a COMPLETELY DIFFERENT but RELATED business model.\n"
         f"   - It must leverage the same underlying domain or technology but target a more profitable/less saturated opportunity.\n"
         f"   - **ai_suggested_prompt**: Generate a short, punchy phrase (5-10 words max) for this new pivot idea. Example: 'Marketplace for vintage watch restoration'.\n\n"
-        f"Ensure the 'ai_suggested_prompt' is ready to be used as a new input for the analysis."
+        f"Ensure the 'ai_suggested_prompt' is ready to be used as a new input for the analysis.\n\n"
+        f"**LANGUAGE INSTRUCTION:** Detect the language of the input idea. The entire response (titles, descriptions, prompts) MUST be in that SAME language."
     )
 
     try:

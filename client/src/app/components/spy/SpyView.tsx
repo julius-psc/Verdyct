@@ -1,6 +1,6 @@
 'use client';
 
-import { UploadCloud, Search, TrendingUp, AlertCircle, CheckCircle2, XCircle, ArrowRight, ExternalLink } from 'lucide-react';
+import { UploadCloud, Search, TrendingUp, AlertCircle, CheckCircle2, XCircle, ArrowRight, ExternalLink, Lock } from 'lucide-react';
 import Widget from '../dashboard/Widget';
 
 // Backend Model Interfaces
@@ -55,8 +55,40 @@ interface SpyViewProps {
 export default function SpyView({ data }: SpyViewProps) {
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-full text-neutral-500">
-        Loading spy analysis...
+      <div className="relative w-full min-h-screen">
+        {/* Blurred Content Placeholder */}
+        <div className="absolute inset-0 filter blur-xl opacity-50 p-8 space-y-6 pointer-events-none select-none overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-8 w-48 bg-gray-700/50 rounded mb-2"></div>
+              <div className="h-4 w-64 bg-gray-700/50 rounded"></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-2 h-64 bg-gray-800/50 rounded-xl border border-white/5"></div>
+            <div className="lg:col-span-1 h-64 bg-gray-800/50 rounded-xl border border-white/5"></div>
+            <div className="lg:col-span-1 h-64 bg-gray-800/50 rounded-xl border border-white/5"></div>
+            <div className="lg:col-span-2 lg:row-span-2 h-96 bg-gray-800/50 rounded-xl border border-white/5"></div>
+          </div>
+        </div>
+
+        {/* Lock Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 p-4">
+          <div className="bg-black/80 backdrop-blur-md border border-white/10 p-8 rounded-2xl max-w-md w-full text-center space-y-4 shadow-2xl">
+            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Lock className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white">Full Analysis Required</h3>
+            <p className="text-neutral-400">
+              Unlock the Spy Agent to see detailed competitor analysis, market positioning, and customer intelligence.
+            </p>
+            <div className="pt-2">
+              <span className="inline-block px-4 py-2 bg-white text-black rounded-full text-sm font-semibold">
+                Upgrade to Full (1 Credit)
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

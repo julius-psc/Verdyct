@@ -1,5 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict
+from sqlmodel import SQLModel, Field as SQLField
+from sqlalchemy import JSON, Column
+from datetime import datetime
+import uuid
 
 
 # ========== REQUEST MODEL ==========
@@ -7,7 +11,10 @@ from typing import List, Optional
 
 class IdeaRequest(BaseModel):
     idea: str = Field(..., description="The startup idea to analyze")
+    analysis_type: str = Field("small", description="'small' (free) or 'full' (1 credit)")
 
+
+# User class removed - using Supabase table 'users'
 
 class WaitlistRequest(BaseModel):
     email: str = Field(..., description="Email address to add to waitlist")
@@ -380,11 +387,7 @@ class VerdyctReportResponse(BaseModel):
 
 # ========== PIXEL & WATCHDOG MODELS ==========
 
-from sqlmodel import SQLModel, Field as SQLField
-from sqlalchemy import JSON, Column
-from typing import Dict
-from datetime import datetime
-import uuid
+
 
 class PixelEvent(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)

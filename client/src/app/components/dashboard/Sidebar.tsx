@@ -53,6 +53,7 @@ export default function Sidebar() {
   const [rejectedProjects, setRejectedProjects] = useState<SidebarProject[]>([]);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [newProjectInput, setNewProjectInput] = useState("");
+  const [analysisType, setAnalysisType] = useState<'small' | 'full'>('small');
   const [projectToDelete, setProjectToDelete] = useState<SidebarProject | null>(null);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -96,9 +97,10 @@ export default function Sidebar() {
 
   const handleNewProjectSubmit = () => {
     if (!newProjectInput.trim()) return;
-    router.push(`/analyzing?idea=${encodeURIComponent(newProjectInput)}`);
+    router.push(`/analyzing?idea=${encodeURIComponent(newProjectInput)}&type=${analysisType}`);
     setIsNewProjectModalOpen(false);
     setNewProjectInput("");
+    setAnalysisType('small'); // Reset
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -302,6 +304,39 @@ export default function Sidebar() {
                   onKeyDown={handleKeyDown}
                   autoFocus
                 />
+
+                {/* Analysis Type Toggle */}
+                <div className="flex items-center gap-6 px-2 pb-2">
+                  <label className={`flex items-center gap-2 cursor-pointer transition-opacity ${analysisType === 'small' ? 'opacity-100' : 'opacity-50'}`}>
+                    <input
+                      type="radio"
+                      name="analysisType"
+                      value="small"
+                      checked={analysisType === 'small'}
+                      onChange={(e) => setAnalysisType(e.target.value as 'small' | 'full')}
+                      className="hidden"
+                    />
+                    <div className={`w-4 h-4 rounded-full border border-white/50 flex items-center justify-center ${analysisType === 'small' ? 'bg-white' : 'bg-transparent'}`}>
+                      {analysisType === 'small' && <div className="w-2 h-2 rounded-full bg-black" />}
+                    </div>
+                    <span className="text-white text-sm font-medium">Small (Free)</span>
+                  </label>
+
+                  <label className={`flex items-center gap-2 cursor-pointer transition-opacity ${analysisType === 'full' ? 'opacity-100' : 'opacity-50'}`}>
+                    <input
+                      type="radio"
+                      name="analysisType"
+                      value="full"
+                      checked={analysisType === 'full'}
+                      onChange={(e) => setAnalysisType(e.target.value as 'small' | 'full')}
+                      className="hidden"
+                    />
+                    <div className={`w-4 h-4 rounded-full border border-white/50 flex items-center justify-center ${analysisType === 'full' ? 'bg-white' : 'bg-transparent'}`}>
+                      {analysisType === 'full' && <div className="w-2 h-2 rounded-full bg-black" />}
+                    </div>
+                    <span className="text-white text-sm font-medium">Full (1 Credit)</span>
+                  </label>
+                </div>
 
                 {/* Bottom Controls */}
                 <div className="flex items-center justify-between relative z-20">

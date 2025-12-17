@@ -21,14 +21,26 @@ export default function AnalystPage() {
                 }
                 const project = await response.json();
 
-                if (project.report_json && project.report_json.agents) {
-                    setAllAgentsData(project.report_json.agents);
-                    if (project.report_json.agents.analyst) {
-                        setAnalystData(project.report_json.agents.analyst);
+                if (project.report_json) {
+                    let reportData = project.report_json;
+                    if (typeof reportData === 'string') {
+                        try {
+                            reportData = JSON.parse(reportData);
+                        } catch (e) {
+                            console.error("Failed to parse report_json string:", e);
+                        }
+                    }
+
+                    if (reportData.agents) {
+                        setAllAgentsData(reportData.agents);
+                        if (reportData.agents.analyst) {
+                            setAnalystData(reportData.agents.analyst);
+                        }
                     }
                 }
             } catch (error) {
                 console.error("Error fetching project data:", error);
+                setLoading(false); // Ensure loading stops on error
             } finally {
                 setLoading(false);
             }
@@ -36,6 +48,17 @@ export default function AnalystPage() {
 
         fetchProjectData();
     }, [params.projectId]);
+
+    if (!analystData && !loading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-neutral-500 gap-4">
+                <p>Unable to load analysis data.</p>
+                <div className="text-xs text-neutral-700 bg-neutral-900 p-4 rounded max-w-lg overflow-auto">
+                    Debug: Project ID {params.projectId}
+                </div>
+            </div>
+        )
+    }
 
     return (
         <main className="flex-1 overflow-auto">

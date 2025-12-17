@@ -20,7 +20,7 @@ from models import (
     WaitlistRequest,
     ContactRequest
 )
-from auth import verify_token
+from auth import verify_token, supabase
 from agents.analyst import generate_analysis, search_market_data, generate_rescue_plan
 from agents.spy import generate_spy_analysis, get_competitor_intel
 from agents.financier import generate_financier_analysis, get_pricing_intel
@@ -148,17 +148,49 @@ async def submit_contact(request: ContactRequest):
 from fastapi import Response
 
 @app.get("/api/projects", response_model=List[Project])
-async def get_projects(response: Response, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+async def get_projects(response: Response, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
     """
     Get all projects for the authenticated user.
     """
+    user_payload, _ = user # Ignore token if we are using local DB for projects (wait, we ARE using local DB for projects)
+    
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     
-    statement = select(Project).where(Project.user_id == user['sub']).order_by(Project.created_at.desc())
+    statement = select(Project).where(Project.user_id == user_payload['sub']).order_by(Project.created_at.desc())
     result = await session.exec(statement)
     return result.all()
+
+@app.get("/api/user/credits")
+async def get_user_credits(user: tuple = Depends(verify_token)):
+    """
+    Get current user's credit balance from Supabase.
+    """
+    user_payload, user_token = user
+    user_id = user_payload['sub']
+    
+    # Authenticated client
+    from supabase import create_client, ClientOptions
+    from auth import SUPABASE_URL, SUPABASE_KEY
+    req_supabase = create_client(
+        SUPABASE_URL, 
+        SUPABASE_KEY, 
+        options=ClientOptions(headers={'Authorization': f'Bearer {user_token}'})
+    )
+    
+    try:
+        user_data = req_supabase.table("users").select("credits").eq("id", user_id).execute()
+        
+        if not user_data.data:
+            # Lazy creation
+            req_supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 10}).execute()
+            return {"credits": 10}
+            
+        return {"credits": user_data.data[0]['credits']}
+    except Exception as e:
+        print(f"Error fetching credits: {e}")
+        return {"credits": 0} # Fail safe
 
 @app.get("/health")
 async def health_check():
@@ -449,11 +481,13 @@ async def update_project(project_id: str, update_data: ProjectUpdate, session: A
     return project
 
 @app.post("/generate-report")
-async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session), user: dict = Depends(verify_token)):
+async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
     """
     ORCHESTRATOR ENDPOINT (STREAMING)
     Runs agents and streams progress updates via SSE.
     """
+    user_payload, user_token = user
+
     async def event_generator():
         try:
             # Helper to run agent and return tag
@@ -463,15 +497,58 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 except Exception as e:
                     return tag, e
 
-            # Step 0: Gatekeeper
-            yield f"data: {json.dumps({'type': 'status', 'agent': 'gatekeeper', 'status': 'running'})}\n\n"
-            
-            from agents.gatekeeper import validate_saas_idea
-            gatekeeper_res = validate_saas_idea(request.idea)
-            
-            if not gatekeeper_res.is_saas:
-                yield f"data: {json.dumps({'type': 'error', 'message': gatekeeper_res.rejection_reason})}\n\n"
-                return
+            # Step 0: Gatekeeper - REMOVED
+            # from agents.gatekeeper import validate_saas_idea
+            # gatekeeper_res = validate_saas_idea(request.idea)
+            # if not gatekeeper_res.is_saas:
+            #     yield f"data: {json.dumps({'type': 'error', 'message': gatekeeper_res.rejection_reason})}\n\n"
+            #     return
+
+            # --- RATE LIMIT CHECK (Small Analysis Only) ---
+            if request.analysis_type != 'full':
+                user_id = user_payload['sub']
+                from supabase import create_client, ClientOptions
+                from auth import SUPABASE_URL, SUPABASE_KEY
+                
+                req_supabase = create_client(
+                    SUPABASE_URL, 
+                    SUPABASE_KEY, 
+                    options=ClientOptions(headers={'Authorization': f'Bearer {user_token}'})
+                )
+                
+                try:
+                    # Fetch user stats
+                    user_data = req_supabase.table("users").select("daily_count, last_active_date").eq("id", user_id).execute()
+                    
+                    if user_data.data:
+                        stats = user_data.data[0]
+                        today = datetime.utcnow().date().isoformat()
+                        
+                        last_active = stats.get('last_active_date')
+                        daily_count = stats.get('daily_count', 0)
+                        
+                        # Reset if new day
+                        if last_active != today:
+                            daily_count = 0
+                            req_supabase.table("users").update({"daily_count": 0, "last_active_date": today}).eq("id", user_id).execute()
+                        
+                        # Check Limit
+                        if daily_count >= 20:
+                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached (20/day). Please come back tomorrow or upgrade for unlimited access.'})}\\n\\n"
+                             return
+                             
+                        # Increment count (optimistic update, or strictly after success? Let's do it now to prevent spam abuse)
+                        req_supabase.table("users").update({"daily_count": daily_count + 1}).eq("id", user_id).execute()
+                        
+                    else:
+                        # Init user if not found (Lazy create handled later partially, but good to ensure here)
+                         # defaulting to 0/today is implicit if row inserted later, but let's just proceed
+                         pass
+                         
+                except Exception as e:
+                    print(f"Rate Limit Check Error: {e}")
+                    # Fail open or closed? Let's fail open but log it to avoid blocking legitimate users on system glitches
+                    pass
 
             # Step 1: Run Analyst
             yield f"data: {json.dumps({'type': 'status', 'agent': 'analyst', 'status': 'running'})}\n\n"
@@ -527,12 +604,65 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 # APPROVED
                 yield f"data: {json.dumps({'type': 'log', 'message': f'POS {pcs_score} >= 60. Proceeding with full analysis.'})}\n\n"
                 
+                # Credit Check & Deduction Logic
+                # Only check/deduct for 'full' analysis
+                if request.analysis_type == 'full':
+                    user_payload, user_token = user
+                    user_id = user_payload['sub']
+                    
+                    # Create authenticated client for this request to respect RLS
+                    # (Or use service role if configured globally, but this is safer fallback)
+                    from supabase import create_client, ClientOptions
+                    from auth import SUPABASE_URL, SUPABASE_KEY
+                    
+                    # Use the global key (Anon or Service) but attach user token if provided
+                    req_supabase = create_client(
+                        SUPABASE_URL, 
+                        SUPABASE_KEY, 
+                        options=ClientOptions(headers={'Authorization': f'Bearer {user_token}'})
+                    )
+                    
+                    try:
+                        user_data = req_supabase.table("users").select("credits").eq("id", user_id).execute()
+                        
+                        current_credits = 0
+                        
+                        # Use data from Supabase or initialize if not present
+                        if not user_data.data:
+                            # Create user entry if it doesn't exist (Lazy creation)
+                            # Default 10 credits
+                            current_credits = 10
+                            req_supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 10}).execute()
+                        else:
+                            current_credits = user_data.data[0]['credits']
+                        
+                        if current_credits < 1:
+                             yield f"data: {json.dumps({'type': 'error', 'message': 'Insufficient credits. Please upgrade or choose Small analysis.'})}\n\n"
+                             return
+
+                        # 2. Deduct credit
+                        new_credits = current_credits - 1
+                        req_supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
+                        
+                        yield f"data: {json.dumps({'type': 'log', 'message': f'Credit deducted. Remaining: {new_credits}'})}\n\n"
+                        
+                    except Exception as e:
+                        print(f"Supabase Credit Error: {e}")
+                        yield f"data: {json.dumps({'type': 'error', 'message': f'System error checking credits: {str(e)}'})}\n\n"
+                        return
+
                 # Start parallel agents
-                tasks = [
-                    run_with_tag("spy", spy_analysis(request)),
-                    run_with_tag("financier", financier_analysis(request)),
-                    run_with_tag("architect", architect_blueprint(request))
-                ]
+                tasks = [] 
+                
+                # Spy, Financier, Architect ONLY run if full analysis
+                if request.analysis_type == 'full':
+                     tasks = [
+                        run_with_tag("spy", spy_analysis(request)),
+                        run_with_tag("financier", financier_analysis(request)),
+                        run_with_tag("architect", architect_blueprint(request))
+                    ]
+                else:
+                    yield f"data: {json.dumps({'type': 'log', 'message': 'Small Analysis: Skipping Spy, Financier, Architect.'})}\n\n"
                 
                 results = {}
                 
@@ -598,7 +728,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     status="approved",
                     url=architect_res.architect.mvp_status.mvp_live_link if architect_res else None,
                     report_json=report_data.dict(),
-                    user_id=user['sub']
+                    user_id=user_payload['sub']
                 )
                 session.add(project)
                 await session.commit()
@@ -612,8 +742,14 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 yield f"data: {json.dumps({'type': 'complete', 'status': 'approved', 'data': report_data.dict()})}\n\n"
 
         except Exception as e:
-            print(f"Orchestrator Error: {e}")
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+            error_msg = str(e)
+            print(f"Orchestrator Error: {error_msg}")
+            
+            if "insufficient_quota" in error_msg or "429" in error_msg:
+                friendly_msg = "OpenAI API Quota Exceeded. Please check your billing details at platform.openai.com."
+                yield f"data: {json.dumps({'type': 'error', 'message': friendly_msg})}\n\n"
+            else:
+                yield f"data: {json.dumps({'type': 'error', 'message': error_msg})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

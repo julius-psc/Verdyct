@@ -8,17 +8,21 @@ import { createClient } from "../../../utils/supabase/client";
 
 export default function Hero() {
   const [input, setInput] = useState("");
+  const [analysisType, setAnalysisType] = useState<'small' | 'full'>('small');
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     const checkPendingIdea = async () => {
       const pendingIdea = localStorage.getItem('pending_idea');
+      const pendingType = localStorage.getItem('pending_type');
       if (pendingIdea) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           setInput(pendingIdea);
+          if (pendingType) setAnalysisType(pendingType as 'small' | 'full');
           localStorage.removeItem('pending_idea');
+          localStorage.removeItem('pending_type');
           handleSubmit(pendingIdea);
         }
       }
@@ -36,12 +40,13 @@ export default function Hero() {
 
       if (!session) {
         localStorage.setItem('pending_idea', promptToUse);
+        localStorage.setItem('pending_type', analysisType);
         router.push('/login?next=/analyzing');
         return;
       }
 
       // If logged in, go straight to analyzing page
-      router.push(`/analyzing?idea=${encodeURIComponent(promptToUse)}`);
+      router.push(`/analyzing?idea=${encodeURIComponent(promptToUse)}&type=${analysisType}`);
 
     } catch (error) {
       console.error("Error checking session:", error);
@@ -95,6 +100,39 @@ export default function Hero() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
             />
+
+            {/* Analysis Type Toggle */}
+            <div className="flex items-center gap-4 px-2">
+              <label className={`flex items-center gap-2 cursor-pointer transition-opacity ${analysisType === 'small' ? 'opacity-100' : 'opacity-50'}`}>
+                <input
+                  type="radio"
+                  name="analysisType"
+                  value="small"
+                  checked={analysisType === 'small'}
+                  onChange={(e) => setAnalysisType(e.target.value as 'small' | 'full')}
+                  className="hidden"
+                />
+                <div className={`w-4 h-4 rounded-full border border-white/50 flex items-center justify-center ${analysisType === 'small' ? 'bg-white' : 'bg-transparent'}`}>
+                  {analysisType === 'small' && <div className="w-2 h-2 rounded-full bg-black" />}
+                </div>
+                <span className="text-white text-sm font-medium">Small (Free)</span>
+              </label>
+
+              <label className={`flex items-center gap-2 cursor-pointer transition-opacity ${analysisType === 'full' ? 'opacity-100' : 'opacity-50'}`}>
+                <input
+                  type="radio"
+                  name="analysisType"
+                  value="full"
+                  checked={analysisType === 'full'}
+                  onChange={(e) => setAnalysisType(e.target.value as 'small' | 'full')}
+                  className="hidden"
+                />
+                <div className={`w-4 h-4 rounded-full border border-white/50 flex items-center justify-center ${analysisType === 'full' ? 'bg-white' : 'bg-transparent'}`}>
+                  {analysisType === 'full' && <div className="w-2 h-2 rounded-full bg-black" />}
+                </div>
+                <span className="text-white text-sm font-medium">Full (1 Credit)</span>
+              </label>
+            </div>
 
             {/* Bottom Controls */}
             <div className="flex items-center justify-between relative z-20">

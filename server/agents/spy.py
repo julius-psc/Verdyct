@@ -187,6 +187,12 @@ Your analysis must:
 - It is better to have fewer verified items than many unverified ones
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
+**LANGUAGE INSTRUCTION:**
+- You must detect the language of the user's input idea (e.g., French, Spanish, German).
+- All textual content in your JSON response (titles, reviews, quotes, summaries, strategic insights, etc.) **MUST** be in the **SAME language** as the input idea.
+- Do not translate the field names (keys) of the JSON structure, only the values.
+- If the idea is in English, output in English. If in French, output in French.
+
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE competitor with a valid verified_url
 - You MUST provide AT LEAST ONE complaint with a valid verified_url

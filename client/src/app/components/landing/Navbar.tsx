@@ -12,6 +12,7 @@ import logo from "../../../../public/assets/brand/logos/default-logo.svg";
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -30,6 +31,21 @@ export default function Navbar() {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Fetch credits
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${apiUrl}/api/user/credits`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setCredits(data.credits);
+          }
+        }
+
       } catch (error) {
         console.error('Error checking auth status:', error);
       } finally {
@@ -115,7 +131,10 @@ export default function Navbar() {
                     >
                       <div className="px-4 py-3 border-b border-neutral-800">
                         <p className="text-sm text-white font-medium truncate">{user.email}</p>
-                        <p className="text-xs text-neutral-500">Plan: Free</p>
+                        <p className="text-xs text-neutral-500 flex justify-between">
+                          <span>Plan: Free</span>
+                          <span className="text-emerald-400 font-medium">{credits !== null ? `${credits} credits` : '...'}</span>
+                        </p>
                       </div>
 
                       <div className="p-1">
