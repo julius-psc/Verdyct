@@ -225,12 +225,12 @@ export default function SpyView({ data }: SpyViewProps) {
 
               <div className="space-y-4">
                 {customer_intel.pain_word_cloud.slice(0, 5).map((pain, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div key={i} className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <XCircle className="w-4 h-4 text-red-500 shrink-0" />
-                      <span className="text-sm text-white capitalize">{pain.term}</span>
+                      <span className="text-sm text-white capitalize truncate" title={pain.term}>{pain.term}</span>
                     </div>
-                    <span className="text-xs text-neutral-500">{pain.mentions} mentions</span>
+                    <span className="text-xs text-neutral-500 shrink-0 whitespace-nowrap">{pain.mentions} mentions</span>
                   </div>
                 ))}
               </div>

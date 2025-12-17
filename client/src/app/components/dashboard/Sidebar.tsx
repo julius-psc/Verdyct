@@ -25,7 +25,7 @@ import {
 import { PieChart, Eye, Hammer, TrendingUp, AudioLines } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 import { fetchProjects, updateProject, deleteProject } from '../../../lib/api';
 import { createClient } from '@/utils/supabase/client';
@@ -481,6 +481,7 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick, isCollapse
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(project.name);
   const [actionLoading, setActionLoading] = useState(false);
+  const pathname = usePathname();
 
   const handleRename = async () => {
     if (!editName.trim() || editName === project.name) {
@@ -648,13 +649,19 @@ function ProjectItem({ project, type, refreshProjects, onDeleteClick, isCollapse
             <div className="ml-3 mt-1 pl-3 border-l border-neutral-800 space-y-0.5 py-1">
               {project.agents.map((agent, index) => {
                 const agentPath = agent.label.replace(/^The\s+/, '').toLowerCase();
+                const href = `/${project.id}/${agentPath}`;
+                const isActive = pathname === href;
+
                 return (
                   <Link
                     key={index}
-                    href={`/${project.id}/${agentPath}`}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm text-neutral-500 hover:text-white hover:bg-neutral-800/30 transition-colors"
+                    href={href}
+                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-colors ${isActive
+                      ? 'bg-neutral-800 text-white font-medium'
+                      : 'text-neutral-500 hover:text-white hover:bg-neutral-800/30'
+                      }`}
                   >
-                    <agent.icon className="w-4 h-4 shrink-0 opacity-70" />
+                    <agent.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'opacity-70'}`} />
                     <span>{agent.label}</span>
                   </Link>
                 );

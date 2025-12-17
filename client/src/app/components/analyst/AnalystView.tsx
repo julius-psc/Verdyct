@@ -262,41 +262,26 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                             {/* Modern Scatter Plot */}
                             <div className="relative flex-1 min-h-[300px] gradient-to-br from-neutral-900/50 to-neutral-900/30 rounded-xl border border-white/10 pt-8 pb-10 px-10">
                                 {/* Clean Grid Lines */}
-                                <svg className="absolute inset-10 w-[calc(100%-80px)] h-[calc(100%-80px)]" style={{ opacity: 0.15 }}>
+                                <svg className="absolute inset-10 w-[calc(100%-80px)] h-[calc(100%-80px)] opacity-20 pointer-events-none">
                                     <defs>
-                                        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                                            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-white" />
+                                        <pattern id="grid" width="20%" height="20%" patternUnits="userSpaceOnUse">
+                                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-white" />
                                         </pattern>
                                     </defs>
                                     <rect width="100%" height="100%" fill="url(#grid)" />
                                 </svg>
 
                                 {/* Axis Labels */}
-                                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 origin-center">
-                                    <span className="text-xs font-medium text-neutral-400 tracking-wider">SEARCH VOLUME</span>
+                                <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 origin-center pointer-events-none">
+                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">Search Volume</span>
                                 </div>
-                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-                                    <span className="text-xs font-medium text-neutral-400 tracking-wider">DIFFICULTY</span>
-                                </div>
-
-                                {/* Quadrant Labels - Subtle & Non-overlapping */}
-                                <div className="absolute top-10 left-12 text-[11px] font-semibold text-emerald-500/40 uppercase tracking-wide">
-                                    Sweet Spot
-                                </div>
-                                <div className="absolute top-10 right-12 text-[11px] font-semibold text-orange-500/40 uppercase tracking-wide">
-                                    Competitive
-                                </div>
-                                <div className="absolute bottom-12 left-12 text-[11px] font-semibold text-blue-500/40 uppercase tracking-wide">
-                                    Niche
-                                </div>
-                                <div className="absolute bottom-12 right-12 text-[11px] font-semibold text-red-500/40 uppercase tracking-wide">
-                                    Avoid
+                                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none">
+                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">Difficulty</span>
                                 </div>
 
-                                {/* Data Points */}
-                                <div className="absolute inset-10 w-[calc(100%-80px)] h-[calc(100%-80px)] pointer-events-none">
+                                {/* Plot Area */}
+                                <div className="absolute inset-10 w-[calc(100%-80px)] h-[calc(100%-80px)]">
                                     {seo_opportunity.high_opportunity_keywords.map((kw, i) => {
-                                        // Helper to map qualitative values to percentages
                                         const getVal = (str: string) => {
                                             const s = str.toLowerCase();
                                             if (s.includes('very high') || s.includes('high') || s.includes('huge')) return 85;
@@ -304,6 +289,7 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                                             if (s.includes('low') || s.includes('small') || s.includes('easy')) return 15;
                                             return 50; // default
                                         };
+
                                         const getDiff = (str: string) => {
                                             const s = str.toLowerCase();
                                             if (s.includes('very high') || s.includes('hard') || s.includes('competitive')) return 85;
