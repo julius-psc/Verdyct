@@ -180,44 +180,51 @@ export default function EnhancePivot({
                         /* Pivot / Enhance Options (Score 50-69) */
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                             {/* Option 1: Enhance */}
-                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-primary-red/50 transition-all duration-300 flex flex-col">
+                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 flex flex-col">
                                 <div className="absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium bg-neutral-800 text-neutral-300">
                                     Option 1
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-1 mt-1">Enhance</h3>
                                 <p className="text-neutral-400 text-sm mb-4">
-                                    {rescuePlan?.improve.description || "Keep the core idea but refine the feature set to target a specific vertical."}
+                                    {rescuePlan?.improve?.description || "Keep the core idea but refine the feature set to target a specific vertical."}
                                 </p>
 
-                                <div className="space-y-2 flex-grow">
-                                    <button
-                                        onClick={() => onEnhance(rescuePlan?.improve.ai_suggested_prompt || "")}
-                                        className="w-full text-left text-xs text-neutral-300 bg-neutral-800/50 hover:bg-neutral-800 p-2.5 rounded-lg transition-colors"
-                                    >
-                                        {rescuePlan?.improve.ai_suggested_prompt || "Refine idea..."}
-                                    </button>
+                                <div className="space-y-2 mb-5 flex-grow">
+                                    <div className="text-sm text-neutral-300 bg-neutral-800/50 p-3 rounded-lg border border-neutral-800">
+                                        {rescuePlan?.improve?.ai_suggested_prompt || "Refine idea..."}
+                                    </div>
                                 </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => onEnhance(rescuePlan?.improve?.ai_suggested_prompt || "")}
+                                    className="relative z-10 cursor-pointer w-full py-2.5 rounded-xl bg-white text-black font-medium hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 mt-auto"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Enhance Idea
+                                </button>
                             </div>
 
                             {/* Option 2: Pivot (Recommended) */}
-                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-primary-red shadow-[0_0_20px_rgba(220,38,38,0.1)] transition-all duration-300 flex flex-col">
+                            <div className="group relative p-5 rounded-2xl bg-neutral-900 border border-primary-red/30 shadow-[0_0_20px_rgba(220,38,38,0.05)] hover:border-primary-red hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(220,38,38,0.2)] transition-all duration-300 flex flex-col">
                                 <div className="absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium bg-primary-red text-white">
                                     Recommended
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-1 mt-1">Pivot</h3>
                                 <p className="text-neutral-400 text-sm mb-4">
-                                    {rescuePlan?.pivot.description || "Shift direction to a related problem space with higher demand."}
+                                    {rescuePlan?.pivot?.description || "Shift direction to a related problem space with higher demand."}
                                 </p>
 
                                 <div className="space-y-2 mb-5 flex-grow">
-                                    <div className="text-sm text-neutral-300 bg-neutral-800/50 p-3 rounded-lg">
-                                        {rescuePlan?.pivot.ai_suggested_prompt || "Pivot idea..."}
+                                    <div className="text-sm text-neutral-300 bg-neutral-800/50 p-3 rounded-lg border border-neutral-800">
+                                        {rescuePlan?.pivot?.ai_suggested_prompt || "Pivot idea..."}
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={() => onPivot(rescuePlan?.pivot.ai_suggested_prompt || "")}
-                                    className="w-full py-2.5 rounded-xl bg-primary-red text-white font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                                    type="button"
+                                    onClick={() => onPivot(rescuePlan?.pivot?.ai_suggested_prompt || "")}
+                                    className="relative z-10 cursor-pointer w-full py-2.5 rounded-xl bg-primary-red text-white font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2 mt-auto"
                                 >
                                     Pivot to This Idea
                                     <ArrowRight className="w-4 h-4" />

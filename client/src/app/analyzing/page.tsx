@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import LoadingModal from '../components/temporary/LoadingModal';
 import EnhancePivot from '../components/temporary/EnhancePivot';
 import { createClient } from '@/utils/supabase/client';
@@ -16,8 +16,13 @@ export default function AnalyzingPage() {
     const [idea, setIdea] = useState<string | null>(null);
     const [showCreditError, setShowCreditError] = useState(false);
 
+    const hasStartedRef = useRef(false);
+
     useEffect(() => {
         const init = async () => {
+            // Prevent double-execution in Strict Mode or rapid re-mounts
+            if (hasStartedRef.current) return;
+
             // Check session first
             const { data: { session } } = await supabase.auth.getSession();
 
@@ -34,13 +39,16 @@ export default function AnalyzingPage() {
             // Session exists, proceed with idea retrieval
             const ideaParam = searchParams.get('idea');
             const typeParam = searchParams.get('type') || 'small';
+
             if (ideaParam) {
+                hasStartedRef.current = true; // Mark as started
                 setIdea(ideaParam);
                 startAnalysis(ideaParam, session.access_token, typeParam);
             } else {
                 const storedIdea = localStorage.getItem('pending_idea');
                 const storedType = localStorage.getItem('pending_type') || 'small';
                 if (storedIdea) {
+                    hasStartedRef.current = true; // Mark as started
                     setIdea(storedIdea);
                     localStorage.removeItem('pending_idea');
                     localStorage.removeItem('pending_type');

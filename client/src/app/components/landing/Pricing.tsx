@@ -80,7 +80,7 @@ export default function Pricing() {
                 <span className="text-4xl font-bold text-white">€9</span>
                 <span className="text-lg text-neutral-500 line-through">€19</span>
               </div>
-              <span className="text-sm text-neutral-400"> / one-time</span>
+              <span className="text-sm text-neutral-400"> / pack</span>
             </div>
             <p className="text-sm text-neutral-300 mb-6">Deep dive into 5 ideas</p>
 

@@ -18,7 +18,7 @@ export const posts: Post[] = [
         category: "Startup Advice",
         title: "5 Signs You Should Pivot Your Startup",
         excerpt: "Recognizing when to change direction is crucial for survival. Here are the red flags to watch for.",
-        date: "Dec 12, 2024",
+        date: "Dec 12, 2025",
         readTime: "7 min read",
         image: '/assets/blog/startup-pivot.jpg',
         content: `
@@ -51,7 +51,7 @@ export const posts: Post[] = [
         category: "Product",
         title: "Understanding the POS Score: The Science of Prediction",
         excerpt: "Deep dive into how our AI calculates the Predictive Opportunity Score and what it means for you.",
-        date: "Dec 10, 2024",
+        date: "Dec 10, 2025",
         readTime: "10 min read",
         image: '/assets/blog/pos-score.jpg',
         content: `
@@ -94,7 +94,7 @@ export const posts: Post[] = [
         category: "Market Analysis",
         title: "The State of AI Startups in 2025: Beyond the Hype",
         excerpt: "An analysis of over 10,000 generated reports reveals surprising trends in the AI sector.",
-        date: "Nov 28, 2024",
+        date: "Nov 28, 2025",
         readTime: "12 min read",
         image: '/assets/blog/ai-trends.jpg',
         content: `

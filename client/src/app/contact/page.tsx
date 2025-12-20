@@ -26,7 +26,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold">Email</p>
-                                    <a href="mailto:hello@verdyct.com" className="text-lg hover:text-primary-red transition-colors">hello@verdyct.com</a>
+                                    <a href="mailto:hello@verdyct.io" className="text-lg hover:text-primary-red transition-colors">hello@verdyct.io</a>
                                 </div>
                             </div>
 
@@ -46,7 +46,7 @@ export default function ContactPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-neutral-500 uppercase tracking-widest font-bold">HQ</p>
-                                    <span className="text-lg text-neutral-300">London, United Kingdom</span>
+                                    <span className="text-lg text-neutral-300">Caen, France</span>
                                 </div>
                             </div>
                         </div>

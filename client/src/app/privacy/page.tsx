@@ -6,7 +6,7 @@ export default function PrivacyPage() {
     return (
         <LegalLayout title="Privacy Policy">
             <p><strong>Last updated: December 2024</strong></p>
-            <p>At Verdyct ("we", "us", or "our"), we are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at legal@verdyct.com.</p>
+            <p>At Verdyct ("we", "us", or "our"), we are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at legal@verdyct.io.</p>
 
             <h2>1. What information do we collect?</h2>
             <p>We collect personal information that you voluntarily provide to us when you register on the Website, express an interest in obtaining information about us or our products and Services, when you participate in activities on the Website or otherwise when you contact us.</p>

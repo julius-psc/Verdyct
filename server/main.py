@@ -518,6 +518,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             #     return
 
             # --- RATE LIMIT CHECK (Small Analysis Only) ---
+            # --- RATE LIMIT CHECK (Small Analysis Only) ---
             if request.analysis_type != 'full':
                 user_id = user_payload['sub']
                 from supabase import create_client, ClientOptions
@@ -545,9 +546,9 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                             daily_count = 0
                             req_supabase.table("users").update({"daily_count": 0, "last_active_date": today}).eq("id", user_id).execute()
                         
-                        # Check Limit
-                        if daily_count >= 20:
-                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached (20/day). Please come back tomorrow or upgrade for unlimited access.'})}\\n\\n"
+                        # Check Limit (REDUCED TO 5 FOR LAUNCH)
+                        if daily_count >= 5:
+                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached. Please come back tomorrow.'})}\\n\\n"
                              return
                              
                         # Increment count (optimistic update, or strictly after success? Let's do it now to prevent spam abuse)

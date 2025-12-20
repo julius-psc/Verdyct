@@ -27,7 +27,7 @@ export default function SecurityPage() {
             <p>Access to production systems is strictly limited to authorized personnel on a need-to-know basis. We enforce Multi-Factor Authentication (MFA) for all internal access.</p>
 
             <h2>Reporting Vulnerabilities</h2>
-            <p>We welcome reports from the security research community. If you discover a vulnerability, please disclose it to us responsibly by emailing security@verdyct.com.</p>
+            <p>We welcome reports from the security research community. If you discover a vulnerability, please disclose it to us responsibly by emailing security@verdyct.io.</p>
         </LegalLayout>
     );
 }
