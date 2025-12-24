@@ -33,13 +33,14 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Optional
+import os
 
 app = FastAPI(title="Verdyct Analyst Agent", version="1.0")
 
 # Configuration CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -431,7 +432,68 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
         
+    # Increment view count
+    if project.is_public:
+        project.views += 1
+        session.add(project)
+        await session.commit()
+        await session.refresh(project)
+
     return project
+
+@app.get("/api/leaderboard", response_model=List[Project])
+async def get_leaderboard(sort_by: str = "score", session: AsyncSession = Depends(get_session)):
+    """
+    Get public projects for the leaderboard.
+    """
+    query = select(Project).where(Project.is_public == True, Project.status == "approved")
+    
+    if sort_by == "votes":
+        query = query.order_by(Project.upvotes.desc())
+    else:
+        # Default by POS Score
+        query = query.order_by(Project.pos_score.desc())
+        
+    query = query.limit(50)
+    result = await session.exec(query)
+    return result.all()
+
+@app.post("/api/projects/{project_id}/publish")
+async def publish_project(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
+    """
+    Publish a project to the leaderboard.
+    """
+    user_payload, _ = user
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user_payload['sub'])
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    project.is_public = True
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
+    return project
+
+@app.post("/api/projects/{project_id}/vote")
+async def vote_project(project_id: str, session: AsyncSession = Depends(get_session)):
+    """
+    Upvote a public project.
+    """
+    statement = select(Project).where(Project.id == project_id)
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project or not project.is_public:
+        raise HTTPException(status_code=404, detail="Project not found or not public")
+        
+    project.upvotes += 1
+    session.add(project)
+    await session.commit()
+    return {"status": "voted", "upvotes": project.upvotes}
+
 
 @app.get("/api/projects", response_model=List[Project])
 async def list_projects(session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
@@ -520,22 +582,21 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
             # --- RATE LIMIT CHECK (Small Analysis Only) ---
             # --- RATE LIMIT CHECK (Small Analysis Only) ---
             if request.analysis_type != 'full':
-                user_id = user_payload['sub']
-                from supabase import create_client, ClientOptions
-                from auth import SUPABASE_URL, SUPABASE_KEY
-                
-                req_supabase = create_client(
-                    SUPABASE_URL, 
-                    SUPABASE_KEY, 
-                    options=ClientOptions(headers={'Authorization': f'Bearer {user_token}'})
-                )
-                
                 try:
-                    # Fetch user stats
-                    user_data = req_supabase.table("users").select("daily_count, last_active_date").eq("id", user_id).execute()
+                    # Authenticated user ID
+                    user_id = user_payload['sub']
                     
-                    if user_data.data:
-                        stats = user_data.data[0]
+                    # We MUST use the remote Supabase DB, not the local SQLite session
+                    # The global 'supabase' client from 'auth.py' is initialized with 
+                    # SERVICE_ROLE_KEY or ANON_KEY.
+                    # We need to ensure we are updating the REMOTE table that 'ProfilePage' reads from.
+                    
+                    # FETCH
+                    # Note: 'daily_count' might be in a 'public.users' table or similar wrapper
+                    response = supabase.table("users").select("daily_count, last_active_date").eq("id", user_id).execute()
+                    
+                    if response.data:
+                        stats = response.data[0]
                         today = datetime.utcnow().date().isoformat()
                         
                         last_active = stats.get('last_active_date')
@@ -544,24 +605,26 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                         # Reset if new day
                         if last_active != today:
                             daily_count = 0
-                            req_supabase.table("users").update({"daily_count": 0, "last_active_date": today}).eq("id", user_id).execute()
+                            supabase.table("users").update({"daily_count": 0, "last_active_date": today}).eq("id", user_id).execute()
                         
                         # Check Limit (REDUCED TO 5 FOR LAUNCH)
                         if daily_count >= 5:
-                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached. Please come back tomorrow.'})}\\n\\n"
+                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached. Please come back yesterday to try again.'})}\\n\\n"
                              return
                              
-                        # Increment count (optimistic update, or strictly after success? Let's do it now to prevent spam abuse)
-                        req_supabase.table("users").update({"daily_count": daily_count + 1}).eq("id", user_id).execute()
+                        # INCREMENT
+                        print(f"DEBUG: Incrementing daily count for {user_id}. Old: {daily_count}")
+                        try:
+                            supabase.table("users").update({"daily_count": daily_count + 1}).eq("id", user_id).execute()
+                            print(f"DEBUG: Successfully incremented daily count.")
+                        except Exception as e:
+                            print(f"CRITICAL ERROR updating Supabase: {e}")
                         
                     else:
-                        # Init user if not found (Lazy create handled later partially, but good to ensure here)
-                         # defaulting to 0/today is implicit if row inserted later, but let's just proceed
-                         pass
+                        print(f"DEBUG: User {user_id} not found in Supabase 'users' table.")
                          
                 except Exception as e:
-                    print(f"Rate Limit Check Error: {e}")
-                    # Fail open or closed? Let's fail open but log it to avoid blocking legitimate users on system glitches
+                    print(f"Rate Limit Check Error (Supabase): {e}")
                     pass
 
             # Step 1: Run Analyst
@@ -621,34 +684,19 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 # Credit Check & Deduction Logic
                 # Only check/deduct for 'full' analysis
                 if request.analysis_type == 'full':
-                    # user_payload and user_token are available from closure
                     user_id = user_payload['sub']
                     
-                    # Create authenticated client for this request to respect RLS
-                    # (Or use service role if configured globally, but this is safer fallback)
-                    from supabase import create_client, ClientOptions
-                    from auth import SUPABASE_URL, SUPABASE_KEY
-                    
-                    # Use the global key (Anon or Service) but attach user token if provided
-                    req_supabase = create_client(
-                        SUPABASE_URL, 
-                        SUPABASE_KEY, 
-                        options=ClientOptions(headers={'Authorization': f'Bearer {user_token}'})
-                    )
-                    
                     try:
-                        user_data = req_supabase.table("users").select("credits").eq("id", user_id).execute()
+                        # Fetch from REMOTE SUPABASE
+                        response = supabase.table("users").select("credits").eq("id", user_id).execute()
                         
                         current_credits = 0
-                        
-                        # Use data from Supabase or initialize if not present
-                        if not user_data.data:
-                            # Create user entry if it doesn't exist (Lazy creation)
-                            # Default 10 credits
-                            current_credits = 10
-                            req_supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 10}).execute()
+                        if response.data:
+                             current_credits = response.data[0]['credits']
                         else:
-                            current_credits = user_data.data[0]['credits']
+                            # Insert default to Supabase
+                            current_credits = 10
+                            supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 10}).execute()
                         
                         if current_credits < 1:
                              yield f"data: {json.dumps({'type': 'error', 'message': 'Insufficient credits. Please upgrade or choose Small analysis.'})}\n\n"
@@ -656,12 +704,12 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
 
                         # 2. Deduct credit
                         new_credits = current_credits - 1
-                        req_supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
+                        supabase.table("users").update({"credits": new_credits}).eq("id", user_id).execute()
                         
                         yield f"data: {json.dumps({'type': 'log', 'message': f'Credit deducted. Remaining: {new_credits}'})}\n\n"
                         
                     except Exception as e:
-                        print(f"Supabase Credit Error: {e}")
+                        print(f"Credit Check Error (Supabase): {e}")
                         yield f"data: {json.dumps({'type': 'error', 'message': f'System error checking credits: {str(e)}'})}\n\n"
                         return
 

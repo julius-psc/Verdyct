@@ -112,6 +112,7 @@ export default function Pricing() {
           </div>
 
           {/* Startup Card */}
+          {/* Builder Card */}
           <div className="bg-neutral-800/50 border border-neutral-700/50 rounded-3xl p-8 min-h-[600px] flex flex-col relative overflow-hidden">
             {/* Launch Ribbon */}
             <div className="absolute top-5 right-5 px-3 py-1 bg-neutral-800 text-neutral-400 text-xs font-bold rounded-full border border-neutral-700">
@@ -119,7 +120,7 @@ export default function Pricing() {
             </div>
 
             <div className="flex flex-col items-start gap-1 mb-3">
-              <div className="text-base font-medium text-white">Startup</div>
+              <div className="text-base font-medium text-white">Builder</div>
               <div className="px-2.5 py-0.5 bg-neutral-800 rounded-full text-xs text-white border border-white/10">
                 Launch Feb 1st
               </div>
@@ -127,11 +128,11 @@ export default function Pricing() {
             <div className="mb-3">
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white">€19</span>
-                <span className="text-lg text-neutral-500 line-through">€39</span>
+                <span className="text-lg text-neutral-500 line-through">€29</span>
               </div>
               <span className="text-sm text-neutral-400"> / month</span>
             </div>
-            <p className="text-sm text-neutral-300 mb-6">For serious founders</p>
+            <p className="text-sm text-neutral-300 mb-6">For those who build, not just dream.</p>
 
             <Link href="/waitlist" className="w-full bg-neutral-800 text-white font-semibold rounded-lg py-3 text-sm border border-neutral-700 hover:bg-neutral-700 transition-colors duration-200 text-center">
               Join Waitlist
@@ -146,15 +147,15 @@ export default function Pricing() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-neutral-500 shrink-0" />
-                  <span className="text-xs text-neutral-300">Competition Tracking</span>
+                  <span className="text-xs text-neutral-300">Custom Action Plan (Timeline)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-neutral-500 shrink-0" />
-                  <span className="text-xs text-neutral-300">Website Monitoring</span>
+                  <span className="text-xs text-neutral-300">Access to Deep Dives</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-neutral-500 shrink-0" />
-                  <span className="text-xs text-neutral-300">VC Visibility</span>
+                  <span className="text-xs text-neutral-300">Unlimited AI Coach</span>
                 </li>
               </ul>
             </div>

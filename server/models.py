@@ -420,6 +420,11 @@ class Project(SQLModel, table=True):
     
     # User Ownership
     user_id: str = SQLField(index=True)
+    
+    # Leaderboard / Social
+    is_public: bool = SQLField(default=False)
+    upvotes: int = SQLField(default=0)
+    views: int = SQLField(default=0)
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None

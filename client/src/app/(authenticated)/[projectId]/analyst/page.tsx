@@ -67,7 +67,13 @@ export default function AnalystPage() {
                     Loading analysis...
                 </div>
             ) : (
-                <AnalystView data={analystData} fullReport={allAgentsData} />
+                <AnalystView
+                    data={analystData}
+                    fullReport={{
+                        ...allAgentsData,
+                        project_id: Array.isArray(params.projectId) ? params.projectId[0] : params.projectId
+                    }}
+                />
             )}
         </main>
     );

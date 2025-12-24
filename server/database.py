@@ -7,8 +7,20 @@ from sqlalchemy.orm import sessionmaker
 
 # ========== CONFIGURATION ==========
 
-DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
-QDRANT_PATH = "./qdrant_db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    print("⚠️ DATABASE_URL not set. Falling back to local SQLite.")
+    DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
+else:
+    # Ensure usage of asyncpg driver for Postgres
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+
+# Fallback to local if no cloud credentials
+QDRANT_PATH = "./qdrant_db" if not QDRANT_URL else None
 COLLECTION_NAME = "verdyct_ideas"
 
 # ========== RELATIONAL DB (ASYNC) ==========
@@ -64,8 +76,14 @@ def get_qdrant_client():
         
     if _qdrant_client is None:
         try:
-            # Initialize local Qdrant
-            _qdrant_client = QdrantClient(path=QDRANT_PATH)
+            if QDRANT_URL and QDRANT_API_KEY:
+                # Initialize Cloud Qdrant
+                _qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+                print("✅ Connected to Qdrant Cloud.")
+            else:
+                # Initialize local Qdrant
+                _qdrant_client = QdrantClient(path=QDRANT_PATH)
+                print("⚠️ Using local Qdrant storage.")
         except Exception as e:
             print(f"Failed to create Qdrant client: {e}")
             return None

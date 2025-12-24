@@ -111,6 +111,12 @@ export default function Navbar() {
             How it works
           </Link>
           <Link
+            href="/leaderboard"
+            className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
+          >
+            Leaderboard
+          </Link>
+          <Link
             href="#pricing"
             className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
           >

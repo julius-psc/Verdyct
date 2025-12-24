@@ -6,6 +6,7 @@ import Widget from '../dashboard/Widget';
 import CardModal from './CardModal';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
+import { createClient } from '@/utils/supabase/client';
 
 // Define types based on the backend response
 interface AnalystData {
@@ -143,6 +144,41 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                     <p className="text-sm text-neutral-400">Market analysis for: {analysis_for}</p>
                 </div>
                 <div className="flex gap-3">
+                    {fullReport?.project_id && (
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const supabase = createClient();
+                                    const { data: { session } } = await supabase.auth.getSession();
+
+                                    if (!session) {
+                                        alert("Please log in to publish.");
+                                        return;
+                                    }
+
+                                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                                    const res = await fetch(`${apiUrl}/api/projects/${fullReport.project_id}/publish`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${session.access_token}`
+                                        }
+                                    });
+                                    if (res.ok) {
+                                        alert("Project published to Leaderboard! 🚀");
+                                    } else {
+                                        alert("Failed to publish. Please try again.");
+                                    }
+                                } catch (e) {
+                                    console.error("Publish failed", e);
+                                    alert("Error publishing project.");
+                                }
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-yellow-900/20"
+                        >
+                            <TrendingUp className="w-4 h-4" />
+                            Publish to Leaderboard
+                        </button>
+                    )}
                     <button
                         onClick={() => setShowCard(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-red-900/20"
