@@ -28,7 +28,7 @@ from agents.architect import generate_architect_blueprint
 from agents.architect import generate_architect_blueprint
 from agents.watchdog import verify_cta
 from database import init_db, get_session, upsert_vector, delete_vector
-from sqlmodel import select, delete
+from sqlmodel import select, delete, func, col
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
@@ -145,6 +145,53 @@ async def submit_contact(request: ContactRequest):
     except Exception as e:
         print(f"Contact Form Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to submit message")
+
+@app.get("/api/projects/{project_id}/stats")
+async def get_project_stats(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
+    """
+    Get aggregated pixel stats for a project.
+    """
+    user_payload, _ = user
+    user_id = user_payload['sub']
+
+    # Verify ownership
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user_id)
+    result = await session.exec(statement)
+    project = result.first()
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Core Stats: Total Events
+    # Note: Using count with sqlmodel/sqlalchemy requires func.count()
+    count_query = select(func.count(col(PixelEvent.id))).where(PixelEvent.project_id == project_id)
+    count_result = await session.exec(count_query)
+    total_events = count_result.one()
+
+    # Unique Visitors (by IP/Session? For now just unique element_text interactions as a proxy for 'engagement depth')
+    # Actually, simpler: Top 5 clicked elements
+    top_elements_query = (
+        select(PixelEvent.element_text, func.count(PixelEvent.id).label("count"))
+        .where(PixelEvent.project_id == project_id)
+        .where(PixelEvent.element_text != None)
+        .group_by(PixelEvent.element_text)
+        .order_by(func.count(PixelEvent.id).desc())
+        .limit(5)
+    )
+    top_elements_result = await session.exec(top_elements_query)
+    top_elements = [{"name": row[0], "count": row[1]} for row in top_elements_result.all()]
+
+    # Last Activity
+    last_event_query = select(PixelEvent).where(PixelEvent.project_id == project_id).order_by(PixelEvent.timestamp.desc()).limit(1)
+    last_event_result = await session.exec(last_event_query)
+    last_event = last_event_result.first()
+    last_active = last_event.timestamp.isoformat() if last_event else None
+
+    return {
+        "total_events": total_events,
+        "top_elements": top_elements,
+        "last_active": last_active
+    }
 
 from fastapi import Response
 
@@ -492,7 +539,44 @@ async def vote_project(project_id: str, session: AsyncSession = Depends(get_sess
     project.upvotes += 1
     session.add(project)
     await session.commit()
-    return {"status": "voted", "upvotes": project.upvotes}
+    return {"ok": True, "upvotes": project.upvotes}
+
+@app.post("/api/projects/{project_id}/unvote")
+async def unvote_project(project_id: str, session: AsyncSession = Depends(get_session)):
+    """
+    Remove an upvote from a project.
+    """
+    statement = select(Project).where(Project.id == project_id)
+    result = await session.exec(statement)
+    project = result.first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    if project.upvotes > 0:
+        project.upvotes -= 1
+        session.add(project)
+        await session.commit()
+        
+    return {"ok": True, "upvotes": project.upvotes}
+
+@app.post("/api/projects/{project_id}/unpublish")
+async def unpublish_project(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
+    """
+    Remove a project from the leaderboard.
+    """
+    user_payload, _ = user
+    statement = select(Project).where(Project.id == project_id, Project.user_id == user_payload['sub'])
+    result = await session.exec(statement)
+    project = result.first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    project.is_public = False
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
+    
+    return {"ok": True}
 
 
 @app.get("/api/projects", response_model=List[Project])

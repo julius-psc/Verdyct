@@ -40,7 +40,7 @@ export default function ArchitectPage() {
                     Loading architectural blueprint...
                 </div>
             ) : (
-                <ArchitectView data={architectData} />
+                <ArchitectView data={architectData} projectId={params.projectId as string} />
             )}
         </main>
     );

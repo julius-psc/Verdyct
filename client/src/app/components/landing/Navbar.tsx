@@ -97,7 +97,7 @@ export default function Navbar() {
         </div>
 
         {/* Nav Links - Center (Desktop) */}
-        <div className="hidden md:flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md absolute left-1/2 -translate-x-1/2">
+        <div className="hidden md:flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
           <Link
             href="/"
             className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
@@ -132,7 +132,7 @@ export default function Navbar() {
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   onBlur={() => setTimeout(() => setIsProfileOpen(false), 200)}
-                  className="flex items-center gap-2 pl-1 pr-3 py-1 bg-neutral-800/50 hover:bg-neutral-800 border border-neutral-700/50 hover:border-neutral-700 rounded-full transition-all duration-200"
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-full transition-all duration-200"
                 >
                   <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-white text-xs font-bold border border-white/10">
                     {user.email?.[0].toUpperCase() || 'U'}

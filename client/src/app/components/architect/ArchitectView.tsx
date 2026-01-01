@@ -20,8 +20,9 @@ import {
     ChevronDown,
     ChevronUp
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Widget from '../dashboard/Widget';
+import { createClient } from '@/utils/supabase/client';
 
 // Backend Model Interfaces
 interface BuildStat {
@@ -106,12 +107,52 @@ interface ArchitectData {
 
 interface ArchitectViewProps {
     data?: ArchitectData;
+    projectId?: string;
 }
 
-export default function ArchitectView({ data }: ArchitectViewProps) {
+export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
     const [isDataMoatActive, setIsDataMoatActive] = useState(false);
     const [isPromptExpanded, setIsPromptExpanded] = useState(false);
     const [isPromptFullscreen, setIsPromptFullscreen] = useState(false);
+    const [pixelStats, setPixelStats] = useState<any>(null);
+
+    // Fetch Stats
+    useEffect(() => {
+        if (projectId) {
+            const fetchStats = async () => {
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+
+                try {
+                    // Cleanly determining API URL - referencing existing patterns or environment
+                    // Since hardcoded in other places, assuming localhost for dev or relative path in prod
+                    // Using relative path '/api' if on same domain, or full URL. user uses localhost:8000.
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                    const headers: HeadersInit = session ? {
+                        'Authorization': `Bearer ${session.access_token}`
+                    } : {};
+
+                    const res = await fetch(`${apiUrl}/api/projects/${projectId}/stats`, {
+                        headers
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        setPixelStats(data);
+                    } else {
+                        console.error("Failed to fetch stats:", res.status);
+                    }
+                } catch (e) {
+                    console.error("Error fetching stats:", e);
+                }
+            };
+            fetchStats();
+
+            // Refresh every 30s
+            const interval = setInterval(fetchStats, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [projectId]);
 
     if (!data) {
         return (
@@ -156,10 +197,10 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
     const { mvp_status, tech_stack, brand_kit, data_moat, architect_footer } = data;
 
     // Helper to find specific tech categories
-    const frontendTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('frontend'))?.technologies[0] || 'React';
-    const backendTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('backend'))?.technologies[0] || 'Python';
-    const databaseTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('database'))?.technologies[0] || 'PostgreSQL';
-    const aiTech = tech_stack.categories.find(c => c.name.toLowerCase().includes('ai'))?.technologies || ['OpenAI'];
+    const frontendTech = tech_stack?.categories.find(c => c.name.toLowerCase().includes('frontend'))?.technologies[0] || 'React';
+    const backendTech = tech_stack?.categories.find(c => c.name.toLowerCase().includes('backend'))?.technologies[0] || 'Python';
+    const databaseTech = tech_stack?.categories.find(c => c.name.toLowerCase().includes('database'))?.technologies[0] || 'PostgreSQL';
+    const aiTech = tech_stack?.categories.find(c => c.name.toLowerCase().includes('ai'))?.technologies || ['OpenAI'];
 
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-8">
@@ -451,6 +492,70 @@ export default function ArchitectView({ data }: ArchitectViewProps) {
                     </Widget>
                 </div>
             </div>
+
+            {/* Added Stats Widget (Bottom) */}
+            {pixelStats && (
+                <div className="mt-12 pt-12 border-t border-white/5">
+                    <div className="flex flex-col md:flex-row gap-8">
+                        <div className="md:w-1/3 space-y-4">
+                            <div className="flex items-center gap-2 text-emerald-500">
+                                <MousePointerClick className="w-5 h-5" />
+                                <h3 className="text-lg font-semibold text-white">Verdyct Pixel Tracker</h3>
+                            </div>
+                            <p className="text-sm text-neutral-400 leading-relaxed">
+                                Your MVP includes the embedded <strong>Verdyct Pixel</strong> script.
+                                It automatically captures every interaction on your generated prototype, giving you real-time insights into user engagement.
+                            </p>
+                            <ul className="text-xs text-neutral-500 space-y-2 list-disc pl-4">
+                                <li>Tracks click events on buttons and links</li>
+                                <li>Records element text and IDs</li>
+                                <li>Privacy-focused (no personal data)</li>
+                            </ul>
+                        </div>
+
+                        <div className="md:w-2/3">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Widget title="Live Activity" action={<div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div><span className="text-xs text-red-500 font-mono">LIVE</span></div>}>
+                                    <div className="flex flex-col gap-4">
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-4xl font-bold text-white">{pixelStats.total_events}</span>
+                                            <span className="text-sm text-neutral-500">interactions</span>
+                                        </div>
+                                        <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-center">
+                                            <span className="text-xs text-neutral-500">Last Activity</span>
+                                            <span className="text-xs text-neutral-300 font-mono">
+                                                {pixelStats.last_active ? new Date(pixelStats.last_active).toLocaleTimeString() : 'Never'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Widget>
+
+                                <Widget title="Top Interactions" action={<div className="text-xs text-neutral-500">Most Clicked</div>}>
+                                    <div className="flex flex-col h-full">
+                                        <div className="space-y-2 overflow-y-auto max-h-[140px] custom-scrollbar pr-2">
+                                            {Array.isArray(pixelStats.top_elements) && pixelStats.top_elements.map((el: any, i: number) => (
+                                                <div key={i} className="flex items-center justify-between text-sm group">
+                                                    <span className="text-neutral-300 truncate max-w-[140px] group-hover:text-emerald-400 transition-colors">{el.name || 'Unknown'}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-1.5 w-12 bg-neutral-800 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-emerald-500/50 rounded-full" style={{ width: `${Math.min(100, (el.count / (pixelStats.total_events || 1)) * 100)}%` }}></div>
+                                                        </div>
+                                                        <span className="text-neutral-500 font-mono text-xs w-6 text-right">{el.count}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {(!pixelStats.top_elements || pixelStats.top_elements.length === 0) && (
+                                                <div className="text-neutral-600 text-xs italic">No interactions recorded yet.</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Widget>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

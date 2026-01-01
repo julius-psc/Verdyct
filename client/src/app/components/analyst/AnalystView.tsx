@@ -73,11 +73,14 @@ interface AnalystData {
 interface AnalystViewProps {
     data?: AnalystData;
     fullReport?: any;
+    isReadOnly?: boolean;
+    isPublic?: boolean;
 }
 
-export default function AnalystView({ data, fullReport }: AnalystViewProps) {
+export default function AnalystView({ data, fullReport, isReadOnly = false, isPublic: initialIsPublic = false }: AnalystViewProps) {
     const [showCard, setShowCard] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [isPublic, setIsPublic] = useState(initialIsPublic);
     const reportRef = useRef<HTMLDivElement>(null);
 
     const generateFullReport = async () => {
@@ -144,7 +147,7 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                     <p className="text-sm text-neutral-400">Market analysis for: {analysis_for}</p>
                 </div>
                 <div className="flex gap-3">
-                    {fullReport?.project_id && (
+                    {fullReport?.project_id && !isReadOnly && (
                         <button
                             onClick={async () => {
                                 try {
@@ -152,47 +155,57 @@ export default function AnalystView({ data, fullReport }: AnalystViewProps) {
                                     const { data: { session } } = await supabase.auth.getSession();
 
                                     if (!session) {
-                                        alert("Please log in to publish.");
+                                        alert("Please log in to manage project.");
                                         return;
                                     }
 
                                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-                                    const res = await fetch(`${apiUrl}/api/projects/${fullReport.project_id}/publish`, {
+                                    const endpoint = isPublic ? 'unpublish' : 'publish';
+                                    const res = await fetch(`${apiUrl}/api/projects/${fullReport.project_id}/${endpoint}`, {
                                         method: 'POST',
                                         headers: {
                                             'Authorization': `Bearer ${session.access_token}`
                                         }
                                     });
                                     if (res.ok) {
-                                        alert("Project published to Leaderboard! 🚀");
+                                        setIsPublic(!isPublic);
+                                        const action = isPublic ? "removed from" : "published to";
+                                        alert(`Project ${action} Leaderboard! 🚀`);
                                     } else {
-                                        alert("Failed to publish. Please try again.");
+                                        alert("Failed to update status. Please try again.");
                                     }
                                 } catch (e) {
-                                    console.error("Publish failed", e);
-                                    alert("Error publishing project.");
+                                    console.error("Status update failed", e);
+                                    alert("Error updating project status.");
                                 }
                             }}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-yellow-900/20"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all shadow-lg ${isPublic
+                                ? 'bg-neutral-800 hover:bg-neutral-700 shadow-none border border-white/10'
+                                : 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 shadow-yellow-900/20'
+                                }`}
                         >
                             <TrendingUp className="w-4 h-4" />
-                            Publish to Leaderboard
+                            {isPublic ? 'Remove from Leaderboard' : 'Publish to Leaderboard'}
                         </button>
                     )}
-                    <button
-                        onClick={() => setShowCard(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-red-900/20"
-                    >
-                        Get Verdyct Card
-                    </button>
-                    <button
-                        onClick={generateFullReport}
-                        disabled={!fullReport || isExporting}
-                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50"
-                    >
-                        {isExporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FileText className="w-4 h-4" />}
-                        {isExporting ? 'Exporting...' : 'Full PDF Report'}
-                    </button>
+                    {!isReadOnly && (
+                        <>
+                            <button
+                                onClick={() => setShowCard(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-red-900/20"
+                            >
+                                Get Verdyct Card
+                            </button>
+                            <button
+                                onClick={generateFullReport}
+                                disabled={!fullReport || isExporting}
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50"
+                            >
+                                {isExporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FileText className="w-4 h-4" />}
+                                {isExporting ? 'Exporting...' : 'Full PDF Report'}
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 

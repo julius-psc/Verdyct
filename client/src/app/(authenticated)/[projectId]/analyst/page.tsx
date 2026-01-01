@@ -8,6 +8,7 @@ export default function AnalystPage() {
     const params = useParams();
     const [analystData, setAnalystData] = useState<any>(null);
     const [allAgentsData, setAllAgentsData] = useState<any>(null);
+    const [isPublic, setIsPublic] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -20,6 +21,7 @@ export default function AnalystPage() {
                     throw new Error('Failed to fetch project data');
                 }
                 const project = await response.json();
+                setIsPublic(project.is_public ?? false);
 
                 if (project.report_json) {
                     let reportData = project.report_json;
@@ -73,6 +75,7 @@ export default function AnalystPage() {
                         ...allAgentsData,
                         project_id: Array.isArray(params.projectId) ? params.projectId[0] : params.projectId
                     }}
+                    isPublic={isPublic}
                 />
             )}
         </main>
