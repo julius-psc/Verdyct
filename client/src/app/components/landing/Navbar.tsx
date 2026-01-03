@@ -68,7 +68,7 @@ export default function Navbar() {
       transition={{ duration: 0.3, ease: 'easeInOut' }}
     >
       <motion.div
-        className="flex flex-col md:flex-row items-center justify-between px-4 py-2 relative"
+        className="flex flex-col md:flex-row items-center justify-between px-6 py-2 relative"
         initial={false}
         animate={{
           width: isScrolled ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '95%' : '60%') : '100%',
@@ -82,8 +82,8 @@ export default function Navbar() {
       >
         <div className="w-full md:w-auto flex items-center justify-between">
           {/* Logo - Left */}
-          <Link href="/" className="flex items-center gap-1">
-            <Image src={logo} alt="Verdyct Logo" className="h-8 md:h-10 w-auto" />
+          <Link href="/" className="flex items-center gap-3">
+            <Image src={logo} alt="Verdyct Logo" className="h-6 md:h-8 w-auto" />
             <span className="text-white font-semibold text-lg md:text-xl">Verdyct</span>
           </Link>
 
@@ -97,7 +97,7 @@ export default function Navbar() {
         </div>
 
         {/* Nav Links - Center (Desktop) */}
-        <div className="hidden md:flex items-center gap-8 bg-white/5 px-6 py-2 rounded-full border border-white/5 backdrop-blur-md absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+        <div className="hidden md:flex items-center gap-8 px-6 py-2 absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
           <Link
             href="/"
             className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"

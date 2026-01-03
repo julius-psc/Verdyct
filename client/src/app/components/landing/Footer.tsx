@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-12 lg:gap-8">
           {/* Logo and Description - Spans 2 columns */}
           <div className="lg:col-span-2 pr-8">
-            <Link href="/" className="flex items-center gap-2 mb-6 inline-block">
+            <Link href="/" className="flex items-center gap-3 mb-6 inline-block">
               <Image src={logo} alt="Verdyct Logo" className="h-8 w-auto" />
               <span className="text-white font-bold text-lg tracking-tight">Verdyct</span>
             </Link>
