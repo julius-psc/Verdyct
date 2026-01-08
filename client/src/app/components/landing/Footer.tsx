@@ -1,7 +1,7 @@
 import Image from "next/image";
 import logo from "../../../../public/assets/brand/logos/default-logo.svg";
 import Link from "next/link";
-import { IconBrandTwitter, IconBrandGithub, IconBrandLinkedin } from "@tabler/icons-react";
+import { IconBrandTwitter, IconBrandInstagram, IconBrandLinkedin } from "@tabler/icons-react";
 
 export default function Footer() {
   return (
@@ -22,7 +22,7 @@ export default function Footer() {
                 <IconBrandTwitter className="w-4 h-4" />
               </a>
               <a href="#" className="p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-200">
-                <IconBrandGithub className="w-4 h-4" />
+                <IconBrandInstagram className="w-4 h-4" />
               </a>
               <a href="#" className="p-2 rounded-full bg-white/5 text-neutral-400 hover:text-white hover:bg-white/10 transition-all duration-200">
                 <IconBrandLinkedin className="w-4 h-4" />
