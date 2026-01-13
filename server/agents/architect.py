@@ -392,7 +392,7 @@ IMPORTANT: You must include the following tracking script in the <head> of the i
             "project_id": project_id
         }
 
-def generate_architect_blueprint(idea: str, max_retries: int = 3) -> ArchitectResponse:
+def generate_architect_blueprint(idea: str, language: str = "en", max_retries: int = 3) -> ArchitectResponse:
     """Génère le blueprint technique et de marque via OpenAI"""
     
     system_prompt = f"""You are a technical architect and brand strategist. Your task is to create a complete Minimum Lovable Product (MLP) blueprint for a startup idea.
@@ -441,10 +441,10 @@ The startup idea to analyze is: {idea}
 - All lists must have at least the minimum required items
 
 **LANGUAGE INSTRUCTION:**
-- You must detect the language of the user's input idea (e.g., French, Spanish, German).
-- All textual content in your JSON response (titles, descriptions, step names, feature titles, etc.) **MUST** be in the **SAME language** as the input idea.
+- The user has requested the report in: **{language}**
+- **CRITICAL:** All textual content in your JSON response (titles, descriptions, step names, feature titles, etc.) **MUST** be in **{language}**.
 - Do not translate the field names (keys) of the JSON structure, only the values.
-- If the idea is in English, output in English. If in French, output in French.
+- **TECHNICAL TERMS:** Do NOT translate standard technical terms (e.g., 'React', 'Next.js', 'PostgreSQL', 'Frontend', 'Backend', 'AI/ML'). Keep them as standard industry terms.
 
 Generate a comprehensive blueprint that a development team could use to build the MVP."""
 

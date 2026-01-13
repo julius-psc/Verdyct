@@ -123,7 +123,7 @@ def search_market_data(idea: str) -> Dict:
             "results_count": 0
         }
 
-def generate_analysis(idea: str, market_data_context: str, max_retries: int = 3) -> AnalystResponse:
+def generate_analysis(idea: str, market_data_context: str, language: str = "en", max_retries: int = 3) -> AnalystResponse:
     """
     Génère l'analyse structurée via OpenAI en utilisant le contexte de marché.
     Inclut la logique de validation et de retry.
@@ -179,10 +179,10 @@ The idea to analyze is: {idea}
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
 **LANGUAGE INSTRUCTION:**
-- You must detect the language of the user's input idea (e.g., French, Spanish, German).
-- All textual content in your JSON response (titles, descriptions, summaries, recommendations, etc.) **MUST** be in the **SAME language** as the input idea.
+- The user has requested the report in: **{language}**
+- **CRITICAL:** All textual content in your JSON response (titles, descriptions, summaries, recommendations, etc.) **MUST** be in **{language}**.
 - Do not translate the field names (keys) of the JSON structure, only the values.
-- If the idea is in English, output in English. If in French, output in French.
+- **TECHNICAL TERMS:** Do NOT translate standard technical terms literally (e.g., 'TAM', 'SAM', 'CAGR', 'Churn Rate', 'Burn Rate', 'Moat'). Keep them as standard industry terms or use commonly accepted equivalents in {language}.
 
 **CRITICAL: INPUT VALIDATION (ANTI-NONSENSE RULE)**
 - You must first evaluate if the input `{idea}` is a legitimate business idea or just a test/nonsense input.
@@ -381,7 +381,7 @@ Be realistic and data-driven. Use ONLY the actual research data provided. NEVER 
             detail=f"Error generating analysis: {str(e)}"
         )
 
-def generate_rescue_plan(idea: str, analyst_data: Analyst) -> RescuePlan:
+def generate_rescue_plan(idea: str, analyst_data: Analyst, language: str = "en") -> RescuePlan:
     """
     Generates a rescue plan (Improve & Pivot) when the idea has a low PCS score.
     """
@@ -409,7 +409,10 @@ def generate_rescue_plan(idea: str, analyst_data: Analyst) -> RescuePlan:
         f"   - It must leverage the same underlying domain or technology but target a more profitable/less saturated opportunity.\n"
         f"   - **ai_suggested_prompt**: Generate a short, punchy phrase (5-10 words max) for this new pivot idea. Example: 'Marketplace for vintage watch restoration'.\n\n"
         f"Ensure the 'ai_suggested_prompt' is ready to be used as a new input for the analysis.\n\n"
-        f"**LANGUAGE INSTRUCTION:** Detect the language of the input idea. The entire response (titles, descriptions, prompts) MUST be in that SAME language."
+        f"**LANGUAGE INSTRUCTION:**\n"
+        f"- The user has requested the response in: **{language}**\n"
+        f"- **CRITICAL:** The entire response (titles, descriptions, prompts) MUST be in **{language}**.\n"
+        f"- Do not translate technical terms literally if they are standard in {language}."
     )
 
     try:

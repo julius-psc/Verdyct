@@ -12,6 +12,7 @@ import uuid
 class IdeaRequest(BaseModel):
     idea: str = Field(..., description="The startup idea to analyze")
     analysis_type: str = Field("small", description="'small' (free) or 'full' (1 credit)")
+    language: str = Field("en", description="Output language for the report ('en' or 'fr')")
 
 
 # User class removed - using Supabase table 'users'

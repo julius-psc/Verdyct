@@ -267,6 +267,7 @@ async def analyze_idea(request: IdeaRequest, user: dict = Depends(verify_token))
                 analysis = generate_analysis(
                     request.idea,
                     market_data["context"],
+                    language=request.language,
                     max_retries=max_retries
                 )
                 
@@ -327,6 +328,7 @@ async def spy_analysis(request: IdeaRequest, user: tuple = Depends(verify_token)
                     request.idea,
                     intel_data["landscape_context"],
                     intel_data["pain_context"],
+                    language=request.language,
                     max_retries=max_retries
                 )
                 
@@ -386,6 +388,7 @@ async def financier_analysis(request: IdeaRequest, user: tuple = Depends(verify_
                 analysis = generate_financier_analysis(
                     request.idea,
                     pricing_data["pricing_context"],
+                    language=request.language,
                     max_retries=max_retries
                 )
                 
@@ -437,6 +440,7 @@ async def architect_blueprint(request: IdeaRequest, user: tuple = Depends(verify
             try:
                 blueprint = generate_architect_blueprint(
                     request.idea,
+                    language=request.language,
                     max_retries=max_retries
                 )
                 return blueprint
@@ -725,7 +729,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 # REJECTED
                 yield f"data: {json.dumps({'type': 'log', 'message': f'POS {pcs_score} < 60. Triggering Rescue Plan.'})}\n\n"
                 
-                rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst)
+                rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst, language=request.language)
                 
                 # Persistence (Rejected)
                 project_id = str(uuid.uuid4())

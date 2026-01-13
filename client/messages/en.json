@@ -1,0 +1,471 @@
+{
+    "Navbar": {
+        "home": "Home",
+        "howItWorks": "How it works",
+        "leaderboard": "Leaderboard",
+        "pricing": "Pricing",
+        "login": "Login",
+        "dashboard": "Dashboard",
+        "profile": "Profile",
+        "settings": "Settings",
+        "legal": "Legal",
+        "logout": "Log Out"
+    },
+    "Hero": {
+        "betaTag": "Beta v1.0 is out!",
+        "heading": "We know what works.",
+        "subheading": "Stop building what nobody wants. We predict your idea's success and give you the plan to launch.",
+        "inputPlaceholder": "Describe your idea...",
+        "smallAnalysis": "Small (Free)",
+        "fullAnalysis": "Full (1 Credit)",
+        "attach": "Attach",
+        "comingSoon": "Coming Soon"
+    },
+    "LoadingModal": {
+        "analystTitle": "The Analyst",
+        "analystDesc": "Processing market data and identifying key trends to build a foundational understanding.",
+        "spyTitle": "The Spy",
+        "spyDesc": "Scanning the competitive landscape for vulnerabilities and opportunities to exploit.",
+        "architectTitle": "The Architect",
+        "architectDesc": "Generating a functional MVP blueprint and deploying a testable landing page.",
+        "financierTitle": "The Financier",
+        "financierDesc": "Analyzing financial projections and revenue models to ensure sustainable growth.",
+        "verdyctTitle": "The Verdyct",
+        "verdyctDesc": "Consolidating all findings from the agents. Your comprehensive report is now ready.",
+        "complete": "Complete",
+        "queued": "Queued",
+        "activeAgent": "Active Agent",
+        "errorDetected": "Error Detected",
+        "finalizing": "FINALIZING...",
+        "processing": "PROCESSING...",
+        "verdyctComplete": "Verdyct Complete",
+        "redirecting": "Your full report is ready. Redirecting..."
+    },
+    "EnhancePivot": {
+        "verdyctScore": "Verdyct Score",
+        "analysisRisks": "Analysis & Risks",
+        "recommendedActions": "Recommended Actions",
+        "hardStop": "Hard Stop",
+        "hardStopDesc": "The analysis suggests this idea has fundamental flaws. We recommend exploring other opportunities.",
+        "tryAnother": "Try Another Idea",
+        "unicornPotential": "Unicorn Potential",
+        "readyToBuild": "Ready to Build",
+        "unicornDesc": "Exceptional metrics detected. Immediate execution is strongly recommended.",
+        "buildDesc": "Fundamentals are solid. You are cleared to generate the MVP architecture.",
+        "startArchitect": "Start Architect Agent",
+        "option1": "Option 1",
+        "enhance": "Enhance",
+        "enhanceIdea": "Enhance Idea",
+        "option2": "Option 2",
+        "recommended": "Recommended",
+        "pivot": "Pivot",
+        "pivotToThis": "Pivot to This Idea",
+        "refinePlaceholder": "Refine idea...",
+        "pivotPlaceholder": "Pivot idea...",
+        "rationale": {
+            "kill": "Fatal flaws detected (Zero TAM, saturated market, no clear problem).",
+            "pivot": "Good core, but weak execution/market. Ask user to refine prompt before building.",
+            "build": "Solid fundamentals. Worth the API cost to generate MVP specs.",
+            "unicorn": "Exceptional opportunity. High urgency."
+        },
+        "scoreLabel": {
+            "kill": "Kill",
+            "pivot": "Pivot",
+            "build": "Build",
+            "unicorn": "Unicorn"
+        },
+        "risks": {
+            "kill1": "Total Addressable Market (TAM) appears negligible.",
+            "kill2": "Legal/Regulatory barriers are insurmountable for an MVP.",
+            "pivot1": "Market Saturation: High. 15+ direct competitors identified.",
+            "pivot2": "Differentiation: Low. Core features overlap 90% with market leaders.",
+            "pivot3": "Acquisition Cost: Estimated CAC > $50, unsustainable for this model.",
+            "build1": "Strong founder-market fit potential.",
+            "build2": "Clear path to initial revenue."
+        }
+    },
+    "HowItWorks": {
+        "title": "Simplicity by design.",
+        "subtitle": "We've condensed weeks of market research into a seamless, automated workflow.",
+        "steps": {
+            "01": {
+                "title": "Input your concept",
+                "description": "No decks. No business plans. Just describe what you want to build in a few sentences."
+            },
+            "02": {
+                "title": "Agents at work",
+                "description": "Our AI swarm dissects your idea, researching competitors, querying market data, and projecting financials."
+            },
+            "03": {
+                "title": "Receive your Verdyct",
+                "description": "Get a Predictive Opportunity Score (POS) and a strategic roadmap to launch with confidence."
+            }
+        }
+    },
+    "About": {
+        "title": "From idea to Verdyct in <span class='text-primary-red'>Minutes.</span>",
+        "subtitle": "You don't just get a report. You get actionable assets, powered by our specialized AI agents.",
+        "agents": {
+            "analyst": {
+                "title": "The Analyst",
+                "description": "Sizes your total market, finds your target audience, and reveals the keywords they're actively searching for."
+            },
+            "spy": {
+                "title": "The Spy",
+                "description": "Instantly maps your top competitors, analyzing their pricing, features, and the strategic weaknesses you can exploit."
+            },
+            "architect": {
+                "title": "The Architect",
+                "description": "Designs your technical roadmap and builds your <strong>Data Moat</strong>, ensuring your startup remains defensible as it scales."
+            },
+            "financier": {
+                "title": "The Financier",
+                "description": "Calculates your potential profit, estimating your Customer Acquisition Cost (CAC), Lifetime Value (LTV), and path to revenue."
+            }
+        }
+    },
+    "Pricing": {
+        "title": "Pricing that scales with you",
+        "subtitle": "We promise you'll get your money's worth.",
+        "monthly": "Monthly",
+        "annual": "Annual",
+        "save22": "Save 22%",
+        "launchOffer": "50% Launch Offer",
+        "launchDate": "Launch Feb 1st",
+        "perPack": "/ pack",
+        "perMonth": "/ month",
+        "perYear": "/ year",
+        "startFree": "Start Free",
+        "joinWaitlist": "Join Waitlist",
+        "joinWaitlistAnnual": "Join Waitlist (Annual)",
+        "seeAnalysis": "See Analysis Example",
+        "seeRoadmap": "See Roadmap Example",
+        "plans": {
+            "beginner": {
+                "name": "Beginner",
+                "description": "Perfect to get a taste",
+                "includesLabel": "Includes",
+                "features": {
+                    "0": "1 Complete Verdyct Analysis",
+                    "1": "Analyst Agent Access (Report)",
+                    "2": "No Spy Agent (Competitors)",
+                    "3": "No Financier Agent",
+                    "4": "No Architect Agent"
+                }
+            },
+            "starter": {
+                "name": "Starter",
+                "description": "Deep dive into 5 ideas",
+                "includesLabel": "Everything in Beginner, plus...",
+                "features": {
+                    "0": "5 Full Verdyct Analyses",
+                    "1": "Access to All 4 Agents",
+                    "2": "Analyst, Spy, Financier, Architect",
+                    "3": "Full Report Download"
+                }
+            },
+            "builder": {
+                "name": "Builder",
+                "description": "For those who build, not just dream.",
+                "includesLabel": "Everything in Starter, plus...",
+                "features": {
+                    "0": "20 Full Analyses / month",
+                    "1": "Custom Action Plan (Timeline)",
+                    "2": "Access to Deep Dives",
+                    "3": "Unlimited AI Coach"
+                }
+            }
+        }
+    },
+    "FAQ": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Everything you need to know about Verdyct.",
+        "items": {
+            "0": {
+                "question": "Do I need a business plan?",
+                "answer": "Not at all. Just describe your idea in plain English. Our AI agents will extrapolate the necessary details to build a comprehensive analysis."
+            },
+            "1": {
+                "question": "How accurate are the predictions?",
+                "answer": "Our predictions are based on real-time market data, competitor analysis, and financial modeling. While no prediction is 100% guaranteed, we provide data-backed probabilities to guide your decisions."
+            },
+            "2": {
+                "question": "Can I download the reports?",
+                "answer": "Yes! You can export the full analysis, including the business plan, financial models, and competitor research, as a professional PDF report."
+            },
+            "3": {
+                "question": "What if my idea changes?",
+                "answer": "No problem. You can pivot your idea within the platform. Our Architect Agent will help you adjust your strategy and re-run numbers instantly."
+            },
+            "4": {
+                "question": "Is my data secure?",
+                "answer": "Absolutely. Your ideas are your intellectual property. We use enterprise-grade encryption and never share your data with third parties or use it to train public models."
+            }
+        }
+    },
+    "CTA": {
+        "title": "Validate. Predict. Launch.",
+        "button": "Start building"
+    },
+    "Profile": {
+        "title": "My Profile",
+        "subtitle": "Manage your account and view your usage.",
+        "loading": "Loading profile...",
+        "notAuthenticated": "Not authenticated",
+        "accountDetails": {
+            "title": "Account Details",
+            "subtitle": "Your personal information"
+        },
+        "fields": {
+            "email": "Email",
+            "userId": "User ID"
+        },
+        "signOut": "Sign Out",
+        "plan": {
+            "title": "Current Plan",
+            "name": "Free Beta",
+            "description": "You are currently on the Beta plan. You have access to the Analysis features with a daily limit."
+        },
+        "usage": {
+            "title": "Daily Usage",
+            "analysesToday": "Analyses Today",
+            "resetNote": "Resets every day at 00:00 UTC."
+        }
+    },
+    "Settings": {
+        "title": "Settings",
+        "subtitle": "Manage your personal information and security preferences.",
+        "tabs": {
+            "account": "Account",
+            "security": "Security",
+            "notifications": "Notifications",
+            "billing": "Billing"
+        },
+        "messages": {
+            "profileSuccess": "Profile updated successfully",
+            "passwordSuccess": "Password updated successfully",
+            "passwordMismatch": "Passwords don't match",
+            "passwordTooShort": "Password must be at least 6 characters"
+        },
+        "account": {
+            "profilePicture": "Profile Picture",
+            "autoSaveNote": "Changes are saved automatically.",
+            "uploadNew": "Upload New (Coming Soon)",
+            "displayName": "Display Name",
+            "enterName": "Enter your name",
+            "email": "Email Address",
+            "emailNote": "Email address cannot be changed securely at this time.",
+            "memberSince": "Member Since",
+            "saveChanges": "Save Changes",
+            "saving": "Saving..."
+        },
+        "security": {
+            "changePassword": "Change Password",
+            "secureNote": "Ensure your account is using a long, random password to stay secure.",
+            "newPassword": "New Password",
+            "enterNewPassword": "Enter new password",
+            "confirmPassword": "Confirm New Password",
+            "confirmNewPassword": "Confirm new password",
+            "updatePassword": "Update Password",
+            "updating": "Updating..."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "empty": "You have no pending notifications. We'll verify your contact methods soon."
+        },
+        "billing": {
+            "title": "Billing & Plans",
+            "currentPlan": "Your workspace is currently on the <span class='text-white'>Free Beta Tier</span>."
+        }
+    },
+    "Leaderboard": {
+        "hallOfFame": "Hall of Fame",
+        "title": "Top Disruptive Ideas",
+        "subtitle": "Discover the highest-rated startup concepts analyzed by Verdyct. Vote for the ones you'd back with real money.",
+        "filters": {
+            "highestScore": "Highest POS Score",
+            "mostUpvoted": "Most Upvoted"
+        },
+        "emptyState": "No public projects yet. Be the first to publish!",
+        "card": {
+            "pos": "POS",
+            "noDescription": "No description available for this project.",
+            "removeVote": "Remove vote",
+            "upvote": "Upvote",
+            "viewReport": "View Report"
+        }
+    },
+    "Legal": {
+        "layout": {
+            "title": "Legal",
+            "nav": {
+                "privacy": "Privacy Policy",
+                "terms": "Terms of Service",
+                "security": "Security",
+                "cookies": "Cookies"
+            }
+        },
+        "hub": {
+            "title": "Legal",
+            "titleSpan": "Center",
+            "subtitle": "Transparency is core to our values.",
+            "cards": {
+                "privacy": {
+                    "name": "Privacy Policy",
+                    "desc": "How we process and protect your personal data."
+                },
+                "terms": {
+                    "name": "Terms of Service",
+                    "desc": "The agreement between you and Verdyct."
+                },
+                "security": {
+                    "name": "Security",
+                    "desc": "Our security standards and practices."
+                },
+                "cookies": {
+                    "name": "Cookie Policy",
+                    "desc": "How we use cookies and tracking technologies."
+                }
+            }
+        },
+        "privacy": {
+            "title": "Privacy Policy",
+            "lastUpdated": "Last updated: December 2024",
+            "intro": "At Verdyct (\"we\", \"us\", or \"our\"), we are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us at legal@verdyct.io.",
+            "sections": {
+                "infoCollect": {
+                    "title": "1. What information do we collect?",
+                    "text1": "We collect personal information that you voluntarily provide to us when you register on the Website, express an interest in obtaining information about us or our products and Services, when you participate in activities on the Website or otherwise when you contact us.",
+                    "text2": "The personal information that we collect depends on the context of your interactions with us and the Website, the choices you make and the products and features you use."
+                },
+                "usage": {
+                    "title": "2. How do we use your information?",
+                    "text": "We use personal information collected via our Website for a variety of business purposes described below. We process your personal information for these purposes in reliance on our legitimate business interests, in order to enter into or perform a contract with you, with your consent, and/or for compliance with our legal obligations.",
+                    "list": [
+                        "To facilitate account creation and logon process.",
+                        "To post testimonials.",
+                        "To request feedback.",
+                        "To enable user-to-user communications.",
+                        "To manage user accounts."
+                    ]
+                },
+                "sharing": {
+                    "title": "3. Will your information be shared with anyone?",
+                    "text": "We only share information with your consent, to comply with laws, to provide you with services, to protect your rights, or to fulfill business obligations."
+                }
+            }
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "lastUpdated": "Last updated: December 2024",
+            "intro": "These Terms of Service (\"Terms\") constitute a legally binding agreement between you and Verdyct regarding your access to and use of the Verdyct website and related services.",
+            "sections": {
+                "acceptance": {
+                    "title": "1. Acceptance of Terms",
+                    "text": "By accessing or using our Service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service."
+                },
+                "ip": {
+                    "title": "2. Intellectual Property",
+                    "text1": "The Service and its original content, features, and functionality are and will remain the exclusive property of Verdyct and its licensors. The Service is protected by copyright, trademark, and other laws of both the United States and foreign countries.",
+                    "text2": "Your Content: You retain all rights to the business ideas, data, and intellectual property you input into Verdyct. We claim no ownership over your generated reports."
+                },
+                "accounts": {
+                    "title": "3. Accounts",
+                    "text": "When you create an account with us, you must provide us information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service."
+                },
+                "termination": {
+                    "title": "4. Termination",
+                    "text": "We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms."
+                },
+                "liability": {
+                    "title": "5. Limitation of Liability",
+                    "text": "In no event shall Verdyct, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses."
+                }
+            }
+        },
+        "cookies": {
+            "title": "Cookie Policy",
+            "intro": "This Cookie Policy explains how Verdyct uses cookies and similar technologies to recognize you when you visit our website.",
+            "what": {
+                "title": "What are cookies?",
+                "text": "Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners in order to make their websites work, or to work more efficiently, as well as to provide reporting information."
+            },
+            "why": {
+                "title": "Why do we use cookies?",
+                "text": "We use first-party and third-party cookies for several reasons. Some cookies are required for technical reasons in order for our Website to operate, and we refer to these as \"essential\" or \"strictly necessary\" cookies. Other cookies also enable us to track and target the interests of our users to enhance the experience on our Online Properties."
+            },
+            "types": {
+                "title": "Types of Cookies We Use",
+                "essential": {
+                    "title": "Essential Cookies",
+                    "text": "These cookies are strictly necessary to provide you with services available through our Website and to use some of its features, such as access to secure areas."
+                },
+                "perf": {
+                    "title": "Performance and Functionality Cookies",
+                    "text": "These cookies are used to enhance the performance and functionality of our Website but are non-essential to their use."
+                },
+                "analytics": {
+                    "title": "Analytics and Customization Cookies",
+                    "text": "These cookies collect information that is used either in aggregate form to help us understand how our Website is being used or how effective our marketing campaigns are."
+                }
+            },
+            "control": {
+                "title": "How can I control cookies?",
+                "text": "You have the right to decide whether to accept or reject cookies. You can exercise your cookie rights by setting your browser preferences."
+            }
+        },
+        "security": {
+            "title": "Security Practices",
+            "intro": "Security is not an afterthought at Verdyct. It is integral to our architecture.",
+            "infra": {
+                "title": "Infrastructure Security",
+                "text": "Our application is hosted on world-class cloud providers that maintain ISO 27001, SOC 2 Type II, and PCI-DSS certifications. We utilize a multi-layered security approach, including:",
+                "list": [
+                    "Virtual Private Cloud (VPC) isolation",
+                    "Web Application Firewalls (WAF)",
+                    "DDoS protection",
+                    "Regular automated vulnerability scanning"
+                ]
+            },
+            "encryption": {
+                "title": "Data Encryption",
+                "text": "We use strong encryption to protect your data both in transit and at rest.",
+                "transit": "In Transit: All data transmitted between your browser and our servers is encrypted using valid TLS 1.2 or higher.",
+                "rest": "At Rest: Sensitive data stored in our databases is encrypted using AES-256 standards."
+            },
+            "access": {
+                "title": "Access Control",
+                "text": "Access to production systems is strictly limited to authorized personnel on a need-to-know basis. We enforce Multi-Factor Authentication (MFA) for all internal access."
+            },
+            "reporting": {
+                "title": "Reporting Vulnerabilities",
+                "text": "We welcome reports from the security research community. If you discover a vulnerability, please disclose it to us responsibly by emailing security@verdyct.io."
+            }
+        }
+    },
+    "Footer": {
+        "description": "The AI-powered co-founder for your next big idea. Analyze markets, predict success, and execute 10x faster.",
+        "product": {
+            "title": "Product",
+            "features": "Features",
+            "pricing": "Pricing",
+            "howItWorks": "How it works",
+            "faq": "FAQ"
+        },
+        "company": {
+            "title": "Company",
+            "about": "About us",
+            "careers": "Careers",
+            "blog": "Blog",
+            "contact": "Contact"
+        },
+        "legal": {
+            "title": "Legal",
+            "mentions": "Legal Mentions",
+            "privacy": "Privacy Policy",
+            "disclaimer": "Disclaimer"
+        },
+        "rights": "© {year} Verdyct Inc. All rights reserved.",
+        "status": "All systems operational"
+    }
+}

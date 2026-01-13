@@ -7,14 +7,14 @@ from sqlalchemy.orm import sessionmaker
 
 # ========== CONFIGURATION ==========
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    print("⚠️ DATABASE_URL not set. Falling back to local SQLite.")
-    DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
-else:
-    # Ensure usage of asyncpg driver for Postgres
-    if DATABASE_URL.startswith("postgresql://"):
-        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+# DATABASE_URL = os.getenv("DATABASE_URL")
+# if not DATABASE_URL:
+#     print("⚠️ DATABASE_URL not set. Falling back to local SQLite.")
+DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
+# else:
+#     # Ensure usage of asyncpg driver for Postgres
+#     if DATABASE_URL.startswith("postgresql://"):
+#         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
@@ -76,14 +76,15 @@ def get_qdrant_client():
         
     if _qdrant_client is None:
         try:
-            if QDRANT_URL and QDRANT_API_KEY:
-                # Initialize Cloud Qdrant
-                _qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
-                print("✅ Connected to Qdrant Cloud.")
-            else:
-                # Initialize local Qdrant
+                # Initialize Cloud Qdrant - DISABLED to fix socket.gaierror
+                # _qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+                # print("✅ Connected to Qdrant Cloud.")
                 _qdrant_client = QdrantClient(path=QDRANT_PATH)
-                print("⚠️ Using local Qdrant storage.")
+                print("⚠️ Force fallback to local Qdrant due to network error.")
+            # else:
+            #     # Initialize local Qdrant
+            #     # _qdrant_client = QdrantClient(path=QDRANT_PATH)
+            #     # print("⚠️ Using local Qdrant storage.")
         except Exception as e:
             print(f"Failed to create Qdrant client: {e}")
             return None
@@ -99,7 +100,8 @@ def get_embedding_model():
             # Load model (this might take a moment on first run)
             _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
         except Exception as e:
-            print(f"Failed to load embedding model: {e}")
+            print(f"Failed to load embedding model (Network/DNS error?): {e}")
+            _vector_db_available = False # Disable vector DB if model fails to load
             return None
     return _embedding_model
 

@@ -138,7 +138,7 @@ def calculate_projections(monthly_price: float, ad_spend: float, conversion_rate
         "projections": projections
     }
 
-def generate_financier_analysis(idea: str, pricing_context: str, max_retries: int = 3) -> FinancierResponse:
+def generate_financier_analysis(idea: str, pricing_context: str, language: str = "en", max_retries: int = 3) -> FinancierResponse:
     """Génère l'analyse financière via OpenAI (sans calculer les projections)"""
     
     # Extraire les URLs disponibles depuis le contexte
@@ -213,10 +213,10 @@ Analyze the idea and categorize it into one of these types:
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
 **LANGUAGE INSTRUCTION:**
-- You must detect the language of the user's input idea (e.g., French, Spanish, German).
-- All textual content in your JSON response (titles, feature names, statuses, summaries, etc.) **MUST** be in the **SAME language** as the input idea.
+- The user has requested the report in: **{language}**
+- **CRITICAL:** All textual content in your JSON response (titles, feature names, statuses, summaries, etc.) **MUST** be in **{language}**.
 - Do not translate the field names (keys) of the JSON structure, only the values.
-- If the idea is in English, output in English. If in French, output in French.
+- **TECHNICAL TERMS:** Do NOT translate standard technical terms literally (e.g., 'SaaS', 'B2B', 'LTV', 'CAC', 'Margin'). Keep them as standard industry terms or use commonly accepted equivalents in {language}.
 
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE pricing tier with a valid verified_url

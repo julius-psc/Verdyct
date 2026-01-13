@@ -95,7 +95,7 @@ def get_competitor_intel(idea: str) -> Dict:
             "pain_count": 0
         }
 
-def generate_spy_analysis(idea: str, landscape_context: str, pain_context: str, max_retries: int = 3) -> SpyResponse:
+def generate_spy_analysis(idea: str, landscape_context: str, pain_context: str, language: str = "en", max_retries: int = 3) -> SpyResponse:
     """Génère l'analyse stratégique du Spy Agent via OpenAI avec retry automatique"""
     
     # Extraire les URLs disponibles depuis les contextes
@@ -188,10 +188,10 @@ Your analysis must:
 - The verified_url field is MANDATORY and cannot be empty or placeholder
 
 **LANGUAGE INSTRUCTION:**
-- You must detect the language of the user's input idea (e.g., French, Spanish, German).
-- All textual content in your JSON response (titles, reviews, quotes, summaries, strategic insights, etc.) **MUST** be in the **SAME language** as the input idea.
+- The user has requested the report in: **{language}**
+- **CRITICAL:** All textual content in your JSON response (titles, reviews, quotes, summaries, strategic insights, etc.) **MUST** be in **{language}**.
 - Do not translate the field names (keys) of the JSON structure, only the values.
-- If the idea is in English, output in English. If in French, output in French.
+- **TECHNICAL TERMS:** Do NOT translate standard technical terms literally (e.g., 'Blue Ocean', 'Red Ocean', 'Niche', 'B2B', 'B2C'). Keep them as standard industry terms or use commonly accepted equivalents in {language}.
 
 **CRITICAL - MINIMUM REQUIREMENTS:**
 - You MUST provide AT LEAST ONE competitor with a valid verified_url

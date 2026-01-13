@@ -1,0 +1,471 @@
+{
+    "Navbar": {
+        "home": "Accueil",
+        "howItWorks": "Comment ça marche",
+        "leaderboard": "Classement",
+        "pricing": "Tarifs",
+        "login": "Connexion",
+        "dashboard": "Tableau de bord",
+        "profile": "Profil",
+        "settings": "Paramètres",
+        "legal": "Mentions légales",
+        "logout": "Se déconnecter"
+    },
+    "Hero": {
+        "betaTag": "Beta v1.0 est sortie !",
+        "heading": "We know what works.",
+        "subheading": "Arrêtez de construire ce que personne ne veut. Nous prédisons le succès de votre idée et vous donnons le plan pour lancer.",
+        "inputPlaceholder": "Décrivez votre idée...",
+        "smallAnalysis": "Small (Free)",
+        "fullAnalysis": "Full (1 Credit)",
+        "attach": "Joindre",
+        "comingSoon": "Bientôt disponible"
+    },
+    "LoadingModal": {
+        "analystTitle": "L'Analyste",
+        "analystDesc": "Traitement des données du marché et identification des tendances clés pour construire une compréhension fondamentale.",
+        "spyTitle": "L'Espion",
+        "spyDesc": "Analyse du paysage concurrentiel pour identifier les vulnérabilités et les opportunités à exploiter.",
+        "architectTitle": "L'Architecte",
+        "architectDesc": "Génération d'un plan MVP fonctionnel et déploiement d'une page de destination testable.",
+        "financierTitle": "Le Financier",
+        "financierDesc": "Analyse des projections financières et des modèles de revenus pour assurer une croissance durable.",
+        "verdyctTitle": "Le Verdyct",
+        "verdyctDesc": "Consolidation de toutes les conclusions des agents. Votre rapport complet est maintenant prêt.",
+        "complete": "Terminé",
+        "queued": "En file d'attente",
+        "activeAgent": "Agent Actif",
+        "errorDetected": "Erreur Détectée",
+        "finalizing": "FINALISATION...",
+        "processing": "TRAITEMENT...",
+        "verdyctComplete": "Verdyct Terminé",
+        "redirecting": "Votre rapport complet est prêt. Redirection..."
+    },
+    "EnhancePivot": {
+        "verdyctScore": "Score Verdyct",
+        "analysisRisks": "Analyse et Risques",
+        "recommendedActions": "Actions Recommandées",
+        "hardStop": "Arrêt Immédiat",
+        "hardStopDesc": "L'analyse suggère que cette idée a des défauts fondamentaux. Nous recommandons d'explorer d'autres opportunités.",
+        "tryAnother": "Essayer une autre idée",
+        "unicornPotential": "Potentiel Licorne",
+        "readyToBuild": "Prêt à Construire",
+        "unicornDesc": "Métriques exceptionnelles détectées. L'exécution immédiate est fortement recommandée.",
+        "buildDesc": "Les fondamentaux sont solides. Vous êtes autorisé à générer l'architecture MVP.",
+        "startArchitect": "Démarrer l'Agent Architecte",
+        "option1": "Option 1",
+        "enhance": "Améliorer",
+        "enhanceIdea": "Améliorer l'Idée",
+        "option2": "Option 2",
+        "recommended": "Recommandé",
+        "pivot": "Pivoter",
+        "pivotToThis": "Pivoter vers cette idée",
+        "refinePlaceholder": "Affiner l'idée...",
+        "pivotPlaceholder": "Idée de pivot...",
+        "rationale": {
+            "kill": "Défauts fatals détectés (TAM nul, marché saturé, pas de problème clair).",
+            "pivot": "Bon noyau, mais exécution/marché faible. Demandez à l'utilisateur d'affiner le prompt avant de construire.",
+            "build": "Fondamentaux solides. Vaut le coût de l'API pour générer les spécifications MVP.",
+            "unicorn": "Opportunité exceptionnelle. Urgence élevée."
+        },
+        "scoreLabel": {
+            "kill": "Tuer",
+            "pivot": "Pivoter",
+            "build": "Construire",
+            "unicorn": "Licorne"
+        },
+        "risks": {
+            "kill1": "Le marché adressable total (TAM) semble négligeable.",
+            "kill2": "Les barrières juridiques/réglementaires sont insurmontables pour un MVP.",
+            "pivot1": "Saturation du marché : Élevée. 15+ concurrents directs identifiés.",
+            "pivot2": "Différenciation : Faible. Les fonctionnalités principales chevauchent à 90% celles des leaders du marché.",
+            "pivot3": "Coût d'acquisition : CAC estimé > 50 $, non durable pour ce modèle.",
+            "build1": "Fort potentiel d'adéquation fondateur-marché.",
+            "build2": "Chemin clair vers les premiers revenus."
+        }
+    },
+    "HowItWorks": {
+        "title": "La simplicité par le design.",
+        "subtitle": "Nous avons condensé des semaines d'étude de marché en un flux de travail transparent et automatisé.",
+        "steps": {
+            "01": {
+                "title": "Entrez votre concept",
+                "description": "Pas de slides. Pas de business plan. Décrivez simplement ce que vous voulez construire en quelques phrases."
+            },
+            "02": {
+                "title": "Agents au travail",
+                "description": "Notre essaim d'IA dissèque votre idée, recherche les concurrents, interroge les données du marché et projette les finances."
+            },
+            "03": {
+                "title": "Recevez votre Verdyct",
+                "description": "Obtenez un Score d'Opportunité Prédictif (POS) et une feuille de route stratégique pour vous lancer en toute confiance."
+            }
+        }
+    },
+    "About": {
+        "title": "D'une idée au Verdyct en <span class='text-primary-red'>Minutes.</span>",
+        "subtitle": "Vous n'obtenez pas juste un rapport. Vous obtenez des atouts exploitables, propulsés par nos agents IA spécialisés.",
+        "agents": {
+            "analyst": {
+                "title": "L'Analyste",
+                "description": "Dimensionne votre marché total, trouve votre public cible et révèle les mots-clés qu'ils recherchent activement."
+            },
+            "spy": {
+                "title": "L'Espion",
+                "description": "Cartographie instantanément vos principaux concurrents, analysant leurs prix, fonctionnalités et les faiblesses stratégiques à exploiter."
+            },
+            "architect": {
+                "title": "L'Architecte",
+                "description": "Conçoit votre feuille de route technique et construit votre <strong>Data Moat</strong>, assurant la défensabilité de votre startup à grande échelle."
+            },
+            "financier": {
+                "title": "Le Financier",
+                "description": "Calcule votre profit potentiel, estimant votre Coût d'Acquisition Client (CAC), Valeur à Vie (LTV) et le chemin vers les revenus."
+            }
+        }
+    },
+    "Pricing": {
+        "title": "Une tarification qui évolue avec vous",
+        "subtitle": "Nous vous promettons que vous en aurez pour votre argent.",
+        "monthly": "Mensuel",
+        "annual": "Annuel",
+        "save22": "Économisez 22%",
+        "launchOffer": "Offre de Lancement -50%",
+        "launchDate": "Lancement 1er Fév",
+        "perPack": "/ pack",
+        "perMonth": "/ mois",
+        "perYear": "/ an",
+        "startFree": "Commencer Gratuitement",
+        "joinWaitlist": "Rejoindre la liste d'attente",
+        "joinWaitlistAnnual": "Rejoindre (Annuel)",
+        "seeAnalysis": "Voir un exemple d'analyse",
+        "seeRoadmap": "Voir un exemple de roadmap",
+        "plans": {
+            "beginner": {
+                "name": "Débutant",
+                "description": "Parfait pour tester",
+                "includesLabel": "Inclus",
+                "features": {
+                    "0": "1 Analyse Verdyct Complète",
+                    "1": "Accès Agent Analyste (Rapport)",
+                    "2": "Pas d'Agent Espion (Concurrents)",
+                    "3": "Pas d'Agent Financier",
+                    "4": "Pas d'Agent Architecte"
+                }
+            },
+            "starter": {
+                "name": "Démarrage",
+                "description": "Analysez 5 idées en profondeur",
+                "includesLabel": "Tout ce qu'il y a dans Débutant, plus...",
+                "features": {
+                    "0": "5 Analyses Verdyct Complètes",
+                    "1": "Accès aux 4 Agents",
+                    "2": "Analyste, Espion, Financier, Architecte",
+                    "3": "Téléchargement du rapport complet"
+                }
+            },
+            "builder": {
+                "name": "Bâtisseur",
+                "description": "Pour ceux qui construisent, pas seulement rêvent.",
+                "includesLabel": "Tout ce qu'il y a dans Démarrage, plus...",
+                "features": {
+                    "0": "20 Analyses Complètes / mois",
+                    "1": "Plan d'Action Personnalisé (Timeline)",
+                    "2": "Accès aux Analyses Approfondies",
+                    "3": "Coach IA Illimité"
+                }
+            }
+        }
+    },
+    "FAQ": {
+        "title": "Questions Fréquemment Posées",
+        "subtitle": "Tout ce que vous devez savoir sur Verdyct.",
+        "items": {
+            "0": {
+                "question": "Ai-je besoin d'un business plan ?",
+                "answer": "Pas du tout. Décrivez simplement votre idée en français courant. Nos agents IA extrapoleront les détails nécessaires pour construire une analyse complète."
+            },
+            "1": {
+                "question": "Quelle est la précision des prédictions ?",
+                "answer": "Nos prédictions sont basées sur des données de marché en temps réel, une analyse des concurrents et une modélisation financière. Bien qu'aucune prédiction ne soit garantie à 100%, nous fournissons des probabilités étayées par des données pour guider vos décisions."
+            },
+            "2": {
+                "question": "Puis-je télécharger les rapports ?",
+                "answer": "Oui ! Vous pouvez exporter l'analyse complète, y compris le business plan, les modèles financiers et la recherche concurrentielle, sous forme de rapport PDF professionnel."
+            },
+            "3": {
+                "question": "Et si mon idée change ?",
+                "answer": "Aucun problème. Vous pouvez faire pivoter votre idée au sein de la plateforme. Notre Agent Architecte vous aidera à ajuster votre stratégie et à relancer les chiffres instantanément."
+            },
+            "4": {
+                "question": "Mes données sont-elles sécurisées ?",
+                "answer": "Absolument. Vos idées sont votre propriété intellectuelle. Nous utilisons un cryptage de niveau entreprise et ne partageons jamais vos données avec des tiers ni ne les utilisons pour former des modèles publics."
+            }
+        }
+    },
+    "CTA": {
+        "title": "Validez. Prédisez. Lancez.",
+        "button": "Commencer à construire"
+    },
+    "Profile": {
+        "title": "Mon Profil",
+        "subtitle": "Gérez votre compte et consultez votre utilisation.",
+        "loading": "Chargement du profil...",
+        "notAuthenticated": "Non authentifié",
+        "accountDetails": {
+            "title": "Détails du compte",
+            "subtitle": "Vos informations personnelles"
+        },
+        "fields": {
+            "email": "Email",
+            "userId": "ID Utilisateur"
+        },
+        "signOut": "Se déconnecter",
+        "plan": {
+            "title": "Plan Actuel",
+            "name": "Beta Gratuite",
+            "description": "Vous êtes actuellement sur le plan Beta. Vous avez accès aux fonctionnalités d'analyse avec une limite quotidienne."
+        },
+        "usage": {
+            "title": "Utilisation Quotidienne",
+            "analysesToday": "Analyses du jour",
+            "resetNote": "Réinitialisé chaque jour à 00:00 UTC."
+        }
+    },
+    "Settings": {
+        "title": "Paramètres",
+        "subtitle": "Gérez vos informations personnelles et préférences de sécurité.",
+        "tabs": {
+            "account": "Compte",
+            "security": "Sécurité",
+            "notifications": "Notifications",
+            "billing": "Facturation"
+        },
+        "messages": {
+            "profileSuccess": "Profil mis à jour avec succès",
+            "passwordSuccess": "Mot de passe mis à jour avec succès",
+            "passwordMismatch": "Les mots de passe ne correspondent pas",
+            "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères"
+        },
+        "account": {
+            "profilePicture": "Photo de profil",
+            "autoSaveNote": "Les changements sont enregistrés automatiquement.",
+            "uploadNew": "Télécharger (Bientôt)",
+            "displayName": "Nom d'affichage",
+            "enterName": "Entrez votre nom",
+            "email": "Adresse Email",
+            "emailNote": "L'adresse email ne peut pas être modifiée de manière sécurisée pour le moment.",
+            "memberSince": "Membre depuis",
+            "saveChanges": "Enregistrer les modifications",
+            "saving": "Enregistrement..."
+        },
+        "security": {
+            "changePassword": "Changer le mot de passe",
+            "secureNote": "Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester sécurisé.",
+            "newPassword": "Nouveau mot de passe",
+            "enterNewPassword": "Entrez le nouveau mot de passe",
+            "confirmPassword": "Confirmer le nouveau mot de passe",
+            "confirmNewPassword": "Confirmez le nouveau mot de passe",
+            "updatePassword": "Mettre à jour le mot de passe",
+            "updating": "Mise à jour..."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "empty": "Vous n'avez aucune notification en attente. Nous vérifierons bientôt vos méthodes de contact."
+        },
+        "billing": {
+            "title": "Facturation et Plans",
+            "currentPlan": "Votre espace de travail est actuellement sur le <span class='text-white'>Niveau Beta Gratuit</span>."
+        }
+    },
+    "Leaderboard": {
+        "hallOfFame": "Tableau d'Honneur",
+        "title": "Meilleures Idées Disruptives",
+        "subtitle": "Découvrez les concepts de startup les mieux notés analysés par Verdyct. Votez pour ceux que vous soutiendriez avec de l'argent réel.",
+        "filters": {
+            "highestScore": "Score POS le plus élevé",
+            "mostUpvoted": "Les plus votés"
+        },
+        "emptyState": "Aucun projet public pour le moment. Soyez le premier à publier !",
+        "card": {
+            "pos": "POS",
+            "noDescription": "Aucune description disponible pour ce projet.",
+            "removeVote": "Retirer le vote",
+            "upvote": "Voter",
+            "viewReport": "Voir le rapport"
+        }
+    },
+    "Legal": {
+        "layout": {
+            "title": "Juridique",
+            "nav": {
+                "privacy": "Politique de Confidentialité",
+                "terms": "Conditions d'Utilisation",
+                "security": "Sécurité",
+                "cookies": "Cookies"
+            }
+        },
+        "hub": {
+            "title": "Centre",
+            "titleSpan": "Juridique",
+            "subtitle": "La transparence est au cœur de nos valeurs.",
+            "cards": {
+                "privacy": {
+                    "name": "Politique de Confidentialité",
+                    "desc": "Comment nous traitons et protégeons vos données personnelles."
+                },
+                "terms": {
+                    "name": "Conditions d'Utilisation",
+                    "desc": "L'accord entre vous et Verdyct."
+                },
+                "security": {
+                    "name": "Sécurité",
+                    "desc": "Nos normes et pratiques de sécurité."
+                },
+                "cookies": {
+                    "name": "Politique des Cookies",
+                    "desc": "Comment nous utilisons les cookies et les technologies de suivi."
+                }
+            }
+        },
+        "privacy": {
+            "title": "Politique de Confidentialité",
+            "lastUpdated": "Dernière mise à jour : Décembre 2024",
+            "intro": "Chez Verdyct (« nous », « notre » ou « nos »), nous nous engageons à protéger vos informations personnelles et votre droit à la vie privée. Si vous avez des questions ou des préoccupations concernant cet avis de confidentialité ou nos pratiques concernant vos informations personnelles, veuillez nous contacter à legal@verdyct.io.",
+            "sections": {
+                "infoCollect": {
+                    "title": "1. Quelles informations collectons-nous ?",
+                    "text1": "Nous collectons des informations personnelles que vous nous fournissez volontairement lorsque vous vous inscrivez sur le site Web, exprimez un intérêt pour obtenir des informations sur nous ou nos produits et services, lorsque vous participez à des activités sur le site Web ou autrement lorsque vous nous contactez.",
+                    "text2": "Les informations personnelles que nous collectons dépendent du contexte de vos interactions avec nous et le site Web, des choix que vous faites et des produits et fonctionnalités que vous utilisez."
+                },
+                "usage": {
+                    "title": "2. Comment utilisons-nous vos informations ?",
+                    "text": "Nous utilisons les informations personnelles collectées via notre site Web à diverses fins commerciales décrites ci-dessous. Nous traitons vos informations personnelles à ces fins sur la base de nos intérêts commerciaux légitimes, afin de conclure ou d'exécuter un contrat avec vous, avec votre consentement et/ou pour nous conformer à nos obligations légales.",
+                    "list": [
+                        "Pour faciliter la création de compte et le processus de connexion.",
+                        "Pour publier des témoignages.",
+                        "Pour demander des commentaires.",
+                        "Pour permettre les communications entre utilisateurs.",
+                        "Pour gérer les comptes utilisateurs."
+                    ]
+                },
+                "sharing": {
+                    "title": "3. Vos informations seront-elles partagées avec quelqu'un ?",
+                    "text": "Nous ne partageons des informations qu'avec votre consentement, pour nous conformer aux lois, pour vous fournir des services, pour protéger vos droits ou pour remplir des obligations commerciales."
+                }
+            }
+        },
+        "terms": {
+            "title": "Conditions d'Utilisation",
+            "lastUpdated": "Dernière mise à jour : Décembre 2024",
+            "intro": "Ces conditions d'utilisation (« Conditions ») constituent un accord juridiquement contraignant entre vous et Verdyct concernant votre accès à et votre utilisation du site Web Verdyct et des services connexes.",
+            "sections": {
+                "acceptance": {
+                    "title": "1. Acceptation des Conditions",
+                    "text": "En accédant ou en utilisant notre Service, vous acceptez d'être lié par ces Conditions. Si vous n'êtes pas d'accord avec une partie des conditions, vous ne pouvez pas accéder au Service."
+                },
+                "ip": {
+                    "title": "2. Propriété Intellectuelle",
+                    "text1": "Le Service et son contenu original, ses fonctionnalités et ses fonctionnalités sont et resteront la propriété exclusive de Verdyct et de ses concédants de licence. Le Service est protégé par le droit d'auteur, les marques de commerce et d'autres lois des États-Unis et des pays étrangers.",
+                    "text2": "Votre Contenu : Vous conservez tous les droits sur les idées commerciales, les données et la propriété intellectuelle que vous saisissez dans Verdyct. Nous ne revendiquons aucune propriété sur vos rapports générés."
+                },
+                "accounts": {
+                    "title": "3. Comptes",
+                    "text": "Lorsque vous créez un compte chez nous, vous devez nous fournir des informations exactes, complètes et à jour à tout moment. Le non-respect de cette obligation constitue une violation des Conditions, ce qui peut entraîner la résiliation immédiate de votre compte sur notre Service."
+                },
+                "termination": {
+                    "title": "4. Résiliation",
+                    "text": "Nous pouvons résilier ou suspendre l'accès à notre Service immédiatement, sans préavis ni responsabilité, pour quelque raison que ce soit, y compris, sans s'y limiter, si vous violez les Conditions."
+                },
+                "liability": {
+                    "title": "5. Limitation de Responsabilité",
+                    "text": "En aucun cas Verdyct, ni ses administrateurs, employés, partenaires, agents, fournisseurs ou affiliés, ne seront responsables de tout dommage indirect, accessoire, spécial, consécutif ou punitif, y compris, sans s'y limiter, la perte de profits, de données, d'utilisation, de clientèle ou d'autres pertes intangibles."
+                }
+            }
+        },
+        "cookies": {
+            "title": "Politique des Cookies",
+            "intro": "Cette politique relative aux cookies explique comment Verdyct utilise les cookies et technologies similaires pour vous reconnaître lorsque vous visitez notre site Web.",
+            "what": {
+                "title": "Que sont les cookies ?",
+                "text": "Les cookies sont de petits fichiers de données placés sur votre ordinateur ou appareil mobile lorsque vous visitez un site Web. Les cookies sont largement utilisés par les propriétaires de sites Web pour faire fonctionner leurs sites Web, ou pour les faire fonctionner plus efficacement, ainsi que pour fournir des informations de reporting."
+            },
+            "why": {
+                "title": "Pourquoi utilisons-nous des cookies ?",
+                "text": "Nous utilisons des cookies propriétaires et tiers pour plusieurs raisons. Certains cookies sont nécessaires pour des raisons techniques afin que notre site Web fonctionne, et nous les qualifions de cookies « essentiels » ou « strictement nécessaires ». D'autres cookies nous permettent également de suivre et de cibler les intérêts de nos utilisateurs pour améliorer l'expérience sur nos propriétés en ligne."
+            },
+            "types": {
+                "title": "Types de cookies que nous utilisons",
+                "essential": {
+                    "title": "Cookies Essentiels",
+                    "text": "Ces cookies sont strictement nécessaires pour vous fournir des services disponibles via notre site Web et pour utiliser certaines de ses fonctionnalités, telles que l'accès aux zones sécurisées."
+                },
+                "perf": {
+                    "title": "Cookies de Performance et de Fonctionnalité",
+                    "text": "Ces cookies sont utilisés pour améliorer les performances et les fonctionnalités de notre site Web mais ne sont pas essentiels à leur utilisation."
+                },
+                "analytics": {
+                    "title": "Cookies d'Analyse et de Personnalisation",
+                    "text": "Ces cookies collectent des informations qui sont utilisées soit sous forme agrégée pour nous aider à comprendre comment notre site Web est utilisé ou quelle est l'efficacité de nos campagnes marketing."
+                }
+            },
+            "control": {
+                "title": "Comment puis-je contrôler les cookies ?",
+                "text": "Vous avez le droit de décider d'accepter ou de rejeter les cookies. Vous pouvez exercer vos droits en matière de cookies en définissant vos préférences de navigateur."
+            }
+        },
+        "security": {
+            "title": "Pratiques de Sécurité",
+            "intro": "La sécurité n'est pas une réflexion après coup chez Verdyct. Elle fait partie intégrante de notre architecture.",
+            "infra": {
+                "title": "Sécurité de l'Infrastructure",
+                "text": "Notre application est hébergée sur des fournisseurs de cloud de classe mondiale qui maintiennent les certifications ISO 27001, SOC 2 Type II et PCI-DSS. Nous utilisons une approche de sécurité multicouche, comprenant :",
+                "list": [
+                    "Isolation du Cloud Privé Virtuel (VPC)",
+                    "Pare-feu d'Application Web (WAF)",
+                    "Protection DDoS",
+                    "Analyse automatisée régulière des vulnérabilités"
+                ]
+            },
+            "encryption": {
+                "title": "Chiffrement des Données",
+                "text": "Nous utilisons un chiffrement fort pour protéger vos données à la fois en transit et au repos.",
+                "transit": "En Transit : Toutes les données transmises entre votre navigateur et nos serveurs sont chiffrées à l'aide de TLS 1.2 ou supérieur valide.",
+                "rest": "Au Repos : Les données sensibles stockées dans nos bases de données sont chiffrées à l'aide des normes AES-256."
+            },
+            "access": {
+                "title": "Contrôle d'Accès",
+                "text": "L'accès aux systèmes de production est strictement limité au personnel autorisé sur la base du besoin d'en connaître. Nous appliquons l'authentification multifacteur (MFA) pour tous les accès internes."
+            },
+            "reporting": {
+                "title": "Signalement de Vulnérabilités",
+                "text": "Nous accueillons les rapports de la communauté de recherche en sécurité. Si vous découvrez une vulnérabilité, veuillez nous la divulguer de manière responsable en envoyant un e-mail à security@verdyct.io."
+            }
+        }
+    },
+    "Footer": {
+        "description": "Le co-fondateur alimenté par l'IA pour votre prochaine grande idée. Analysez les marchés, prédisez le succès et exécutez 10x plus vite.",
+        "product": {
+            "title": "Produit",
+            "features": "Fonctionnalités",
+            "pricing": "Tarifs",
+            "howItWorks": "Comment ça marche",
+            "faq": "FAQ"
+        },
+        "company": {
+            "title": "Entreprise",
+            "about": "À propos",
+            "careers": "Carrières",
+            "blog": "Blog",
+            "contact": "Contact"
+        },
+        "legal": {
+            "title": "Juridique",
+            "mentions": "Mentions Légales",
+            "privacy": "Politique de Confidentialité",
+            "disclaimer": "Avis de non-responsabilité"
+        },
+        "rights": "© {year} Verdyct Inc. Tous droits réservés.",
+        "status": "Tous les systèmes opérationnels"
+    }
+}
