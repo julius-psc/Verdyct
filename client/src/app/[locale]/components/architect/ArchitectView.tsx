@@ -17,9 +17,13 @@ import {
     BrainCircuit,
     Maximize2,
     Minimize2,
+    ChevronUp,
     ChevronDown,
-    ChevronUp
+    Activity,
+    MousePointer2,
+    Code
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import Widget from '../dashboard/Widget';
 import { createClient } from '@/utils/supabase/client';
@@ -111,7 +115,8 @@ interface ArchitectViewProps {
 }
 
 export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
-    const [isDataMoatActive, setIsDataMoatActive] = useState(false);
+    const t = useTranslations('Architect');
+    const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
     const [isPromptExpanded, setIsPromptExpanded] = useState(false);
     const [isPromptFullscreen, setIsPromptFullscreen] = useState(false);
     const [pixelStats, setPixelStats] = useState<any>(null);
@@ -179,13 +184,13 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
                         <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
                             <Lock className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-xl font-bold text-white">Full Analysis Required</h3>
+                        <h3 className="text-xl font-bold text-white">{t('fullAnalysisRequired')}</h3>
                         <p className="text-neutral-400">
-                            Unlock the Architect Agent to see detailed technical blueprint, MVP status, and tech stack.
+                            {t('unlockMessage')}
                         </p>
                         <div className="pt-2">
                             <span className="inline-block px-4 py-2 bg-white text-black rounded-full text-sm font-semibold">
-                                Upgrade to Full (1 Credit)
+                                {t('upgrade')}
                             </span>
                         </div>
                     </div>
@@ -205,12 +210,12 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-8">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-transparent bg-clip-text bg-gradient-to-r from-white to-neutral-400">The Architect</h1>
-                    <p className="text-sm text-neutral-400">Technical Architecture & MVP Design</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">{t('title')}</h1>
+                    <p className="text-sm text-neutral-400">{t('subtitle')}</p>
                 </div>
-            </div>
+            </header>
 
             {/* 1. HERO: AI Blueprint - Premium Data Artifact Style */}
             <div className={`w-full transition-all duration-500 ease-in-out ${isPromptFullscreen ? 'fixed inset-0 z-50 p-4 bg-black/95 backdrop-blur-xl' : 'relative group'}`}>
@@ -338,56 +343,51 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
             {/* Main Grid for Remaining Widgets */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
 
-                {/* 2. MVP Showcase (2x2) */}
-                <div className="lg:col-span-2 lg:row-span-2">
-                    <Widget title="Live MVP Preview" action={<div className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></span><span className="text-xs text-emerald-500 font-medium">Live</span></div>}>
-                        <div className="flex flex-col h-full gap-6">
-                            {/* Browser Window Mockup */}
-                            <div
-                                className="relative flex-1 bg-neutral-900/50 rounded-lg border border-white/5 overflow-hidden group cursor-not-allowed hover:border-white/10 transition-colors"
-                                onClick={() => {
-                                    const el = document.getElementById('mvp-preview-badge');
-                                    if (el) {
-                                        el.classList.remove('opacity-0');
-                                        el.classList.add('opacity-100', 'scale-110');
-                                        setTimeout(() => {
-                                            el.classList.remove('opacity-100', 'scale-110');
-                                            el.classList.add('opacity-0');
-                                        }, 1500);
-                                    }
-                                }}
-                            >
-                                {/* Browser Header */}
-                                <div className="h-8 bg-black/40 border-b border-white/5 flex items-center px-3 gap-2">
-                                    <div className="flex gap-1.5">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50"></div>
-                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50"></div>
-                                    </div>
-                                    <div className="flex-1 flex justify-center">
-                                        <div className="bg-white/5 rounded px-3 py-0.5 text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">
-                                            locahost:3000
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Content Placeholder */}
-                                <div className="absolute inset-0 top-8 bg-gradient-to-br from-neutral-900/50 to-neutral-950 flex items-center justify-center">
-                                    <div className="text-center space-y-3 relative">
-
-                                        {/* Coming Soon Badge - Initially Hidden */}
-                                        <div id="mvp-preview-badge" className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-black text-xs font-bold rounded-full opacity-0 transition-getAll duration-300 z-20 pointer-events-none whitespace-nowrap shadow-xl">
-                                            Coming Soon
-                                        </div>
-
-                                        <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
-                                            <Play className="w-8 h-8 text-emerald-500 fill-emerald-500/20" />
-                                        </div>
-                                        <p className="text-sm text-neutral-400 group-hover:text-neutral-300 transition-colors">Interactive Preview</p>
-                                    </div>
+                {/* 1. Interactive MVP Preview (2x2) */}
+                <div className="lg:col-span-2 lg:row-span-2 group relative">
+                    <Widget title={t('blueprintTitle')} action={<Globe className="w-4 h-4 text-neutral-500" />}>
+                        <div className="flex flex-col h-full relative z-10">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    </span>
+                                    {t('generatedOptimized')}
+                                </span>
+                                <div className="flex gap-2">
+                                    {isPromptFullscreen ? (
+                                        <button onClick={() => setIsPromptFullscreen(false)} className="p-1.5 hover:bg-white/10 rounded text-neutral-400 hover:text-white transition-colors">
+                                            <Minimize2 className="w-4 h-4" />
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => setIsPromptFullscreen(true)} className="p-1.5 hover:bg-white/10 rounded text-neutral-400 hover:text-white transition-colors">
+                                            <Maximize2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
+                            {/* Preview Window */}
+                            <div className="flex-1 bg-neutral-950 rounded-lg border border-neutral-800 overflow-hidden relative group/preview">
+                                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-neutral-950 to-transparent flex justify-center gap-3 translate-y-full group-hover/preview:translate-y-0 transition-transform duration-300 z-20">
+                                    <a
+                                        href={data.mvp_status.mvp_live_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-4 py-2 bg-white text-black text-xs font-bold rounded-full hover:scale-105 transition-transform"
+                                    >
+                                        {t('openLovable')} <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                    <button className="flex items-center gap-2 px-4 py-2 bg-neutral-800 text-white text-xs font-bold rounded-full border border-white/10 hover:bg-neutral-700 transition-colors">
+                                        <Code className="w-3 h-3" /> {t('copyCode')}
+                                    </button>
+                                </div>
+                                <div className="w-full h-full flex items-center justify-center text-neutral-500 flex-col gap-4 bg-grid-white/[0.02]">
+                                    <Globe className="w-12 h-12 opacity-20" />
+                                    <p className="text-xs font-mono">{t('livePreview')}</p>
+                                </div>
+                            </div>
                         </div>
                     </Widget>
                 </div>
@@ -460,16 +460,16 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
 
                 {/* 4. User Journey (2x1) */}
                 <div className="lg:col-span-2">
-                    <Widget title="User Journey" action={<Figma className="w-4 h-4 text-neutral-500" />}>
+                    <Widget title={t('userJourney')} action={<Figma className="w-4 h-4 text-neutral-500" />}>
                         <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
-                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">{t('comingSoon')}</div>
 
                             <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                                 <Figma className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
                             </div>
-                            <h3 className="text-base font-medium text-white mb-1">Figma Integration</h3>
+                            <h3 className="text-base font-medium text-white mb-1">{t('figmaIntegration')}</h3>
                             <p className="text-xs text-neutral-500 text-center max-w-xs">
-                                Visualise your AI-generated user flows directly within the dashboard.
+                                {t('figmaDesc')}
                             </p>
                         </div>
                     </Widget>
@@ -477,85 +477,82 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
 
                 {/* 5. Data Moat (2x1) */}
                 <div className="lg:col-span-2">
-                    <Widget title="Data Moat Configuration" action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
+                    <Widget title={t('dataMoat')} action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
                         <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
-                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">{t('comingSoon')}</div>
 
                             <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                                 <Lock className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
                             </div>
-                            <h3 className="text-base font-medium text-white mb-1">Data Strategy</h3>
+                            <h3 className="text-base font-medium text-white mb-1">{t('dataMoat')}</h3>
                             <p className="text-xs text-neutral-500 text-center max-w-xs">
-                                Advanced configuration for data retention and competitive moat building.
+                                {t('dataDesc')}
                             </p>
                         </div>
                     </Widget>
                 </div>
-            </div>
 
-            {/* Added Stats Widget (Bottom) */}
-            {pixelStats && (
-                <div className="mt-12 pt-12 border-t border-white/5">
-                    <div className="flex flex-col md:flex-row gap-8">
-                        <div className="md:w-1/3 space-y-4">
-                            <div className="flex items-center gap-2 text-emerald-500">
-                                <MousePointerClick className="w-5 h-5" />
-                                <h3 className="text-lg font-semibold text-white">Verdyct Pixel Tracker</h3>
+                {/* 6. Pixel Tracker Stats (4x1) */}
+                <div className="lg:col-span-4">
+                    <Widget title={t('pixelTracker')} action={<Activity className="w-4 h-4 text-neutral-500" />}>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Left: Tracker Status */}
+                            <div className="flex flex-col justify-center">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="relative">
+                                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                                    </div>
+                                    <span className="text-sm font-bold text-white">{t('liveActivity')}</span>
+                                </div>
+                                <p className="text-xs text-neutral-500 leading-relaxed mb-3">
+                                    {t('pixelDesc')}
+                                </p>
+                                <div className="flex gap-4">
+                                    <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 bg-neutral-900 px-2 py-1 rounded">
+                                        <MousePointer2 className="w-3 h-3" /> {t('trackClicks')}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 bg-neutral-900 px-2 py-1 rounded">
+                                        <ShieldCheck className="w-3 h-3" /> {t('privacyFocused')}
+                                    </div>
+                                </div>
                             </div>
-                            <p className="text-sm text-neutral-400 leading-relaxed">
-                                Your MVP includes the embedded <strong>Verdyct Pixel</strong> script.
-                                It automatically captures every interaction on your generated prototype, giving you real-time insights into user engagement.
-                            </p>
-                            <ul className="text-xs text-neutral-500 space-y-2 list-disc pl-4">
-                                <li>Tracks click events on buttons and links</li>
-                                <li>Records element text and IDs</li>
-                                <li>Privacy-focused (no personal data)</li>
-                            </ul>
-                        </div>
 
-                        <div className="md:w-2/3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Widget title="Live Activity" action={<div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div><span className="text-xs text-red-500 font-mono">LIVE</span></div>}>
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-4xl font-bold text-white">{pixelStats.total_events}</span>
-                                            <span className="text-sm text-neutral-500">interactions</span>
-                                        </div>
-                                        <div className="mt-auto pt-3 border-t border-white/5 flex justify-between items-center">
-                                            <span className="text-xs text-neutral-500">Last Activity</span>
-                                            <span className="text-xs text-neutral-300 font-mono">
-                                                {pixelStats.last_active ? new Date(pixelStats.last_active).toLocaleTimeString() : 'Never'}
-                                            </span>
-                                        </div>
+                            {/* Middle: Stats */}
+                            <div className="border-l border-neutral-800 pl-6 flex items-center justify-around">
+                                <div className="text-center">
+                                    <div className="text-3xl font-bold text-white mb-1">{pixelStats?.total_events || 0}</div>
+                                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('interactions')}</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        {pixelStats?.last_active ? 'Now' : t('never')}
                                     </div>
-                                </Widget>
+                                    <div className="text-[10px] text-neutral-500 uppercase tracking-wider">{t('lastActivity')}</div>
+                                </div>
+                            </div>
 
-                                <Widget title="Top Interactions" action={<div className="text-xs text-neutral-500">Most Clicked</div>}>
-                                    <div className="flex flex-col h-full">
-                                        <div className="space-y-2 overflow-y-auto max-h-[140px] custom-scrollbar pr-2">
-                                            {Array.isArray(pixelStats.top_elements) && pixelStats.top_elements.map((el: any, i: number) => (
-                                                <div key={i} className="flex items-center justify-between text-sm group">
-                                                    <span className="text-neutral-300 truncate max-w-[140px] group-hover:text-emerald-400 transition-colors">{el.name || 'Unknown'}</span>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-1.5 w-12 bg-neutral-800 rounded-full overflow-hidden">
-                                                            <div className="h-full bg-emerald-500/50 rounded-full" style={{ width: `${Math.min(100, (el.count / (pixelStats.total_events || 1)) * 100)}%` }}></div>
-                                                        </div>
-                                                        <span className="text-neutral-500 font-mono text-xs w-6 text-right">{el.count}</span>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {(!pixelStats.top_elements || pixelStats.top_elements.length === 0) && (
-                                                <div className="text-neutral-600 text-xs italic">No interactions recorded yet.</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </Widget>
+                            {/* Right: Top Interactions Table */}
+                            <div className="border-l border-neutral-800 pl-6">
+                                <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">{t('topInteractions')}</h4>
+                                <div className="space-y-2">
+                                    {pixelStats?.top_elements && pixelStats.top_elements.length > 0 ? (
+                                        pixelStats.top_elements.slice(0, 3).map((el: any, i: number) => (
+                                            <div key={i} className="flex items-center justify-between text-xs">
+                                                <span className="text-white font-mono bg-neutral-900 px-1.5 py-0.5 rounded truncate max-w-[140px]" title={el.element_id}>
+                                                    {el.element_text || el.element_id || t('unknown')}
+                                                </span>
+                                                <span className="text-neutral-500">{el.clicks} {t('mostClicked')}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-xs text-neutral-600 italic">{t('noInteractions')}</div>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Widget>
                 </div>
-            )}
-
+            </div>
         </div>
     );
 }

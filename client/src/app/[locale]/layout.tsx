@@ -6,6 +6,9 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '../../i18n/routing';
 
+import CookieConsent from "./components/landing/CookieConsent";
+import { CSPostHogProvider } from "./providers";
+
 const sourceSans3 = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-source-sans-3",
@@ -38,7 +41,10 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={`${sourceSans3.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <CSPostHogProvider>
+            {children}
+            <CookieConsent />
+          </CSPostHogProvider>
         </NextIntlClientProvider>
       </body>
     </html>

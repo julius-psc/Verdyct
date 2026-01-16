@@ -11,6 +11,7 @@ import {
     ExternalLink,
     Lock
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import Widget from '../dashboard/Widget';
 
@@ -80,6 +81,7 @@ interface FinancierViewProps {
 }
 
 export default function FinancierView({ data }: FinancierViewProps) {
+    const t = useTranslations('Financier');
     // Interactive sliders state
     const [monthlyPrice, setMonthlyPrice] = useState(19);
     const [adSpend, setAdSpend] = useState(500);
@@ -159,13 +161,13 @@ export default function FinancierView({ data }: FinancierViewProps) {
                         <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
                             <Lock className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-xl font-bold text-white">Full Analysis Required</h3>
+                        <h3 className="text-xl font-bold text-white">{t('fullAnalysisRequired')}</h3>
                         <p className="text-neutral-400">
-                            Unlock the Financier Agent to see detailed financial projections, pricing models, and profit engine.
+                            {t('unlockMessage')}
                         </p>
                         <div className="pt-2">
                             <span className="inline-block px-4 py-2 bg-white text-black rounded-full text-sm font-semibold">
-                                Upgrade to Full (1 Credit)
+                                {t('upgrade')}
                             </span>
                         </div>
                     </div>
@@ -186,24 +188,24 @@ export default function FinancierView({ data }: FinancierViewProps) {
     return (
         <div className="max-w-[1600px] mx-auto p-8 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Financier</h1>
-                    <p className="text-sm text-neutral-400">Financial Modeling & Pricing Strategy</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">{t('title')}</h1>
+                    <p className="text-sm text-neutral-400">{t('subtitle')}</p>
                 </div>
-            </div>
+            </header>
 
             {/* Main Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)]">
 
                 {/* 1. Profit Engine (2x2) - Interactive Calculator */}
                 <div className="lg:col-span-2 lg:row-span-2">
-                    <Widget title="The Profit Engine" action={<Calculator className="w-4 h-4 text-emerald-500" />}>
+                    <Widget title={t('profitEngine')} action={<Calculator className="w-4 h-4 text-emerald-500" />}>
                         <div className="flex flex-col h-full gap-6">
                             {/* Top Section: Main Health Indicator */}
                             <div className="flex items-center justify-between px-2 pb-4 border-b border-white/5">
                                 <div className="space-y-1">
-                                    <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Business Health</div>
+                                    <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{t('businessHealth')}</div>
                                     <div className="flex items-baseline gap-3">
                                         <span className={`text-5xl font-bold tracking-tighter ${ltvCacRatio >= 3 ? 'text-emerald-500' : ltvCacRatio >= 2 ? 'text-yellow-500' : 'text-red-500'}`}>
                                             {ltvCacRatio.toFixed(1)}x
@@ -212,8 +214,8 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                     </div>
                                 </div>
                                 <div className="text-right space-y-1">
-                                    <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Time to Profit</div>
-                                    <div className="text-3xl font-bold text-white">{monthsToProfitability} <span className="text-sm font-normal text-neutral-500">months</span></div>
+                                    <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{t('timeToProfit')}</div>
+                                    <div className="text-3xl font-bold text-white">{monthsToProfitability} <span className="text-sm font-normal text-neutral-500">{t('months')}</span></div>
                                 </div>
                             </div>
 
@@ -222,7 +224,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 {/* Monthly Price */}
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-white font-medium">Monthly Price</span>
+                                        <span className="text-white font-medium">{t('monthlyPrice')}</span>
                                         <span className="text-emerald-400 font-mono">€{monthlyPrice}</span>
                                     </div>
                                     <input
@@ -235,7 +237,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 {/* Ad Spend */}
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-white font-medium">Monthly Ad Spend</span>
+                                        <span className="text-white font-medium">{t('adSpend')}</span>
                                         <span className="text-emerald-400 font-mono">€{adSpend}</span>
                                     </div>
                                     <input
@@ -248,7 +250,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 {/* Conversion Rate */}
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-white font-medium">Conversion Rate</span>
+                                        <span className="text-white font-medium">{t('conversionRate')}</span>
                                         <span className="text-emerald-400 font-mono">{conversionRate}%</span>
                                     </div>
                                     <input
@@ -265,7 +267,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                     <TrendingUp className="w-3 h-3" />
                                 </div>
                                 <p className="text-xs text-neutral-300 leading-relaxed">
-                                    <strong className="text-white">Verdyct:</strong> {financier_footer.verdyct_summary}
+                                    <strong className="text-white">{t('verdyctLabel')}</strong> {financier_footer.verdyct_summary}
                                 </p>
                             </div>
                         </div>
@@ -274,7 +276,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
 
                 {/* 2. Revenue Projection (2x1) - Top Right */}
                 <div className="lg:col-span-2">
-                    <Widget title="5-Year Revenue Projection (Simulated)">
+                    <Widget title={t('revenueProjection')}>
                         <div className="flex flex-col h-full justify-between">
                             <div className="flex items-end justify-between h-32 gap-2 mt-8 px-2">
                                 {revenueProjections.map((amount, i) => {
@@ -307,7 +309,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
 
                 {/* 3. Unit Economics (2x1) - Middle Right */}
                 <div className="lg:col-span-2">
-                    <Widget title="Unit Economics Breakdown">
+                    <Widget title={t('unitEconomics')}>
                         <div className="grid grid-cols-2 gap-4 h-full">
                             <div className="flex flex-col justify-between p-3 rounded-lg bg-white/5 border border-white/5">
                                 <div className="flex items-center gap-2 text-xs text-neutral-400">
@@ -316,18 +318,18 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 </div>
                                 <div>
                                     <div className="text-2xl font-bold text-white">€{cac.toFixed(0)}</div>
-                                    <div className="text-[10px] text-neutral-500 mt-1">Cost per Acquisition</div>
+                                    <div className="text-[10px] text-neutral-500 mt-1">{t('costPerAcquisition')}</div>
                                 </div>
                             </div>
                             <div className="flex flex-col justify-between p-3 rounded-lg bg-white/5 border border-white/5">
-                                <div className="flex items-center gap-2 text-xs text-neutral-400">
+                                <div className="flex items-center gap-2 =text-xs text-neutral-400">
                                     <Wallet className="w-3.5 h-3.5" />
                                     <span>LTV</span>
                                 </div>
                                 <div>
                                     <div className="text-2xl font-bold text-white">€{ltv.toFixed(0)}</div>
                                     <div className="text-[10px] text-emerald-500 mt-1 flex items-center gap-1">
-                                        <TrendingUp className="w-3 h-3" /> 24mo Lifespan
+                                        <TrendingUp className="w-3 h-3" /> {t('lifespan')}
                                     </div>
                                 </div>
                             </div>
@@ -337,14 +339,14 @@ export default function FinancierView({ data }: FinancierViewProps) {
 
                 {/* 4. Pricing Strategy (4x1) - Bottom Row */}
                 <div className="lg:col-span-4">
-                    <Widget title="Pricing Strategy" action={<DollarSign className="w-4 h-4 text-neutral-500" />}>
+                    <Widget title={t('pricingStrategy')} action={<DollarSign className="w-4 h-4 text-neutral-500" />}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
                             {/* Tier 1 - Starter */}
                             <div className="p-4 rounded-lg border border-neutral-800 bg-neutral-900/30 flex flex-col justify-between">
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-neutral-400">{starterTier ? starterTier.name : 'Starter'}</span>
+                                            <span className="text-sm font-medium text-neutral-400">{starterTier ? starterTier.name : t('starter')}</span>
                                             {starterTier?.verified_url && (
                                                 <a href={starterTier.verified_url} target="_blank" rel="noopener noreferrer" className="text-neutral-600 hover:text-emerald-400">
                                                     <ExternalLink className="w-3 h-3" />
@@ -352,21 +354,21 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-2xl font-bold text-white mb-3">{starterTier ? starterTier.price : 'Free'}</div>
+                                    <div className="text-2xl font-bold text-white mb-3">{starterTier ? starterTier.price : t('free')}</div>
                                     <ul className="space-y-2">
                                         {starterTier ? starterTier.features.map((feature, i) => (
                                             <li key={i} className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{feature}</li>
                                         )) : (
-                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Basic Features</li>
+                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{t('basicFeatures')}</li>
                                         )}
                                     </ul>
                                 </div>
-                                <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">Current Plan</button>
+                                <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">{t('currentPlan')}</button>
                             </div>
 
                             {/* Tier 2 - Recommended */}
                             <div className="p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5 relative flex flex-col justify-between">
-                                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">RECOMMENDED</div>
+                                <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{t('recommended').toUpperCase()}</div>
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
@@ -386,7 +388,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                         ))}
                                     </ul>
                                 </div>
-                                <button className="w-full mt-4 py-1.5 rounded bg-emerald-500 text-xs font-bold text-black hover:bg-emerald-400 transition-colors">Upgrade to Pro</button>
+                                <button className="w-full mt-4 py-1.5 rounded bg-emerald-500 text-xs font-bold text-black hover:bg-emerald-400 transition-colors">{t('upgradeToPro')}</button>
                             </div>
 
                             {/* Tier 3 - Enterprise */}
@@ -394,7 +396,7 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                 <div>
                                     <div className="flex justify-between items-start mb-1">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium text-neutral-400">{enterpriseTier ? enterpriseTier.name : 'Enterprise'}</span>
+                                            <span className="text-sm font-medium text-neutral-400">{enterpriseTier ? enterpriseTier.name : t('enterprise')}</span>
                                             {enterpriseTier?.verified_url && (
                                                 <a href={enterpriseTier.verified_url} target="_blank" rel="noopener noreferrer" className="text-neutral-600 hover:text-emerald-400">
                                                     <ExternalLink className="w-3 h-3" />
@@ -402,16 +404,16 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="text-2xl font-bold text-white mb-3">{enterpriseTier ? enterpriseTier.price : 'Custom'}</div>
+                                    <div className="text-2xl font-bold text-white mb-3">{enterpriseTier ? enterpriseTier.price : t('custom')}</div>
                                     <ul className="space-y-2">
                                         {enterpriseTier ? enterpriseTier.features.map((feature, i) => (
                                             <li key={i} className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{feature}</li>
                                         )) : (
-                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />Advanced Features</li>
+                                            <li className="text-xs text-neutral-400 flex items-center gap-2"><Check className="w-3.5 h-3.5 text-emerald-500" />{t('advancedFeatures')}</li>
                                         )}
                                     </ul>
                                 </div>
-                                <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">Contact Sales</button>
+                                <button className="w-full mt-4 py-1.5 rounded border border-neutral-700 text-xs font-medium text-neutral-300 hover:bg-neutral-800 transition-colors">{t('contactSales')}</button>
                             </div>
                         </div>
                     </Widget>

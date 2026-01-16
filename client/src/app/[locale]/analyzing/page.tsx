@@ -43,19 +43,30 @@ export default function AnalyzingPage() {
             const ideaParam = searchParams.get('idea');
             const typeParam = searchParams.get('type') || 'small';
 
+            // Generate a simple hash/key for the current analysis attempt
+            const analysisKey = `analysis_lock_${ideaParam || localStorage.getItem('pending_idea')}`;
+
+            // Check if we already started this specific analysis in this session
+            if (sessionStorage.getItem(analysisKey)) {
+                console.log("Analysis already in progress for this idea (lock found).");
+                return;
+            }
+
             if (ideaParam) {
-                hasStartedRef.current = true; // Mark as started
+                hasStartedRef.current = true; // Mark as started locally
+                sessionStorage.setItem(analysisKey, 'true'); // Set session lock
                 setIdea(ideaParam);
-                startAnalysis(ideaParam, session.access_token, typeParam);
+                startAnalysis(ideaParam, session.access_token, typeParam, analysisKey);
             } else {
                 const storedIdea = localStorage.getItem('pending_idea');
                 const storedType = localStorage.getItem('pending_type') || 'small';
                 if (storedIdea) {
-                    hasStartedRef.current = true; // Mark as started
+                    hasStartedRef.current = true; // Mark as started locally
+                    sessionStorage.setItem(analysisKey, 'true'); // Set session lock
                     setIdea(storedIdea);
                     localStorage.removeItem('pending_idea');
                     localStorage.removeItem('pending_type');
-                    startAnalysis(storedIdea, session.access_token, storedType);
+                    startAnalysis(storedIdea, session.access_token, storedType, analysisKey);
                 } else {
                     router.push('/');
                 }
@@ -65,7 +76,7 @@ export default function AnalyzingPage() {
         init();
     }, [searchParams]);
 
-    const startAnalysis = async (promptToUse: string, token: string, analysisType: string = 'small') => {
+    const startAnalysis = async (promptToUse: string, token: string, analysisType: string = 'small', analysisKey?: string) => {
         try {
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
             const response = await fetch(`${apiUrl}/generate-report`, {
@@ -78,6 +89,7 @@ export default function AnalyzingPage() {
             });
 
             if (response.status === 401) {
+                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on auth error
                 await supabase.auth.signOut();
                 localStorage.setItem('pending_idea', promptToUse);
                 router.push('/login?next=/analyzing');
@@ -109,8 +121,10 @@ export default function AnalyzingPage() {
                             if (data.type === 'agent_complete') {
                                 window.dispatchEvent(new CustomEvent('agent-complete', { detail: data.agent }));
                             } else if (data.type === 'complete') {
+                                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on success
                                 setAnalysisData(data.data);
                             } else if (data.type === 'error') {
+                                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on error
                                 console.error("Stream error:", data.message);
                                 if (data.message.includes('Insufficient credits')) {
                                     setShowCreditError(true);
@@ -127,6 +141,7 @@ export default function AnalyzingPage() {
             }
 
         } catch (error) {
+            if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on exception
             console.error("Error analyzing idea:", error);
             alert("Something went wrong. Please try again.");
             router.push('/');

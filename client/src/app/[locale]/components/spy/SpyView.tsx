@@ -1,6 +1,7 @@
 'use client';
 
 import { UploadCloud, Search, TrendingUp, AlertCircle, CheckCircle2, XCircle, ArrowRight, ExternalLink, Lock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Widget from '../dashboard/Widget';
 
 // Backend Model Interfaces
@@ -53,6 +54,8 @@ interface SpyViewProps {
 }
 
 export default function SpyView({ data }: SpyViewProps) {
+  const t = useTranslations('Spy');
+
   if (!data) {
     return (
       <div className="relative w-full min-h-screen">
@@ -78,13 +81,13 @@ export default function SpyView({ data }: SpyViewProps) {
             <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
               <Lock className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-white">Full Analysis Required</h3>
+            <h3 className="text-xl font-bold text-white">{t('fullAnalysisRequired')}</h3>
             <p className="text-neutral-400">
-              Unlock the Spy Agent to see detailed competitor analysis, market positioning, and customer intelligence.
+              {t('unlockMessage')}
             </p>
             <div className="pt-2">
               <span className="inline-block px-4 py-2 bg-white text-black rounded-full text-sm font-semibold">
-                Upgrade to Full (1 Credit)
+                {t('upgrade')}
               </span>
             </div>
           </div>
@@ -105,12 +108,12 @@ export default function SpyView({ data }: SpyViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Spy</h1>
-          <p className="text-sm text-neutral-400">Competitive Intelligence & Strategic Analysis</p>
+          <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">{t('title')}</h1>
+          <p className="text-sm text-neutral-400">{t('subtitle')}</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors">
           <UploadCloud className="w-4 h-4" />
-          Export Report
+          {t('export')}
         </button>
       </div>
 
@@ -119,7 +122,7 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 1. Opportunity Score (2x1) - Top Left */}
         <div className="lg:col-span-2">
-          <Widget title="Competitive Opportunity" showGrid={true}>
+          <Widget title={t('opportunity')} showGrid={true}>
             <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between h-full px-2 gap-6 xl:gap-0">
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -144,12 +147,12 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 2. Market Metrics (1x1) */}
         <div className="lg:col-span-1">
-          <Widget title="Market Maturity">
+          <Widget title={t('marketMaturity')}>
             <div className="flex flex-col justify-between h-full">
               <div>
                 <div className="text-3xl font-semibold text-white capitalize">{marketMaturity}</div>
                 <div className="flex items-center gap-1 text-sm text-neutral-400 mt-1">
-                  <span>Current State</span>
+                  <span>{t('currentState')}</span>
                 </div>
               </div>
               <div className="w-full bg-neutral-800 h-1.5 rounded-full mt-4 overflow-hidden">
@@ -161,13 +164,13 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 3. Market Metrics (1x1) */}
         <div className="lg:col-span-1">
-          <Widget title="Competition Level">
+          <Widget title={t('competitionLevel')}>
             <div className="flex flex-col justify-between h-full">
               <div>
                 <div className="text-3xl font-semibold text-white capitalize">{competitionLevel}</div>
                 <div className="flex items-center gap-1 text-sm text-orange-400 mt-1">
                   <AlertCircle className="w-4 h-4" />
-                  <span>Intensity</span>
+                  <span>{t('intensity')}</span>
                 </div>
               </div>
               <div className="w-full bg-neutral-800 h-1.5 rounded-full mt-4 overflow-hidden">
@@ -179,12 +182,12 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 4. Competitor Analysis (2x2) - Main Content */}
         <div className="lg:col-span-2 lg:row-span-2">
-          <Widget title="Market Leaders Analysis" action={<Search className="w-4 h-4 text-neutral-500" />}>
+          <Widget title={t('leadersAnalysis')} action={<Search className="w-4 h-4 text-neutral-500" />}>
             <div className="flex flex-col h-full gap-4">
               <div className="flex items-center justify-between text-xs text-neutral-500 px-2 pb-2 border-b border-white/5">
-                <span className="w-[40%]">Competitor</span>
-                <span className="w-[30%] text-right">Position</span>
-                <span className="w-[30%] text-right">Source</span>
+                <span className="w-[40%]">{t('competitor')}</span>
+                <span className="w-[30%] text-right">{t('position')}</span>
+                <span className="w-[30%] text-right">{t('source')}</span>
               </div>
 
               <div className="space-y-2 overflow-y-auto max-h-[300px] custom-scrollbar">
@@ -202,7 +205,7 @@ export default function SpyView({ data }: SpyViewProps) {
                     </div>
 
                     <div className="w-[30%] text-right">
-                      <span className="text-xs text-emerald-500">Verified</span>
+                      <span className="text-xs text-emerald-500">{t('verified')}</span>
                     </div>
                   </div>
                 ))}
@@ -210,7 +213,7 @@ export default function SpyView({ data }: SpyViewProps) {
 
               <div className="mt-auto pt-4 border-t border-white/5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-neutral-500">Total Analyzed: {competitors.length} Companies</span>
+                  <span className="text-neutral-500">{t('totalAnalyzed', { count: competitors.length })}</span>
                 </div>
               </div>
             </div>
@@ -219,9 +222,9 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 5. Key Trends (1x2) - Replaced with Pain Words since Trends are not in Spy model */}
         <div className="lg:col-span-1 lg:row-span-2">
-          <Widget title="Customer Pain Points">
+          <Widget title={t('painPoints')}>
             <div className="flex flex-col h-full gap-4">
-              <p className="text-xs text-neutral-400">Frequent complaints in the market.</p>
+              <p className="text-xs text-neutral-400">{t('painPointsSubtitle')}</p>
 
               <div className="space-y-4">
                 {customer_intel.pain_word_cloud.slice(0, 5).map((pain, i) => (
@@ -230,7 +233,7 @@ export default function SpyView({ data }: SpyViewProps) {
                       <XCircle className="w-4 h-4 text-red-500 shrink-0" />
                       <span className="text-sm text-white capitalize truncate" title={pain.term}>{pain.term}</span>
                     </div>
-                    <span className="text-xs text-neutral-500 shrink-0 whitespace-nowrap">{pain.mentions} mentions</span>
+                    <span className="text-xs text-neutral-500 shrink-0 whitespace-nowrap">{pain.mentions} {t('mentions')}</span>
                   </div>
                 ))}
               </div>
@@ -240,7 +243,7 @@ export default function SpyView({ data }: SpyViewProps) {
 
         {/* 6. Recent Intel (1x2) - Using Top Complaints */}
         <div className="lg:col-span-1 lg:row-span-2">
-          <Widget title="Voice of Customer">
+          <Widget title={t('voiceOfCustomer')}>
             <div className="flex flex-col h-full gap-4">
               <div className="space-y-3 overflow-y-auto custom-scrollbar pr-1">
                 {customer_intel.top_complaints.map((complaint, i) => (
@@ -256,7 +259,7 @@ export default function SpyView({ data }: SpyViewProps) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-neutral-500 hover:text-emerald-400 transition-colors"
-                            title="View Source"
+                            title={t('viewSource')}
                           >
                             <ExternalLink className="w-3 h-3" />
                           </a>

@@ -7,14 +7,19 @@ from sqlalchemy.orm import sessionmaker
 
 # ========== CONFIGURATION ==========
 
-# DATABASE_URL = os.getenv("DATABASE_URL")
-# if not DATABASE_URL:
-#     print("⚠️ DATABASE_URL not set. Falling back to local SQLite.")
-DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
-# else:
-#     # Ensure usage of asyncpg driver for Postgres
-#     if DATABASE_URL.startswith("postgresql://"):
-#         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    print("⚠️ DATABASE_URL not set. Falling back to local SQLite.")
+    DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
+# DATABASE_URL = "sqlite+aiosqlite:///./verdyct_v2.db"
+else:
+    # Ensure usage of asyncpg driver for Postgres
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+    # Remove sslmode from URL if present (asyncpg doesn't like it in the URL)
+    if "sslmode=" in DATABASE_URL:
+         DATABASE_URL = DATABASE_URL.split("sslmode=")[0].rstrip("&?")
 
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
@@ -25,7 +30,12 @@ COLLECTION_NAME = "verdyct_ideas"
 
 # ========== RELATIONAL DB (ASYNC) ==========
 
-engine = create_async_engine(DATABASE_URL, echo=False, future=True)
+# Config for Supabase/Postgres via asyncpg
+connect_args = {}
+if "supa" in DATABASE_URL or "aws-" in DATABASE_URL:
+    connect_args = {"ssl": "require"}
+
+engine = create_async_engine(DATABASE_URL, echo=False, future=True, connect_args=connect_args)
 
 async def init_db():
     """
@@ -76,22 +86,21 @@ def get_qdrant_client():
         
     if _qdrant_client is None:
         try:
-                # Initialize Cloud Qdrant - DISABLED to fix socket.gaierror
-                # _qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
-                # print("✅ Connected to Qdrant Cloud.")
-                _qdrant_client = QdrantClient(path=QDRANT_PATH)
-                print("⚠️ Force fallback to local Qdrant due to network error.")
-            # else:
-            #     # Initialize local Qdrant
-            #     # _qdrant_client = QdrantClient(path=QDRANT_PATH)
-            #     # print("⚠️ Using local Qdrant storage.")
+            if QDRANT_URL and QDRANT_API_KEY:
+                # Initialize Cloud Qdrant
+                _qdrant_client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+                print(f"✅ Connected to Qdrant Cloud: {QDRANT_URL}")
+            else:
+                # Initialize local Qdrant
+                _qdrant_client = QdrantClient(path=QDRANT_PATH or "./qdrant_db")
+                print("⚠️ Using local Qdrant storage.")
         except Exception as e:
             print(f"Failed to create Qdrant client: {e}")
             return None
     return _qdrant_client
 
 def get_embedding_model():
-    global _embedding_model
+    global _embedding_model, _vector_db_available
     if not _vector_db_available:
         return None
         

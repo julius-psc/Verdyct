@@ -1,6 +1,7 @@
 'use client';
 
 import { UploadCloud, TrendingUp, User, Briefcase, MapPin, Search, ShieldCheck, ExternalLink, FileText, Target, Zap, Activity } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState, useRef } from 'react';
 import Widget from '../dashboard/Widget';
 import CardModal from './CardModal';
@@ -81,6 +82,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
     const [showCard, setShowCard] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isPublic, setIsPublic] = useState(initialIsPublic);
+    const t = useTranslations('Analyst');
     const reportRef = useRef<HTMLDivElement>(null);
 
     const generateFullReport = async () => {
@@ -113,7 +115,8 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
             doc.save(`Verdyct_Report_${data.analysis_for.replace(/\s+/g, '_')}.pdf`);
         } catch (error) {
             console.error("PDF Export failed:", error);
-            alert("Failed to export PDF. Please try again.");
+            console.error("PDF Export failed:", error);
+            alert(t('alertError'));
         } finally {
             setIsExporting(false);
         }
@@ -122,7 +125,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
     if (!data) {
         return (
             <div className="flex items-center justify-center h-full text-neutral-500">
-                Loading analysis data...
+                {t('loading')}
             </div>
         );
     }
@@ -143,8 +146,8 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">The Analyst</h1>
-                    <p className="text-sm text-neutral-400">Market analysis for: {analysis_for}</p>
+                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-white">{t('title')}</h1>
+                    <p className="text-sm text-neutral-400">{t('subtitle', { name: analysis_for })}</p>
                 </div>
                 <div className="flex gap-3">
                     {fullReport?.project_id && !isReadOnly && (
@@ -170,7 +173,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                     if (res.ok) {
                                         setIsPublic(!isPublic);
                                         const action = isPublic ? "removed from" : "published to";
-                                        alert(`Project ${action} Leaderboard! 🚀`);
+                                        alert(isPublic ? t('alertUnpublished') : t('alertPublished'));
                                     } else {
                                         alert("Failed to update status. Please try again.");
                                     }
@@ -185,7 +188,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                 }`}
                         >
                             <TrendingUp className="w-4 h-4" />
-                            {isPublic ? 'Remove from Leaderboard' : 'Publish to Leaderboard'}
+                            {isPublic ? t('unpublish') : t('publish')}
                         </button>
                     )}
                     {!isReadOnly && (
@@ -194,7 +197,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                 onClick={() => setShowCard(true)}
                                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 rounded-lg text-sm font-semibold text-white transition-all shadow-lg shadow-red-900/20"
                             >
-                                Get Verdyct Card
+                                {t('getCard')}
                             </button>
                             <button
                                 onClick={generateFullReport}
@@ -202,7 +205,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                 className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50"
                             >
                                 {isExporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FileText className="w-4 h-4" />}
-                                {isExporting ? 'Exporting...' : 'Full PDF Report'}
+                                {isExporting ? t('exporting') : t('export')}
                             </button>
                         </>
                     )}
@@ -214,7 +217,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
 
                 {/* Main Visual - Market Score (2x2) */}
                 <div className="lg:col-span-2 lg:row-span-2">
-                    <Widget title="Market Viability" showGrid={true}>
+                    <Widget title={t('marketViability')} showGrid={true}>
                         <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between h-full px-2 gap-6 xl:gap-0">
                             <div className="flex-1 min-w-0">
                                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -222,7 +225,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                     <span className="text-lg lg:text-xl text-emerald-500 font-medium">{pcs_score}/100</span>
                                 </div>
                                 <p className="text-sm text-neutral-400 mt-3 max-w-md leading-relaxed">
-                                    <strong className="text-white">The Analyst's Verdyct:</strong> {analyst_footer.verdyct_summary}
+                                    <strong className="text-white">{t('verdyctLabel')}</strong> {analyst_footer.verdyct_summary}
                                 </p>
                             </div>
                             <div className="self-center xl:self-auto h-24 w-24 shrink-0 rounded-full border-4 border-emerald-500/20 flex items-center justify-center relative">
@@ -266,7 +269,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
 
                 {/* Consumer DNA (2x2) */}
                 <div className="lg:col-span-2 lg:row-span-2">
-                    <Widget title="Consumer DNA" action={<User className="w-4 h-4 text-neutral-500" />}>
+                    <Widget title={t('consumerDna')} action={<User className="w-4 h-4 text-neutral-500" />}>
                         <div className="flex flex-col h-full gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center border border-white/5">
@@ -290,7 +293,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                             </div>
 
                             <div className="space-y-3">
-                                <h4 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Pain Points</h4>
+                                <h4 className="text-xs font-medium text-neutral-500 uppercase tracking-wider">{t('painPoints')}</h4>
                                 <div className="space-y-2">
                                     {ideal_customer_persona.pain_points.map((point, i) => (
                                         <div key={i} className="flex items-center gap-2 text-sm text-neutral-300">
@@ -306,7 +309,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
 
                 {/* Search Landscape (2x2) */}
                 <div className="lg:col-span-2 lg:row-span-2">
-                    <Widget title="Search Landscape" action={<Search className="w-4 h-4 text-neutral-500" />}>
+                    <Widget title={t('searchLandscape')} action={<Search className="w-4 h-4 text-neutral-500" />}>
                         <div className="flex flex-col h-full gap-6">
                             {/* Modern Scatter Plot */}
                             <div className="relative flex-1 min-h-[300px] gradient-to-br from-neutral-900/50 to-neutral-900/30 rounded-xl border border-white/10 pt-8 pb-10 px-10">
@@ -322,10 +325,10 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
 
                                 {/* Axis Labels */}
                                 <div className="absolute left-2 top-1/2 -translate-y-1/2 -rotate-90 origin-center pointer-events-none">
-                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">Search Volume</span>
+                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">{t('searchVolume')}</span>
                                 </div>
                                 <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none">
-                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">Difficulty</span>
+                                    <span className="text-[10px] font-bold text-neutral-500 tracking-widest uppercase">{t('difficulty')}</span>
                                 </div>
 
                                 {/* Plot Area */}
@@ -393,14 +396,14 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                             </div>
                         </div>
                         <div className="text-right">
-                            <h2 className="text-[10px] font-bold text-neutral-500 tracking-[0.2em] uppercase">Confidential Report</h2>
+                            <h2 className="text-[10px] font-bold text-neutral-500 tracking-[0.2em] uppercase">{t('confidentialReport')}</h2>
                             <p className="text-[10px] text-neutral-600 mt-1">{new Date().toLocaleDateString()}</p>
                         </div>
                     </header>
 
                     {/* 2. Report Title & Verdict */}
                     <section className="mb-12 relative z-10">
-                        <h3 className="font-bold text-xs uppercase tracking-wider mb-2 text-[#C12424]">Target Analysis</h3>
+                        <h3 className="font-bold text-xs uppercase tracking-wider mb-2 text-[#C12424]">{t('targetAnalysis')}</h3>
                         <h1 className="text-5xl font-extrabold tracking-tight text-white mb-8 uppercase" style={{ lineHeight: 0.9 }}>
                             {analysis_for}
                         </h1>
@@ -408,19 +411,20 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                         <div className="grid grid-cols-12 gap-8 items-start">
                             {/* Score */}
                             <div className="col-span-4 border-r border-neutral-800 pr-8">
-                                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide mb-1">Verdyct Score</div>
+                                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide mb-1">{t('verdyctScore')}</div>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-7xl font-bold tracking-tighter text-[#C12424]">{pcs_score}</span>
                                     <span className="text-lg font-medium text-neutral-600">/100</span>
                                 </div>
                                 <div className="mt-3 inline-block px-3 py-1 bg-[#C12424]/10 text-[#C12424] text-xs font-bold tracking-wide uppercase rounded border border-[#C12424]/20">
-                                    {score_card.level} Potential
+                                    {score_card.level} {t('potential')}
                                 </div>
                             </div>
 
+
                             {/* Executive Summary */}
                             <div className="col-span-8 pl-4">
-                                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide mb-2">Executive Summary</div>
+                                <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wide mb-2">{t('executiveSummary')}</div>
                                 <p className="text-sm leading-relaxed text-gray-300 border-l-2 pl-4 border-[#C12424]">
                                     {analyst_footer.verdyct_summary}
                                 </p>
@@ -451,7 +455,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                         <p className="text-[10px] uppercase font-bold text-neutral-600 mb-1 h-8 leading-tight">{m.name}</p>
                                         <div className="mb-1">
                                             <p className="text-xl font-bold text-white leading-none">{val}</p>
-                                            {year && <p className="text-xs text-neutral-500 font-medium mt-1">by {year}</p>}
+                                            {year && <p className="text-xs text-neutral-500 font-medium mt-1">{t('by')} {year}</p>}
                                         </div>
                                         <p className="text-xs font-medium text-emerald-500 flex items-center gap-1 mt-auto">
                                             ↑ {m.change_percentage}
@@ -468,7 +472,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                         {/* Customer DNA */}
                         <div>
                             <div className="flex items-center gap-2 mb-6 border-b border-neutral-800 pb-2">
-                                <h3 className="text-lg font-bold text-white">Ideal Customer Profile</h3>
+                                <h3 className="text-lg font-bold text-white">{t('idealCustomerProfile')}</h3>
                             </div>
 
                             <div className="bg-neutral-900/50 border border-neutral-800 p-6 rounded-lg">
@@ -487,7 +491,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                 </blockquote>
 
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest">MAJOR PAIN POINTS</p>
+                                    <p className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest">{t('majorPainPoints')}</p>
                                     <ul className="space-y-2">
                                         {ideal_customer_persona.pain_points.slice(0, 3).map((pp, i) => (
                                             <li key={i} className="flex items-start gap-3">
@@ -503,15 +507,15 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                         {/* Competitive Landscape Table */}
                         <div>
                             <div className="flex items-center gap-2 mb-6 border-b border-neutral-800 pb-2">
-                                <h3 className="text-lg font-bold text-white">Competitive Landscape</h3>
+                                <h3 className="text-lg font-bold text-white">{t('competitiveLandscape')}</h3>
                             </div>
 
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr>
-                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800">Competitor</th>
-                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800 text-right">Position</th>
-                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800 text-right">Source</th>
+                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800">{t('competitor')}</th>
+                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800 text-right">{t('position')}</th>
+                                        <th className="py-2 text-[10px] font-bold text-neutral-600 uppercase tracking-wider border-b border-neutral-800 text-right">{t('source')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -521,7 +525,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                             <td className="py-3 text-xs text-neutral-400 border-b border-neutral-900 text-right group-last:border-0">{comp.quadrant_label || "N/A"}</td>
                                             <td className="py-3 border-b border-neutral-900 text-right group-last:border-0">
                                                 <span className="inline-block text-[10px] font-medium text-[#C12424] uppercase tracking-wider">
-                                                    {comp.verified_url ? "Verified" : "Analyzed"}
+                                                    {comp.verified_url ? t('verified') : t('analyzed')}
                                                 </span>
                                             </td>
                                         </tr>
@@ -529,7 +533,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                                 </tbody>
                             </table>
                             {(!fullReport?.spy?.market_quadrant?.competitors || fullReport.spy.market_quadrant.competitors.length === 0) && (
-                                <p className="text-sm text-neutral-600 italic mt-4">No direct competitors analyzed.</p>
+                                <p className="text-sm text-neutral-600 italic mt-4">{t('noCompetitors')}</p>
                             )}
                         </div>
                     </div>
@@ -537,7 +541,7 @@ export default function AnalystView({ data, fullReport, isReadOnly = false, isPu
                     {/* Footer */}
                     <footer className="mt-12 pt-6 border-t border-neutral-900 flex justify-between items-end relative z-10">
                         <div>
-                            <p className="text-[10px] text-neutral-600 font-medium tracking-wide">GENERATED BY VERDYCT AI AGENTS</p>
+                            <p className="text-[10px] text-neutral-600 font-medium tracking-wide">{t('generatedBy')}</p>
                         </div>
                         {/* Removed Bottom Right Branding as requested */}
                     </footer>

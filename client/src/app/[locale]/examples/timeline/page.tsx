@@ -1,11 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { mockTimelineData } from '@/data/mockTimeline';
-import Link from 'next/link';
+import { getMockTimelineData } from '@/data/mockTimeline';
+import { Link } from '@/i18n/routing';
 import { ArrowLeft, Sparkles, CheckCircle2, Lock, MessageSquare, Bot, User, Play, ChevronRight } from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
 
 export default function TimelineExamplePage() {
+    const t = useTranslations('Examples.Timeline');
+    const locale = useLocale();
+    const mockTimelineData = getMockTimelineData(locale);
     const [selectedStepId, setSelectedStepId] = useState(mockTimelineData.current_step);
     const selectedStep = mockTimelineData.steps.find(s => s.id === selectedStepId);
 
@@ -15,9 +19,9 @@ export default function TimelineExamplePage() {
             {/* Disclaimer Banner */}
             <div className="bg-gradient-to-r from-red-900/50 to-neutral-900 border-b border-red-500/20 px-4 py-2 flex items-center justify-center gap-2 text-xs md:text-sm text-red-100 relative z-50">
                 <Sparkles className="w-4 h-4 text-red-400" />
-                <span className="font-medium">The "Builder" Plan includes a dedicated AI Co-Founder.</span>
+                <span className="font-medium">{t('builderPlan')}</span>
                 <span className="hidden md:inline text-red-400/70 ml-2"> | </span>
-                <span className="hidden md:inline opacity-70">It guides you step-by-step from Idea to Exit.</span>
+                <span className="hidden md:inline opacity-70">{t('guidesYou')}</span>
             </div>
 
             {/* Header */}
@@ -29,7 +33,7 @@ export default function TimelineExamplePage() {
                     <div>
                         <h1 className="text-xl font-bold flex items-center gap-2">
                             {mockTimelineData.project_name}
-                            <span className="text-xs font-normal text-red-400 bg-red-400/10 px-2 py-0.5 rounded-full border border-red-400/20">Active Project</span>
+                            <span className="text-xs font-normal text-red-400 bg-red-400/10 px-2 py-0.5 rounded-full border border-red-400/20">{t('activeProject')}</span>
                         </h1>
                     </div>
                 </div>
@@ -40,7 +44,7 @@ export default function TimelineExamplePage() {
                 {/* Left Sidebar: Timeline Stepper */}
                 <aside className="w-[400px] border-r border-white/5 bg-neutral-900/30 flex flex-col overflow-y-auto">
                     <div className="p-6">
-                        <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-6">Execution Roadmap</h2>
+                        <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-6">{t('executionRoadmap')}</h2>
 
                         <div className="space-y-0 relative">
                             {/* Vertical Line */}
@@ -74,7 +78,7 @@ export default function TimelineExamplePage() {
                                         <div>
                                             <div className="flex items-center gap-2 mb-0.5">
                                                 <h3 className={`font-semibold text-sm ${isSelected ? 'text-white' : 'text-neutral-300'}`}>{step.title}</h3>
-                                                {step.status === 'current' && <span className="text-[10px] bg-red-500 text-white font-bold px-1.5 rounded">NOW</span>}
+                                                {step.status === 'current' && <span className="text-[10px] bg-red-500 text-white font-bold px-1.5 rounded">{t('now')}</span>}
                                             </div>
                                             <p className="text-xs text-neutral-500 leading-snug">{step.description}</p>
                                             <span className="text-[10px] text-neutral-600 mt-2 block">{step.date}</span>
@@ -98,8 +102,8 @@ export default function TimelineExamplePage() {
                                 <MessageSquare className="w-5 h-5 text-red-500" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-white">Coaching Session: {selectedStep?.title}</h3>
-                                <p className="text-xs text-neutral-400">Verdyct AI Co-Founder • Private Context</p>
+                                <h3 className="text-sm font-bold text-white">{t('coachingSession', { step: selectedStep?.title || '' })}</h3>
+                                <p className="text-xs text-neutral-400">{t('privateContext')}</p>
                             </div>
                         </div>
                     </div>
@@ -120,8 +124,8 @@ export default function TimelineExamplePage() {
                                     <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">{msg.role === 'ai' ? 'Verdyct AI' : 'You'}</span>
 
                                     <div className={`px-5 py-3.5 rounded-2xl text-sm leading-relaxed shadow-md border ${msg.role === 'ai'
-                                            ? 'bg-neutral-900 border-white/10 text-neutral-200 rounded-tl-sm'
-                                            : 'bg-red-800/80 border-red-700/50 text-white rounded-tr-sm backdrop-blur-sm'
+                                        ? 'bg-neutral-900 border-white/10 text-neutral-200 rounded-tl-sm'
+                                        : 'bg-red-800/80 border-red-700/50 text-white rounded-tr-sm backdrop-blur-sm'
                                         }`}>
                                         {msg.content}
 
@@ -129,12 +133,12 @@ export default function TimelineExamplePage() {
                                         {msg.type === 'insight' && (
                                             <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2 text-red-400 font-medium">
                                                 <Sparkles className="w-4 h-4" />
-                                                High-Value Insight
+                                                {t('insight')}
                                             </div>
                                         )}
                                         {msg.type === 'list' && (
                                             <div className="mt-2 text-xs text-neutral-400">
-                                                * This list was auto-added to your implementation plan.
+                                                {t('autoList')}
                                             </div>
                                         )}
                                     </div>
@@ -149,7 +153,7 @@ export default function TimelineExamplePage() {
                                     <Bot className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="px-5 py-4 rounded-2xl bg-neutral-900/50 border border-white/5 text-neutral-400 text-xs flex items-center gap-1">
-                                    Thinking <span className="animate-bounce">.</span><span className="animate-bounce delay-75">.</span><span className="animate-bounce delay-150">.</span>
+                                    {t('thinking')} <span className="animate-bounce">.</span><span className="animate-bounce delay-75">.</span><span className="animate-bounce delay-150">.</span>
                                 </div>
                             </div>
                         )}
@@ -160,7 +164,7 @@ export default function TimelineExamplePage() {
                         <div className="max-w-4xl mx-auto relative">
                             <input
                                 type="text"
-                                placeholder={selectedStep?.status === 'current' ? "Ask advice on pricing..." : "Session archived."}
+                                placeholder={selectedStep?.status === 'current' ? t('askAdvice') : t('sessionArchived')}
                                 className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-4 pr-12 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <button
@@ -173,10 +177,10 @@ export default function TimelineExamplePage() {
                             </button>
                         </div>
                         <p className="text-center text-[10px] text-neutral-600 mt-3 mb-2">
-                            Verdyct AI uses real-time market data to coach your startup journey.
+                            {t('realTimeData')}
                         </p>
                         <p className="text-center text-[9px] text-neutral-700 max-w-lg mx-auto leading-relaxed">
-                            *This is a static example. The actual product may evolve, and some fields shown here might be different or not available in the live version depending on your plan and data availability.
+                            {t('disclaimer')}
                         </p>
                     </div>
 

@@ -20,6 +20,5 @@ EXPOSE 8000
 ENV PYTHONUNBUFFERED=1
 
 # Run the application
-# We use shell form to allow expansion if needed, but array form is safer for signal handling.
-# However, we need to bind to 0.0.0.0 for Docker
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Using shell form to allow variable expansion for $PORT (defaults to 8000 if not set)
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

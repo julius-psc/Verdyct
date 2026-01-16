@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "C:\Users\stizi\Music\Verdyct\server\migrate_db.py", line 73, in migrate
+    target_session.add(proj)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\stizi\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\orm\session.py", line 3467, in add
+    self._save_or_update_state(state)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\stizi\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\orm\session.py", line 3491, in _save_or_update_state
+    self._save_or_update_impl(state)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\stizi\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\orm\session.py", line 4181, in _save_or_update_impl
+    self._update_impl(state)
+    ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\stizi\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\orm\session.py", line 4164, in _update_impl
+    to_attach = self._before_attach(state, obj)
+  File "C:\Users\stizi\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\orm\session.py", line 4255, in _before_attach
+    raise sa_exc.InvalidRequestError(
+    ...<3 lines>...
+    )
+sqlalchemy.exc.InvalidRequestError: Object '<Project at 0x1cea08b5910>' is already attached to session '2' (this is '3')
