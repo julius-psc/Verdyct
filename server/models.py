@@ -429,3 +429,33 @@ class Project(SQLModel, table=True):
 
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
+
+
+# ========== TIMELINE MODELS ==========
+
+class Timeline(SQLModel, table=True):
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    project_id: str = SQLField(index=True)
+    status: str = "active"  # active, completed
+    goal: str = Field(..., description="The user's final objective")
+    context: Dict = SQLField(default={}, sa_column=Column(JSON))
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class TimelineStep(SQLModel, table=True):
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    timeline_id: str = SQLField(index=True)
+    order_index: int
+    title: str
+    description: str
+    status: str = "locked"  # locked, active, completed
+    content: str  # Detailed instructions
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = None
+
+class TimelineMessage(SQLModel, table=True):
+    id: str = SQLField(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    timeline_id: str = SQLField(index=True)
+    step_id: Optional[str] = SQLField(default=None, index=True)
+    role: str  # user, assistant
+    content: str
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)

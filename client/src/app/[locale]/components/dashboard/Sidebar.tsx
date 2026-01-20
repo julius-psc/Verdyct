@@ -22,7 +22,7 @@ import {
   IconAlertTriangle,
   IconLoader2
 } from '@tabler/icons-react';
-import { PieChart, Eye, Hammer, TrendingUp, AudioLines } from 'lucide-react';
+import { PieChart, Eye, Hammer, TrendingUp, AudioLines, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useRouter, usePathname } from 'next/navigation';
@@ -79,6 +79,7 @@ export default function Sidebar() {
           { icon: Eye, label: 'The Spy' },
           { icon: Hammer, label: 'The Architect' },
           { icon: TrendingUp, label: 'The Financier' },
+          { icon: Clock, label: 'The Timeline' },
         ]
       }));
 

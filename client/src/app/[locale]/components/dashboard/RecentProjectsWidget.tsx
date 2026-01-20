@@ -1,15 +1,16 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock, Play } from 'lucide-react';
 import Widget from './Widget';
 import { Project } from '@/lib/api';
 
 interface RecentProjectsWidgetProps {
     projects: Project[];
+    subscriptionTier?: string;
 }
 
-export default function RecentProjectsWidget({ projects }: RecentProjectsWidgetProps) {
+export default function RecentProjectsWidget({ projects, subscriptionTier = "free" }: RecentProjectsWidgetProps) {
     // Sort by date (newest first) and take top 3
     const recentProjects = [...projects]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())

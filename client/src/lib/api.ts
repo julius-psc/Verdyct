@@ -79,3 +79,39 @@ export async function updateProject(projectId: string, data: { name?: string }, 
         return null;
     }
 }
+
+// ========== TIMELINE API ==========
+
+export async function startTimeline(projectId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/api/timeline/start`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ project_id: projectId })
+    });
+    if (!response.ok) throw new Error('Failed to start timeline');
+    return await response.json();
+}
+
+export async function getTimeline(projectId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/api/timeline/${projectId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return await response.json();
+}
+
+export async function sendTimelineMessage(projectId: string, message: string, stepId: string | undefined, token: string) {
+    const response = await fetch(`${API_BASE_URL}/api/timeline/chat`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ project_id: projectId, message, step_id: stepId })
+    });
+    return await response.json();
+}

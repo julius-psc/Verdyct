@@ -51,12 +51,25 @@ export default function MainView() {
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tier, setTier] = useState<string>("free");
 
   useEffect(() => {
     async function loadData() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
+
+      // 1. Fetch User Tier
+      if (session?.user) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('subscription_tier')
+          .eq('id', session.user.id)
+          .single();
+        if (userData) {
+          setTier(userData.subscription_tier || "free");
+        }
+      }
 
       const data = await fetchProjects(token);
       setProjects(data);
@@ -175,7 +188,7 @@ export default function MainView() {
 
           {/* Recent Projects - Spanning full width at bottom */}
           <div className="lg:col-span-4">
-            <RecentProjectsWidget projects={projects} />
+            <RecentProjectsWidget projects={projects} subscriptionTier={tier} />
           </div>
 
 
