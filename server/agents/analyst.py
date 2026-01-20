@@ -91,33 +91,55 @@ def calculate_pos(breakdown: list, confidence_level: str = "Medium") -> int:
 
 def search_market_data(idea: str) -> Dict:
     """
-    Effectue la recherche de données de marché via Tavily.
-    Retourne le contexte formaté et les résultats bruts.
+    Effectue une recherche approfondie (Deep Research) en plusieurs étapes.
+    1. Market Size & Growth (TAM, CAGR)
+    2. Trends & Drivers
+    3. Audience & Demographics
+    Combines results for a richer context.
     """
     try:
-        # Construire une requête optimisée pour Tavily
-        query = f"Market size TAM SAM CAGR for {idea} statistics growth trends competitors"
-        query = optimize_query(query)
+        all_results = []
         
-        # Appel à l'API Tavily
-        response = tavily_client.search(
-            query=query,
-            search_depth="advanced",
-            max_results=10,
-            include_answer=True
-        )
+        # Step 1: Market Size & Growth
+        query_size = optimize_query(f"Total addressable market size TAM SAM CAGR statistics for {idea} 2024 2025")
+        try:
+            r1 = tavily_client.search(query=query_size, search_depth="advanced", max_results=5, include_answer=True)
+            all_results.extend(extract_tavily_results(r1))
+        except Exception as e:
+            print(f"Error in Step 1 (Size): {e}")
+
+        # Step 2: Trends & Drivers
+        query_trends = optimize_query(f"Key market trends growth drivers and challenges for {idea} industry")
+        try:
+            r2 = tavily_client.search(query=query_trends, search_depth="advanced", max_results=5)
+            all_results.extend(extract_tavily_results(r2))
+        except Exception as e:
+            print(f"Error in Step 2 (Trends): {e}")
+
+        # Step 3: Customer Segments
+        query_users = optimize_query(f"Target audience customer demographics and psychographics for {idea} users")
+        try:
+            r3 = tavily_client.search(query=query_users, search_depth="advanced", max_results=4)
+            all_results.extend(extract_tavily_results(r3))
+        except Exception as e:
+            print(f"Error in Step 3 (Users): {e}")
         
-        results = extract_tavily_results(response)
-        context = format_tavily_context(results)
+        # Deduplicate based on URL
+        unique_results = {}
+        for res in all_results:
+            if res['url'] not in unique_results:
+                unique_results[res['url']] = res
+        
+        final_results_list = list(unique_results.values())
+        context = format_tavily_context(final_results_list)
         
         return {
             "context": context,
-            "results_count": len(results)
+            "results_count": len(final_results_list)
         }
         
     except Exception as e:
         print(f"Error in market data search: {e}")
-        # En cas d'erreur, on retourne un contexte vide mais on ne plante pas
         return {
             "context": "",
             "results_count": 0

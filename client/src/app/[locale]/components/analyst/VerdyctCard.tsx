@@ -95,7 +95,7 @@ export const VerdyctCard = React.forwardRef<HTMLDivElement, VerdyctCardProps>(({
                     <div className="text-left">
                         <span className="font-black tracking-widest text-xs text-neutral-500 block mb-1">EVALUATION</span>
                         <div className="flex items-center gap-2">
-                            <span className="font-bold tracking-tighter text-lg text-white">VERDYCT.AI</span>
+                            <span className="font-bold tracking-tighter text-lg text-white">VERDYCT.IO</span>
                         </div>
                     </div>
                     <span className="text-[10px] font-medium text-neutral-500 uppercase tracking-widest">{new Date().toLocaleDateString()}</span>

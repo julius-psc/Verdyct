@@ -56,6 +56,7 @@ interface SpyViewProps {
 export default function SpyView({ data }: SpyViewProps) {
   const t = useTranslations('Spy');
 
+
   if (!data) {
     return (
       <div className="relative w-full min-h-screen">
@@ -86,9 +87,12 @@ export default function SpyView({ data }: SpyViewProps) {
               {t('unlockMessage')}
             </p>
             <div className="pt-2">
-              <span className="inline-block px-4 py-2 bg-white text-black rounded-full text-sm font-semibold">
-                {t('upgrade')}
-              </span>
+              <button
+                disabled={true}
+                className="inline-flex items-center justify-center px-6 py-3 bg-neutral-800 text-neutral-500 rounded-full text-sm font-bold cursor-not-allowed border border-white/5"
+              >
+                {t('upgrade')} - Coming Soon
+              </button>
             </div>
           </div>
         </div>

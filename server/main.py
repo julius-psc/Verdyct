@@ -37,6 +37,7 @@ from fastapi import Depends
 from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Optional
 import os
+from utils import generate_project_name
 
 app = FastAPI(title="Verdyct Analyst Agent", version="1.0")
 
@@ -682,13 +683,7 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     # Authenticated user ID
                     user_id = user_payload['sub']
                     
-                    # We MUST use the remote Supabase DB, not the local SQLite session
-                    # The global 'supabase' client from 'auth.py' is initialized with 
-                    # SERVICE_ROLE_KEY or ANON_KEY.
-                    # We need to ensure we are updating the REMOTE table that 'ProfilePage' reads from.
-                    
                     # FETCH
-                    # Note: 'daily_count' might be in a 'public.users' table or similar wrapper
                     response = supabase.table("users").select("daily_count, last_active_date").eq("id", user_id).execute()
                     
                     if response.data:
@@ -696,32 +691,44 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                         today = datetime.utcnow().date().isoformat()
                         
                         last_active = stats.get('last_active_date')
+                        # Robust Date Parsing: Handle if DB has full timestamp
+                        if last_active and "T" in last_active:
+                             last_active = last_active.split("T")[0]
+                        
                         daily_count = stats.get('daily_count', 0)
+                        
+                        print(f"DEBUG RATE LIMIT: User={user_id}, LastActive={last_active}, Today={today}, Count={daily_count}")
                         
                         # Reset if new day
                         if last_active != today:
+                            print(f"DEBUG RATE LIMIT: Resetting count for new day.")
                             daily_count = 0
+                            # Update DB immediately with reset
                             supabase.table("users").update({"daily_count": 0, "last_active_date": today}).eq("id", user_id).execute()
                         
                         # Check Limit (REDUCED TO 5 FOR LAUNCH)
                         if daily_count >= 5:
-                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached. Please come back yesterday to try again.'})}\\n\\n"
+                             print("DEBUG RATE LIMIT: Limit reached. Blocking request.")
+                             yield f"data: {json.dumps({'type': 'error', 'message': 'Daily analysis limit reached. Please come back tomorrow.'})}\n\n"
                              return
                              
                         # INCREMENT
-                        print(f"DEBUG: Incrementing daily count for {user_id}. Old: {daily_count}")
+                        print(f"DEBUG: Incrementing daily count for {user_id}. Old: {daily_count} -> New: {daily_count + 1}")
                         try:
-                            supabase.table("users").update({"daily_count": daily_count + 1}).eq("id", user_id).execute()
-                            print(f"DEBUG: Successfully incremented daily count.")
+                            supabase.table("users").update({"daily_count": daily_count + 1, "last_active_date": today}).eq("id", user_id).execute()
                         except Exception as e:
-                            print(f"CRITICAL ERROR updating Supabase: {e}")
+                            print(f"CRITICAL ERROR updating Supabase count: {e}")
+                            # If we can't increment, we should probably fail safe or log warning
+                            # For now, let's proceed but this is bad.
                         
                     else:
                         print(f"DEBUG: User {user_id} not found in Supabase 'users' table.")
                          
                 except Exception as e:
                     print(f"Rate Limit Check Error (Supabase): {e}")
-                    pass
+                    # FAIL SAFE: BLOCK if we can't verify limits
+                    yield f"data: {json.dumps({'type': 'error', 'message': 'System error checking usage limits. Please try again.'})}\n\n"
+                    return
 
             # Step 1: Run Analyst
             yield f"data: {json.dumps({'type': 'status', 'agent': 'analyst', 'status': 'running'})}\n\n"
@@ -752,9 +759,12 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     rescue_plan=rescue_plan
                 )
                 
+                # Generate AI Name (even for rejected, it keeps it clean)
+                project_name = generate_project_name(request.idea)
+                
                 project = Project(
                     id=project_id,
-                    name=f"{request.idea[:30]}...",
+                    name=project_name,
                     raw_idea=request.idea,
                     pos_score=pcs_score,
                     status="rejected",
@@ -878,9 +888,12 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     agents=agents_data
                 )
 
+                # Generate AI Name
+                project_name = generate_project_name(request.idea)
+
                 project = Project(
                     id=project_id,
-                    name=f"{request.idea[:30]}...",
+                    name=project_name,
                     raw_idea=request.idea,
                     pos_score=pcs_score,
                     status="approved",

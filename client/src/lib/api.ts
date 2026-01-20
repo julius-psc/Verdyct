@@ -80,6 +80,7 @@ export async function updateProject(projectId: string, data: { name?: string }, 
     }
 }
 
+
 // ========== TIMELINE API ==========
 
 export async function startTimeline(projectId: string, token: string) {

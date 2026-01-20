@@ -14,80 +14,60 @@ from utils import (
 
 def get_competitor_intel(idea: str) -> Dict:
     """
-    Effectue la reconnaissance concurrentielle via Tavily.
-    Deux types de recherches :
-    1. Landscape Search : identifie les concurrents principaux
-    2. Pain Search : collecte les plaintes et critiques sur chaque concurrent
+    Multistep Competitive Intelligence (Deep Research).
+    1. Discovery: Identify real competitor names.
+    2. Comparison: Feature & Pricing check.
+    3. Sentiment: User complaints & reviews.
     """
     try:
-        # 1. Landscape Search : identifier les concurrents avec leurs noms réels
-        landscape_query = f"Top competitors for {idea} list names pricing features comparison alternatives"
-        landscape_query = optimize_query(landscape_query)
+        all_results = []
+        landscape_context = ""
+        pain_context = ""
         
-        landscape_response = tavily_client.search(
-            query=landscape_query,
-            search_depth="advanced",
-            max_results=10
-        )
-        
-        landscape_results = extract_tavily_results(landscape_response)
-        landscape_context = format_tavily_context(landscape_results)
-        
-        # Ajouter une note explicite pour l'extraction des noms
-        if landscape_context:
-            landscape_context = f"IMPORTANT: Extract real competitor names (e.g., Expensify, QuickBooks, Zapier) from the data below. Use ONLY names that appear in the search results.\n\n{landscape_context}"
-        
-        # 2. Pain Search : rechercher les plaintes pour chaque concurrent identifié
-        pain_queries = []
-        pain_contexts = []
-        
-        # Recherche générale de plaintes sur le marché
-        general_pain_query = f"{idea} complaints reddit G2 Capterra negative reviews"
-        general_pain_query = optimize_query(general_pain_query)
+        # Step 1: Discovery (Who?)
+        query_discovery = optimize_query(f"List of top direct competitors for {idea} startup alternatives")
         try:
-            pain_response = tavily_client.search(
-                query=general_pain_query,
-                search_depth="advanced",
-                max_results=10
-            )
-            pain_results = extract_tavily_results(pain_response)
-            pain_context = format_tavily_context(pain_results)
-            if pain_context:
-                pain_contexts.append(f"General market complaints:\n{pain_context}")
+            r1 = tavily_client.search(query=query_discovery, search_depth="advanced", max_results=5)
+            discovery_results = extract_tavily_results(r1)
+            all_results.extend(discovery_results)
+            # Create preliminary context to help next steps if needed, 
+            # but usually we just process them all at the end.
+            # However, for Spy, we need specific contexts for specific sections.
+            landscape_context += format_tavily_context(discovery_results)
         except Exception as e:
-            print(f"Error in general pain search: {e}")
-        
-        # Recherches spécifiques pour les concurrents identifiés (limité à 3 pour éviter trop d'appels API)
-        # On laisse l'IA identifier les concurrents depuis le landscape_context
-        competitor_pain_query = f"{idea} competitors complaints reddit G2 Capterra cons negative reviews"
-        competitor_pain_query = optimize_query(competitor_pain_query)
+            print(f"Error in Step 1 (Discovery): {e}")
+
+        # Step 2: Comparison (Features/Pricing)
+        # We use a broad query as we might not have names yet if r1 failed, 
+        # but usually "competitors" keyword is enough for Tavily to fun.
+        query_compare = optimize_query(f"Feature and pricing comparison {idea} vs competitors table")
         try:
-            competitor_pain_response = tavily_client.search(
-                query=competitor_pain_query,
-                search_depth="advanced",
-                max_results=10
-            )
-            competitor_pain_results = extract_tavily_results(competitor_pain_response)
-            competitor_pain_context = format_tavily_context(competitor_pain_results)
-            if competitor_pain_context:
-                pain_contexts.append(f"Competitor-specific complaints:\n{competitor_pain_context}")
+            r2 = tavily_client.search(query=query_compare, search_depth="advanced", max_results=5)
+            compare_results = extract_tavily_results(r2)
+            all_results.extend(compare_results)
+            landscape_context += "\n" + format_tavily_context(compare_results)
         except Exception as e:
-            print(f"Error in competitor pain search: {e}")
-        
-        # Combiner tous les contextes
-        all_pain_context = "\n\n---\n\n".join(pain_contexts) if pain_contexts else ""
+             print(f"Error in Step 2 (Compare): {e}")
+
+        # Step 3: Sentiment (Pain points)
+        query_sentiment = optimize_query(f"User complaints and negative reviews for {idea} competitors reddit G2")
+        try:
+            r3 = tavily_client.search(query=query_sentiment, search_depth="advanced", max_results=6)
+            sentiment_results = extract_tavily_results(r3)
+            all_results.extend(sentiment_results)
+            pain_context = format_tavily_context(sentiment_results)
+        except Exception as e:
+             print(f"Error in Step 3 (Sentiment): {e}")
         
         return {
             "landscape_context": landscape_context,
-            "pain_context": all_pain_context,
-            "landscape_count": len(landscape_results),
-            "pain_count": len([c for c in pain_contexts if c])
+            "pain_context": pain_context,
+            "landscape_count": 0, # Legacy counts, not critical
+            "pain_count": 0
         }
         
     except Exception as e:
         print(f"Error in competitor intel search: {e}")
-        import traceback
-        traceback.print_exc()
         return {
             "landscape_context": "",
             "pain_context": "",
@@ -142,14 +122,17 @@ Your analysis must:
    - Or: "Cheap" vs "Premium", "Simple" vs "Complex", etc.
    Choose axes that reveal meaningful strategic differences in the market.
 
-2. **Position Competitors**: 
+2. **Position Competitors (NO RANDOM SCORING)**: 
    - Extract competitor names DIRECTLY from the landscape data above
    - Use ONLY names that appear in the Tavily search results (e.g., "Expensify", "QuickBooks", "Zapier")
    - NEVER invent competitor names or use placeholders
    - **CRITICAL URL VALIDATION**: For EACH competitor, you MUST provide a "verified_url" field
    - The verified_url MUST be one of the URLs from the VERIFIED_URL fields in the landscape data above
    - If you cannot find a URL that mentions the competitor, DO NOT include that competitor
-   - Assign X/Y coordinates (0-100 scale) for each competitor based on their positioning in the data
+   - **SCORING RULE**: Assign X/Y coordinates (0-100 scale) based on **EVIDENCE**. 
+     * If a competitor is described as "expensive", their Price score must be high (e.g. 80-90). 
+     * If they are "simple", their Complexity score must be low.
+     * DO NOT assign random coordinates.
    - Label each competitor's quadrant (e.g., "Crowded", "Niche", "Premium", etc.)
    - Use the actual data from Tavily to inform positioning
 

@@ -134,3 +134,29 @@ def optimize_query(query: str, max_length: int = 400) -> str:
         # En cas d'erreur, on tronque simplement
         return query[:max_length]
 
+def generate_project_name(idea: str) -> str:
+    """
+    Generate a short, catchy, professional project name (2-5 words) using gpt-4o-mini.
+    """
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a naming expert. Generate a short, professional, and catchy name (2-5 words) for a startup project based on the user's idea. Do not use quotes. Just return the name."
+                },
+                {
+                    "role": "user",
+                    "content": f"Idea: {idea}"
+                }
+            ],
+            temperature=0.7,
+            max_tokens=20
+        )
+        name = response.choices[0].message.content.strip().replace('"', '')
+        return name
+    except Exception as e:
+        print(f"Error generating name: {e}")
+        return f"{idea[:30]}..."
+
