@@ -30,12 +30,14 @@ def get_onboarding_prompt(context: Dict) -> str:
     """
 
 def get_step_helper_prompt(step: TimelineStep, context: Dict) -> str:
+    # OPTIMIZED: Only include title + description (not full content) to save tokens
     return SYSTEM_PROMPT + f"""
     STATUS: HELPING WITH STEP "{step.title}".
     Context: {json.dumps(context)}
-    Current Step Details: {step.content}
+    Step Description: {step.description}
     
     The user is asking for help or feedback on this specific step.
+    If they need detailed instructions, you can reference that the full guide is available in the main panel.
     Answer their question, provide examples, or unblock them.
     Keep answers concise and actionable.
     """
@@ -67,9 +69,16 @@ def run_timeline_agent(
     # 2. Build Messages
     messages = [{"role": "system", "content": system_content}]
     
-    # Add recent history (last 10)
-    # Filter history to only relevant context if needed, but for now simple tail
-    for msg in chat_history[-10:]:
+    # OPTIMIZED: Smart context selection to reduce token costs
+    # Strategy: Keep first message + last 4 messages (2 exchanges)
+    if len(chat_history) > 5:
+        # Keep first message (initial context) + last 4 messages (recent conversation)
+        selected_history = [chat_history[0]] + chat_history[-4:]
+    else:
+        # If history is short, keep all
+        selected_history = chat_history
+    
+    for msg in selected_history:
         messages.append({"role": msg.role, "content": msg.content})
         
     messages.append({"role": "user", "content": last_user_message})

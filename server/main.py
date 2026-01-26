@@ -1139,6 +1139,31 @@ async def get_timeline_state(project_id: str, session: AsyncSession = Depends(ge
     }
 
 
+@app.get("/api/timeline/step/{step_id}/history")
+async def get_step_history(
+    step_id: str,
+    session: AsyncSession = Depends(get_session),
+    user: tuple = Depends(verify_token)
+):
+    """Get chat history for a specific step."""
+    # Fetch Step to get timeline_id
+    step = (await session.exec(select(TimelineStep).where(TimelineStep.id == step_id))).first()
+    if not step:
+        raise HTTPException(status_code=404, detail="Step not found")
+    
+    # Fetch messages for this step
+    query = select(TimelineMessage).where(
+        TimelineMessage.timeline_id == step.timeline_id,
+        TimelineMessage.step_id == step_id
+    ).order_by(TimelineMessage.created_at)
+    
+    messages = (await session.exec(query)).all()
+    
+    return {
+        "messages": [{"role": m.role, "content": m.content} for m in messages]
+    }
+
+
 @app.post("/api/timeline/step/complete")
 async def complete_step(
     payload: dict = Body(...),

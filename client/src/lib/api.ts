@@ -116,3 +116,13 @@ export async function sendTimelineMessage(projectId: string, message: string, st
     });
     return await response.json();
 }
+
+export async function getStepHistory(stepId: string, token: string) {
+    const response = await fetch(`${API_BASE_URL}/api/timeline/step/${stepId}/history`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return await response.json();
+}
