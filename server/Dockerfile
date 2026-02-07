@@ -21,4 +21,4 @@ ENV PYTHONUNBUFFERED=1
 
 # Run the application
 # Using shell form to allow variable expansion for $PORT (defaults to 8000 if not set)
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["python", "main.py"]

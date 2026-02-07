@@ -94,6 +94,35 @@ interface ScoringBreakdownItem {
     max_score: number;
 }
 
+interface MVPMilestone {
+    phase: string;
+    duration: string;
+    deliverables: string[];
+}
+
+interface TechRisk {
+    risk: string;
+    impact: string;
+    mitigation: string;
+}
+
+interface ScalabilityStrategy {
+    title: string;
+    description: string;
+}
+
+interface ComplianceItem {
+    requirement: string;
+    status: string;
+    action: string;
+}
+
+interface Integration {
+    name: string;
+    category: string;
+    justification: string;
+}
+
 interface ArchitectData {
     title: string;
     score: number;
@@ -102,6 +131,12 @@ interface ArchitectData {
     tech_stack: TechStack;
     brand_kit: BrandKit;
     data_moat: DataMoat;
+    // Enhanced Fields
+    mvp_roadmap?: MVPMilestone[];
+    tech_risks?: TechRisk[];
+    scalability_strategy?: ScalabilityStrategy[];
+    compliance_checklist?: ComplianceItem[];
+    recommended_integrations?: Integration[];
     architect_footer: {
         verdyct_summary: string;
         scoring_breakdown: ScoringBreakdownItem[];
@@ -458,41 +493,134 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
                     </Widget>
                 </div>
 
-                {/* 4. User Journey (2x1) */}
+                {/* 4. MVP Roadmap (AI-Accelerated) (2x1) */}
                 <div className="lg:col-span-2">
-                    <Widget title={t('userJourney')} action={<Figma className="w-4 h-4 text-neutral-500" />}>
-                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
-                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">{t('comingSoon')}</div>
-
-                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <Figma className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
-                            </div>
-                            <h3 className="text-base font-medium text-white mb-1">{t('figmaIntegration')}</h3>
-                            <p className="text-xs text-neutral-500 text-center max-w-xs">
-                                {t('figmaDesc')}
-                            </p>
+                    <Widget title={t('roadmapTitle') || "MVP Roadmap"} action={<Activity className="w-4 h-4 text-neutral-500" />}>
+                        <div className="space-y-4">
+                            {data.mvp_roadmap && data.mvp_roadmap.length > 0 ? (
+                                data.mvp_roadmap.map((item, i) => (
+                                    <div key={i} className="flex gap-4 group">
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2"></div>
+                                            {data.mvp_roadmap && i < data.mvp_roadmap.length - 1 && <div className="w-px h-full bg-white/10 my-1 group-hover:bg-emerald-500/30 transition-colors"></div>}
+                                        </div>
+                                        <div className="pb-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h4 className="text-sm font-semibold text-white">{item.phase}</h4>
+                                                <span className="text-[10px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded border border-white/5">{item.duration}</span>
+                                            </div>
+                                            <ul className="space-y-1">
+                                                {item.deliverables.map((del, j) => (
+                                                    <li key={j} className="text-xs text-neutral-400 flex items-start gap-1.5 leading-relaxed">
+                                                        <span className="mt-1 w-1 h-1 rounded-full bg-neutral-700"></span>
+                                                        {del}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-8 text-neutral-500 text-sm italic">{t('noRoadmap')}</div>
+                            )}
                         </div>
                     </Widget>
                 </div>
 
-                {/* 5. Data Moat (2x1) */}
+                {/* 5. Technical Risks (2x1) */}
                 <div className="lg:col-span-2">
-                    <Widget title={t('dataMoat')} action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
-                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
-                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">{t('comingSoon')}</div>
-
-                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                                <Lock className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
-                            </div>
-                            <h3 className="text-base font-medium text-white mb-1">{t('dataMoat')}</h3>
-                            <p className="text-xs text-neutral-500 text-center max-w-xs">
-                                {t('dataDesc')}
-                            </p>
+                    <Widget title={t('risksTitle') || "Risk Radar"} action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
+                        <div className="grid grid-cols-1 gap-3">
+                            {data.tech_risks && data.tech_risks.length > 0 ? (
+                                data.tech_risks.map((risk, i) => (
+                                    <div key={i} className="p-3 bg-neutral-900/40 rounded-lg border border-white/5 hover:border-red-500/20 transition-colors group">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <div className="text-sm font-medium text-white">{risk.risk}</div>
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${risk.impact.toLowerCase() === 'high' ? 'bg-red-500/10 text-red-500' :
+                                                risk.impact.toLowerCase() === 'medium' ? 'bg-amber-500/10 text-amber-500' :
+                                                    'bg-emerald-500/10 text-emerald-500'
+                                                }`}>
+                                                {risk.impact} Impact
+                                            </span>
+                                        </div>
+                                        <div className="text-xs text-neutral-500 mt-2 pl-2 border-l-2 border-neutral-800 group-hover:border-neutral-600 transition-colors">
+                                            <span className="text-neutral-400 font-medium">Mitigation:</span> {risk.mitigation}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5">
+                                    <ShieldCheck className="w-6 h-6 text-neutral-600 mb-2" />
+                                    <p className="text-xs text-neutral-500">{t('noRisks')}</p>
+                                </div>
+                            )}
                         </div>
                     </Widget>
                 </div>
 
-                {/* 6. Pixel Tracker Stats (4x1) */}
+                {/* 6. Integrations & Stack (4x1) */}
+                <div className="lg:col-span-4">
+                    <Widget title={t('integrationsTitle') || "Recommended Integrations"} action={<Cpu className="w-4 h-4 text-neutral-500" />}>
+                        <div className="flex flex-wrap gap-4">
+                            {data.recommended_integrations && data.recommended_integrations.length > 0 ? (
+                                data.recommended_integrations.map((tool, i) => (
+                                    <div key={i} className="flex items-center gap-3 p-3 bg-neutral-900/50 rounded-lg border border-white/5 min-w-[200px] flex-1">
+                                        <div className="w-10 h-10 rounded bg-neutral-800 flex items-center justify-center text-white font-bold text-xs">
+                                            {tool.name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-medium text-white">{tool.name}</div>
+                                            <div className="text-[10px] text-neutral-500">{tool.category}</div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-neutral-500 text-sm">{t('noIntegrations')}</div>
+                            )}
+                        </div>
+
+                        {/* Scalability & Compliance Mini-Section */}
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                            <div>
+                                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Scalability Strategy</h4>
+                                <div className="text-sm text-neutral-300 leading-relaxed">
+                                    {data.scalability_strategy && data.scalability_strategy.length > 0 ? (
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {data.scalability_strategy.map((s, i) => (
+                                                <li key={i}><span className="text-white font-medium">{s.title}:</span> {s.description.substring(0, 80)}...</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="italic text-neutral-600">Standard auto-scaling strategy.</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">Compliance Checklist</h4>
+                                <div className="text-sm text-neutral-300 leading-relaxed">
+                                    {data.compliance_checklist && data.compliance_checklist.length > 0 ? (
+                                        <ul className="space-y-2">
+                                            {data.compliance_checklist.map((c, i) => (
+                                                <li key={i} className="flex items-center gap-2">
+                                                    {c.status.toLowerCase().includes('required') ? (
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Required"></span>
+                                                    ) : (
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Recommended"></span>
+                                                    )}
+                                                    <span className="text-neutral-400">{c.requirement}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="italic text-neutral-600">Standard GDPR/Privacy compliance.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </Widget>
+                </div>
+
+                {/* 7. Pixel Tracker Stats (4x1) - EXISTING */}
                 <div className="lg:col-span-4">
                     <Widget title={t('pixelTracker')} action={<Activity className="w-4 h-4 text-neutral-500" />}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -549,6 +677,40 @@ export default function ArchitectView({ data, projectId }: ArchitectViewProps) {
                                     )}
                                 </div>
                             </div>
+                        </div>
+                    </Widget>
+                </div>
+
+                {/* 8. User Journey (TEASER) (2x1) */}
+                <div className="lg:col-span-2">
+                    <Widget title={t('userJourney') || "User Journey"} action={<Figma className="w-4 h-4 text-neutral-500" />}>
+                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
+
+                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <Figma className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
+                            </div>
+                            <h3 className="text-base font-medium text-white mb-1">Figma Integration</h3>
+                            <p className="text-xs text-neutral-500 text-center max-w-xs">
+                                Auto-generate UI flows from your idea.
+                            </p>
+                        </div>
+                    </Widget>
+                </div>
+
+                {/* 9. Data Moat (TEASER) (2x1) */}
+                <div className="lg:col-span-2">
+                    <Widget title={t('dataMoat') || "Data Moat"} action={<ShieldCheck className="w-4 h-4 text-neutral-500" />}>
+                        <div className="flex flex-col h-full items-center justify-center p-6 bg-neutral-900/40 rounded-lg border border-white/5 relative overflow-hidden group hover:border-white/10 transition-colors">
+                            <div className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900 border border-white/10 rounded text-[10px] text-neutral-400 font-medium">Coming Soon</div>
+
+                            <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                                <Lock className="w-6 h-6 text-neutral-400 group-hover:text-white transition-colors" />
+                            </div>
+                            <h3 className="text-base font-medium text-white mb-1">Defensive Strategy</h3>
+                            <p className="text-xs text-neutral-500 text-center max-w-xs">
+                                AI-driven analysis of your data competitive advantage.
+                            </p>
                         </div>
                     </Widget>
                 </div>

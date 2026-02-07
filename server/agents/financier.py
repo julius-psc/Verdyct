@@ -12,229 +12,237 @@ from utils import (
     optimize_query
 )
 
-def get_pricing_intel(idea: str) -> Dict:
+def get_financial_intel(idea: str) -> Dict:
     """
-    Effectue la recherche de pricing via Tavily.
-    Recherche les prix des concurrents et les modèles de pricing SaaS.
+    Effectue la recherche financière globale (Pricing + Costs).
+    1. Concurrent Pricing Models
+    2. Operational Cost Benchmarks (Server, Team, Tools) for this industry
     """
     try:
-        # Recherche pour le pricing des concurrents
-        pricing_query = f"Pricing for {idea} competitors SaaS pricing models"
-        pricing_query = optimize_query(pricing_query)
+        results = {}
         
-        pricing_response = tavily_client.search(
-            query=pricing_query,
-            search_depth="advanced",
-            max_results=10
-        )
+        # 1. Pricing Search
+        pricing_query = optimize_query(f"Pricing for {idea} competitors SaaS pricing models")
+        print(f"   💰 Searching Pricing: {pricing_query}...")
+        r_pricing = tavily_client.search(query=pricing_query, search_depth="advanced", max_results=6)
+        pricing_res = extract_tavily_results(r_pricing)
+        results["pricing_context"] = format_tavily_context(pricing_res)
         
-        pricing_results = extract_tavily_results(pricing_response)
-        pricing_context = format_tavily_context(pricing_results)
+        # 2. Cost/Operating Benchmarks Search (LEAN/BOOTSTRAP FOCUSED)
+        cost_query = optimize_query(f"Bootstrapped operating costs for {idea} solopreneur indie hacker tech stack")
+        print(f"   📉 Searching Costs (Lean): {cost_query}...")
+        r_costs = tavily_client.search(query=cost_query, search_depth="advanced", max_results=4)
+        cost_res = extract_tavily_results(r_costs)
+        results["cost_context"] = format_tavily_context(cost_res)
         
-        return {
-            "pricing_context": pricing_context,
-            "results_count": len(pricing_results)
-        }
+        results["results_count"] = len(pricing_res) + len(cost_res)
+        return results
         
     except Exception as e:
-        print(f"Error in pricing intel search: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Error in financial intel search: {e}")
         return {
             "pricing_context": "",
+            "cost_context": "",
             "results_count": 0
         }
 
-def calculate_projections(monthly_price: float, ad_spend: float, conversion_rate: float) -> Dict:
+def calculate_projections(monthly_price: float, ad_spend: float, conversion_rate: float, cost_structure: list = []) -> Dict:
     """
-    Calcule les projections financières sur 5 ans.
-    Cette fonction Python effectue TOUS les calculs mathématiques.
-    L'IA ne doit PAS calculer ces projections.
-    
-    Formules:
-    - CAC = Ad Spend / (Ad Spend * Conversion Rate / 100)
-    - LTV = Monthly Price * (1 / Churn Rate) * Gross Margin
-    - Revenue = Customers * Monthly Price * 12
+    Calcule les projections financières (Revenue, Profit, Break-Even, Runway).
+    Now includes Fixed Cost analysis from LLM data.
     """
-    # Assumptions basées sur les standards de l'industrie
-    churn_rate = 0.05  # 5% churn mensuel (standard SaaS)
-    gross_margin = 0.80  # 80% marge brute (standard SaaS)
+    # 1. Analyze Costs
+    fixed_costs = 0
+    variable_costs_per_user = 0
     
-    # Calcul du CAC (Customer Acquisition Cost)
-    # Conversion rate est en pourcentage (ex: 2.5%)
-    leads_per_month = ad_spend / 10  # Estimation: €10 par lead
-    customers_per_month = leads_per_month * (conversion_rate / 100)
-    
-    if customers_per_month > 0:
-        cac = ad_spend / customers_per_month
+    # Defaults if no structure provided
+    if not cost_structure:
+        fixed_costs = 100 # Low default for lean startups (Domains, minimal hosting)
     else:
-        cac = ad_spend  # Fallback si pas de conversions
+        for cost in cost_structure:
+            # Handle both dict and Pydantic object
+            c_amount = cost.get('monthly_amount', 0) if isinstance(cost, dict) else cost.monthly_amount
+            c_var = cost.get('is_variable', False) if isinstance(cost, dict) else cost.is_variable
+            
+            if c_var:
+                variable_costs_per_user += c_amount # Assuming 'variable' costs are entered as unit costs by LLM
+            else:
+                fixed_costs += c_amount
+
+    # Gross Margin (Unit Economics)
+    # Revenue per user - Variable Cost
+    gross_profit_per_user = monthly_price - variable_costs_per_user
+    if gross_profit_per_user <= 0: gross_profit_per_user = monthly_price * 0.2 # Fallback to 20% if costs > price
+
+    # 2. Key Metrics
+    churn_rate = 0.05
     
-    # Calcul du LTV (Lifetime Value)
-    # LTV = Monthly Price * Average Lifetime * Gross Margin
-    average_lifetime_months = 1 / churn_rate  # 20 mois en moyenne
-    ltv = monthly_price * average_lifetime_months * gross_margin
+    # LEAN VISIBILITY ALGORITHM
+    # 1. Base Organic Traffic (SEO/Social/Communities) - Every founder does some manual work
+    base_organic_traffic = 300 # Visitors per month (Sweat Equity)
     
-    # Calcul du ratio LTV:CAC
-    if cac > 0:
-        ltv_cac_ratio = ltv / cac
-    else:
-        ltv_cac_ratio = 0
+    # 2. Paid Traffic
+    paid_leads = ad_spend / 1.5 if ad_spend > 0 else 0
     
-    # Déterminer le statut
-    if ltv_cac_ratio >= 3:
-        status = "Excellent"
-    elif ltv_cac_ratio >= 2:
-        status = "Good"
-    elif ltv_cac_ratio >= 1:
-        status = "Fair"
-    else:
-        status = "Poor"
+    # Total Leads
+    total_leads = base_organic_traffic + paid_leads
     
-    # Projections de revenus sur 5 ans
-    # Modèle de croissance: croissance mensuelle des clients
-    growth_rate = 0.10  # 10% de croissance mensuelle (agressif mais réaliste)
+    customers_per_month = total_leads * (conversion_rate / 100)
+    
+    cac = ad_spend / customers_per_month if customers_per_month > 0 else ad_spend
+    ltv = gross_profit_per_user / churn_rate
+    ltv_cac_ratio = ltv / cac if cac > 0 else 0
+
+    # 3. Break-Even Analysis
+    # Breakeven Users = Fixed Costs / Gross Profit per User
+    break_even_users = fixed_costs / gross_profit_per_user if gross_profit_per_user > 0 else 0
+    break_even_users = int(break_even_users)
+
+    # 4. Burn Rate & Runway
+    seed_money = 50000 # Assumption: Friends & Family / Pre-seed
+    # Runway = Seed / Net Burn (Fixed Costs - Revenue) -> Simplified to (Seed / Fixed Costs) for Day 0
+    runway_months = seed_money / fixed_costs if fixed_costs > 0 else 99
+    
+    # Status
+    if ltv_cac_ratio >= 3 and runway_months > 12: status = "Excellent"
+    elif ltv_cac_ratio >= 1.5: status = "Good"
+    elif ltv_cac_ratio >= 1: status = "Fair"
+    else: status = "Risk"
+
+    # 5. Projections (5 Years)
+    growth_rate = 0.15 # 15% MoM early stage
     projections = []
-    
     current_customers = 0
+    
+    # Track when we hit breakeven
+    months_to_breakeven = None
+    accumulated_cash = seed_money
+
     for year in range(1, 6):
-        # Calculer le nombre de clients à la fin de l'année
-        # On commence avec quelques clients et on grandit
-        if year == 1:
-            # Année 1: croissance depuis 0
-            customers_end_year = customers_per_month * 12
-        else:
-            # Années suivantes: croissance composée
-            customers_start_year = current_customers
-            for month in range(12):
-                new_customers = customers_per_month * (1 + growth_rate) ** (year - 1)
-                churned = customers_start_year * churn_rate
-                customers_start_year = customers_start_year + new_customers - churned
-            customers_end_year = customers_start_year
+        customers_end_year = 0
+        annual_revenue = 0
+        annual_profit = 0
         
-        current_customers = customers_end_year
-        
-        # Revenu annuel = clients moyens * prix mensuel * 12
-        # Approximation: moyenne entre début et fin d'année
-        avg_customers = customers_end_year * 0.6  # Approximation
-        annual_revenue = avg_customers * monthly_price * 12
-        
-        # Formater en euros
-        if annual_revenue >= 1000:
-            revenue_str = f"€{annual_revenue:,.0f}".replace(",", " ")
-        else:
-            revenue_str = f"€{annual_revenue:.0f}"
-        
+        # Monthly simulation for precision
+        for m in range(12):
+            if year == 1 and m == 0:
+                new = customers_per_month
+            else:
+                new = customers_per_month * ((1 + growth_rate) if current_customers < 1000 else 1.05)
+            
+            churn = current_customers * churn_rate
+            current_customers += (new - churn)
+            
+            # Monthly Financials
+            m_revenue = current_customers * monthly_price
+            m_costs = fixed_costs + (current_customers * variable_costs_per_user) + ad_spend
+            m_profit = m_revenue - m_costs
+            
+            annual_revenue += m_revenue
+            annual_profit += m_profit
+            accumulated_cash += m_profit
+
+            if m_profit > 0 and months_to_breakeven is None:
+                months_to_breakeven = ((year - 1) * 12) + m
+
+        # Format
+        fmt = lambda x: f"€{x:,.0f}".replace(",", " ")
         projections.append({
             "year": f"Year {year}",
-            "revenue": revenue_str
+            "revenue": fmt(annual_revenue),
+            "profit": fmt(annual_profit),
+            "customers": f"{int(current_customers)}"
         })
-    
+
     return {
         "cac": cac,
         "ltv": ltv,
         "ltv_cac_ratio": ltv_cac_ratio,
         "status": status,
-        "projections": projections
+        "projections": projections,
+        "break_even_users": f"{break_even_users:,}".replace(",", " "),
+        "projected_runway_months": f"{int(runway_months)} months" if accumulated_cash > 0 else "0 months"
     }
 
-def generate_financier_analysis(idea: str, pricing_context: str, language: str = "en", max_retries: int = 3) -> FinancierResponse:
+def generate_financier_analysis(idea: str, pricing_context: str, cost_context: str = "", language: str = "en", max_retries: int = 3) -> FinancierResponse:
     """Génère l'analyse financière via OpenAI (sans calculer les projections)"""
     
     # Extraire les URLs disponibles depuis le contexte
     pricing_urls = extract_urls_from_context(pricing_context)
+    cost_urls = extract_urls_from_context(cost_context)
+    all_urls = {**pricing_urls, **cost_urls}
     
-    if not pricing_urls:
-        raise ValueError("No URLs found in Tavily search results. Cannot verify any pricing information.")
+    if not all_urls:
+         # Warn but don't crash, allowing inference if possible (similar to Spy)
+         print("Warning: No financial URLs found. Proceeding with inference.")
     
     # Construire la section de contexte
-    if pricing_context:
-        pricing_section = f"PRICING DATA FROM TAVILY:\n{pricing_context}"
-    else:
-        pricing_section = "No pricing data available."
+    pricing_section = f"PRICING DATA:\n{pricing_context}" if pricing_context else "No pricing data available."
+    cost_section = f"OPERATING COST BENCHMARKS:\n{cost_context}" if cost_context else "No specific cost benchmarks available."
     
     # Liste des URLs disponibles pour référence
-    urls_list = "\n".join([f"- {url}" for url in pricing_urls.keys()]) if pricing_urls else "No URLs available"
+    urls_list = "\n".join([f"- {url}" for url in all_urls.keys()]) if all_urls else "No URLs available"
     
-    system_prompt = f"""You are a strategic CFO. Your task is to analyze a startup idea and suggest a pricing model and baseline assumptions.
+    system_prompt = f"""You are a Bootstrapped Founder Advisor. Your task is to analyze a startup idea and suggest a lean pricing model, low-cost operating structure, and realistic roadmap for a solopreneur.
 
 The startup idea to analyze is: {idea}
 
 {pricing_section}
 
+{cost_section}
+
 **STEP 1: DETECT BUSINESS MODEL TYPE**
 Analyze the idea and categorize it into one of these types:
-1. **SaaS (B2B/B2C):** Recurring revenue (e.g., Slack, Netflix). -> Use 'Monthly Subscription'.
-2. **Marketplace:** Connecting buyers/sellers (e.g., Uber, Airbnb). -> Use 'Commission/Take Rate' (Price = 0, Revenue comes from %).
-3. **Transactional/E-commerce:** Selling goods (e.g., Shopify store). -> Use 'Unit Margin' or 'Average Cart Value'.
-4. **Ad-Supported:** Free for users (e.g., Facebook). -> Use 'CPM/Ad Revenue'.
+1. **SaaS (B2B/B2C):** Recurring revenue -> Use 'Monthly Subscription'.
+2. **Marketplace:** Connecting buyers/sellers -> Use 'Commission/Take Rate'.
+3. **Transactional/E-commerce:** Selling goods -> Use 'Unit Margin'.
 
-**STEP 2: ADAPT PRICING TIERS**
-- If **SaaS**: Show Tiers with 'Price /mo'.
-- If **Marketplace**: Show Tiers based on 'Commission %' (e.g., Standard: 15%, Pro: 25% + Boost). The 'price' field should be the text 'X% Commission'.
-- If **Transactional**: Show 'Average Unit Price'.
+**STEP 2: ADAPT PRICING TIERS (LEAN)**
+- Suggest exactly 3 tiers ("Early Bird/Starter", "Pro", "Scale").
+- **CRITICAL:** Each tier MUST have a verified_url from the pricing data if available.
 
-**CRITICAL:** Do NOT suggest a €199/month subscription for a food delivery app meant for end-users. That is a hallucination.
+**STEP 3: ESTIMATE OPERATING COSTS (BOOTSTRAP MODE)**
+- Estimate 4-6 categories of monthly operating costs for a SOLOPRENEUR.
+- **MINDSET:** Prioritize FREE TIERS (Vercel, Supabase, Stripe, Gmail). 
+- Assume the founder does NOT take a salary initially (Sweat Equity).
+- Include: Domain Name (~€1-2/mo), Hosting (Free/Low), Email Marketing (Free tier), Legal/Admin.
+- Mark costs that scale with users as `is_variable: true`, fixed costs as `is_variable: false`.
+- **REALISM:** Total MVP fixed costs should often be under €100-200/mo.
+
+**STEP 4: FINANCIAL ROADMAP (INDIE HACKER)**
+- Outline 3 phases: "Bootstrap (MVP)", "Validation (First Customers)", "Scale (Revenue Funded)".
+- **Phase 1 (Bootstrap):** Budget €0-€500. Goal: Launch MVP using sweat equity.
+- **Phase 2 (Validation):** Focus on first 100 paying customers via manual outreach/SEO.
+- **Phase 3 (Scale):** Reinvest revenue into ads/better tools.
 
 **CRITICAL RULES:**
-
 1. **Pricing Tiers:**
-   - You MUST suggest exactly 3 pricing tiers: "Acquisition", "Profit", and "Scale"
-   - Each tier MUST have a verified_url from the pricing data above
-   - Use ONLY real competitor names found in the data (e.g., "Expensify", "QuickBooks")
-   - NEVER use placeholders like "Competitor X"
-   - The benchmark_competitor MUST be a real competitor name from the data
-   - Each tier MUST have at least 2-3 features
-   - Mark ONE tier as recommended: true (typically the "Profit" tier)
+   - Use ONLY real competitor names found in the data.
+   - The verified_url field is MANDATORY where possible.
 
-2. **Lever Values (Initial Assumptions):**
-   - monthly_price: Set based on the "Profit" tier price.
-     * If SaaS: Extract the monthly price (e.g., "€19" -> 19).
-     * If Marketplace/Transactional: Estimate the Average Revenue Per User (ARPU) or Average Commission Value per active user per month (e.g., if 15% comm on €100 spend -> 15).
-   - ad_spend: Set between 100-5000 based on industry standards (startup: 500, scale: 2000)
-   - conversion_rate: Set between 0.5-10% based on industry (SaaS average: 2-3%)
-   - Set realistic min/max/step values for each lever
+2. **Lever Values:**
+   - monthly_price: Set based on the "Pro" tier.
+   - ad_spend: Set a realistic monthly budget for a starter (e.g., €0-€500).
+   - conversion_rate: 1-5%.
 
-3. **DO NOT CALCULATE - Use Placeholders:**
-   - For profit_engine.metrics: Use placeholder values that will be replaced by Python calculations:
-     * ltv_cac_ratio: "0:1" (placeholder)
-     * status: "Calculating" (placeholder)
-     * estimated_cac: "€0" (placeholder)
-     * estimated_ltv: "€0" (placeholder)
-   - For revenue_projection.projections: Provide a placeholder array with 5 years:
-     * [{{"year": "Year 1", "revenue": "€0"}}, {{"year": "Year 2", "revenue": "€0"}}, ...]
-   - Python will replace ALL these values with actual calculations
-   - Focus on providing accurate pricing_model and profit_engine.levers
-
-**URL VALIDATION REQUIREMENT - ANTI-HALLUCINATION RULE:**
-- EVERY pricing tier MUST have a verified_url from the pricing data above
-- The verified_url MUST be one of the URLs from the VERIFIED_URL fields in the data
-- If you cannot find a URL that contains the pricing, DO NOT include that tier
-- The verified_url field is MANDATORY and cannot be empty or placeholder
+3. **DO NOT CALCULATE METRICS:**
+   - For profit_engine.metrics and revenue_projection.projections, use PLACEHOLDERS.
+   - Python will calculate standard metrics AND Break-Even/Runway based on your Cost Structure.
 
 **LANGUAGE INSTRUCTION:**
 - The user has requested the report in: **{language}**
-- **CRITICAL:** All textual content in your JSON response (titles, feature names, statuses, summaries, etc.) **MUST** be in **{language}**.
-- Do not translate the field names (keys) of the JSON structure, only the values.
-- **TECHNICAL TERMS:** Do NOT translate standard technical terms literally (e.g., 'SaaS', 'B2B', 'LTV', 'CAC', 'Margin'). Keep them as standard industry terms or use commonly accepted equivalents in {language}.
-
-**CRITICAL - MINIMUM REQUIREMENTS:**
-- You MUST provide AT LEAST ONE pricing tier with a valid verified_url
-- You MUST provide all 3 levers (monthly_price, ad_spend, conversion_rate)
-- If you cannot meet these minimum requirements, the system will retry automatically
-- DO NOT return empty lists - this will cause the system to fail and retry
+- **CRITICAL:** All textual content (titles, names, summaries) **MUST** be in **{language}**. Do not translate JSON keys/fields, only values.
 
 Available URLs for reference:
 {urls_list}
-
-Be data-driven. Use ONLY the actual pricing data provided. NEVER include pricing tiers without a verified_url. ALWAYS ensure you provide at least the minimum required verified data."""
+"""
 
     try:
         response = openai_client.beta.chat.completions.parse(
             model="gpt-4o-2024-08-06",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Suggest a pricing model and baseline assumptions for this startup idea: {idea}"}
+                {"role": "user", "content": f"Generate detailed financial analysis including cost structure for: {idea}"}
             ],
             response_format=FinancierResponse,
             temperature=0.7
@@ -246,21 +254,21 @@ Be data-driven. Use ONLY the actual pricing data provided. NEVER include pricing
         message = response.choices[0].message
         
         if not hasattr(message, 'parsed') or message.parsed is None:
-            if hasattr(message, 'content') and message.content:
+             # Fallback parsing logic (same as before)
+             if hasattr(message, 'content') and message.content:
                 import json
                 try:
                     content_dict = json.loads(message.content)
                     analysis = FinancierResponse(**content_dict)
-                except (json.JSONDecodeError, ValueError) as parse_error:
-                    raise ValueError(f"Failed to parse OpenAI response: {parse_error}")
-            else:
-                raise ValueError("No parsed response and no content available from OpenAI")
+                except Exception as e:
+                    raise ValueError(f"Failed to parse OpenAI response: {e}")
+             else:
+                raise ValueError("No parsed response available")
         else:
             analysis = message.parsed
         
-        # Nettoyer tous les champs texte
+        # Clean text
         try:
-            import json
             analysis_dict = analysis.model_dump()
             def clean_dict_recursive(obj):
                 if isinstance(obj, dict):
@@ -274,72 +282,41 @@ Be data-driven. Use ONLY the actual pricing data provided. NEVER include pricing
             cleaned_dict = clean_dict_recursive(analysis_dict)
             analysis = FinancierResponse(**cleaned_dict)
         except Exception as e:
-            print(f"Warning: Could not clean parsed response: {e}")
-        
-        if not isinstance(analysis, FinancierResponse):
-            raise ValueError("Failed to parse response as FinancierResponse")
-        
-        # Validation post-processing : vérifier que toutes les URLs sont valides
-        valid_urls = set(pricing_urls.keys())
+            print(f"Warning: Cleaning failed: {e}")
+
+        # Post-Processing: Calculations
         analysis_dict = analysis.model_dump()
         
-        # Valider les URLs des pricing tiers
-        if 'financier' in analysis_dict and 'pricing_model' in analysis_dict['financier']:
-            if 'tiers' in analysis_dict['financier']['pricing_model']:
-                valid_tiers = []
-                for tier in analysis_dict['financier']['pricing_model']['tiers']:
-                    verified_url = tier.get('verified_url', '')
-                    if verified_url and verified_url in valid_urls:
-                        valid_tiers.append(tier)
-                    else:
-                        print(f"Warning: Pricing tier {tier.get('name', 'Unknown')} has invalid or missing URL: {verified_url}")
-                analysis_dict['financier']['pricing_model']['tiers'] = valid_tiers
-        
-        # Validation stricte
-        if len(analysis_dict.get('financier', {}).get('pricing_model', {}).get('tiers', [])) == 0:
-            raise ValueError("No valid pricing tiers found with verified URLs. All tiers were filtered out.")
-        
-        # Recréer l'objet avec les données validées
-        analysis = FinancierResponse(**analysis_dict)
-        
-        # POST-PROCESSING: Calculer les projections avec Python
-        # Extraire le monthly_price depuis les levers
         monthly_price = analysis.financier.profit_engine.levers.monthly_price.value
         ad_spend = analysis.financier.profit_engine.levers.ad_spend.value
         conversion_rate = analysis.financier.profit_engine.levers.conversion_rate.value
+        cost_structure = analysis.financier.cost_structure or []
         
-        # Calculer les projections
-        calculations = calculate_projections(monthly_price, ad_spend, conversion_rate)
+        # PASS COST STRUCTURE TO CALCULATIONS
+        calculations = calculate_projections(monthly_price, ad_spend, conversion_rate, cost_structure)
         
-        # Mettre à jour les métriques calculées
-        analysis_dict = analysis.model_dump()
+        # Update metrics
         analysis_dict['financier']['profit_engine']['metrics'] = {
             "ltv_cac_ratio": f"{calculations['ltv_cac_ratio']:.1f}:1",
             "status": calculations['status'],
             "estimated_cac": f"€{calculations['cac']:.0f}",
-            "estimated_ltv": f"€{calculations['ltv']:.0f}"
+            "estimated_ltv": f"€{calculations['ltv']:.0f}",
+            "break_even_users": calculations['break_even_users'], # NEW
+            "projected_runway_months": calculations['projected_runway_months'] # NEW
         }
         
-        # Mettre à jour les projections de revenus
+        # Update projections
         analysis_dict['financier']['revenue_projection'] = {
             "projections": calculations['projections']
         }
         
-        # Recréer l'objet final avec les calculs
-        analysis = FinancierResponse(**analysis_dict)
-        
-        return analysis
+        return FinancierResponse(**analysis_dict)
         
     except HTTPException:
         raise
     except ValueError as ve:
-        # Les ValueError sont relancés pour permettre le retry
         raise ve
     except Exception as e:
         import traceback
-        error_details = traceback.format_exc()
-        print(f"Error generating financier analysis: {error_details}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error generating financier analysis: {str(e)}"
-        )
+        print(f"Error generating financier analysis: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))

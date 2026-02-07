@@ -9,7 +9,10 @@ import {
     Check,
     Users,
     ExternalLink,
-    Lock
+    Lock,
+    PieChart,
+    Flag,
+    Calendar
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
@@ -48,6 +51,8 @@ interface Metrics {
     status: string;
     estimated_cac: string;
     estimated_ltv: string;
+    break_even_users: string;
+    projected_runway_months: string;
 }
 
 interface ProfitEngine {
@@ -64,6 +69,19 @@ interface RevenueProjections {
     projections: RevenueProjection[];
 }
 
+interface CostCategory {
+    name: string;
+    monthly_amount: number;
+    is_variable: boolean;
+}
+
+interface FinancialRoadmapPhase {
+    phase_name: string;
+    duration_months: number;
+    required_budget: string;
+    milestone_goal: string;
+}
+
 interface FinancierData {
     title: string;
     score: number;
@@ -74,6 +92,8 @@ interface FinancierData {
         verdyct_summary: string;
         recommendation_text: string;
     };
+    cost_structure?: CostCategory[];
+    financial_roadmap?: FinancialRoadmapPhase[];
 }
 
 interface FinancierViewProps {
@@ -203,20 +223,39 @@ export default function FinancierView({ data }: FinancierViewProps) {
                     <Widget title={t('profitEngine')} action={<Calculator className="w-4 h-4 text-emerald-500" />}>
                         <div className="flex flex-col h-full gap-6">
                             {/* Top Section: Main Health Indicator */}
-                            <div className="flex items-center justify-between px-2 pb-4 border-b border-white/5">
+                            <div className="grid grid-cols-2 gap-4 px-2 pb-4 border-b border-white/5">
                                 <div className="space-y-1">
                                     <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{t('businessHealth')}</div>
-                                    <div className="flex items-baseline gap-3">
-                                        <span className={`text-5xl font-bold tracking-tighter ${ltvCacRatio >= 3 ? 'text-emerald-500' : ltvCacRatio >= 2 ? 'text-yellow-500' : 'text-red-500'}`}>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className={`text-4xl font-bold tracking-tighter ${ltvCacRatio >= 3 ? 'text-emerald-500' : ltvCacRatio >= 2 ? 'text-yellow-500' : 'text-red-500'}`}>
                                             {ltvCacRatio.toFixed(1)}x
                                         </span>
-                                        <span className="text-sm text-neutral-500 font-medium">LTV:CAC Ratio</span>
+                                        <span className="text-xs text-neutral-500 font-medium whitespace-nowrap">LTV:CAC</span>
                                     </div>
                                 </div>
                                 <div className="text-right space-y-1">
                                     <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">{t('timeToProfit')}</div>
-                                    <div className="text-3xl font-bold text-white">{monthsToProfitability} <span className="text-sm font-normal text-neutral-500">{t('months')}</span></div>
+                                    <div className="text-2xl font-bold text-white">{monthsToProfitability} <span className="text-sm font-normal text-neutral-500">{t('months')}</span></div>
                                 </div>
+                                {/* Row 2: Break Even & Runway - Only if data available from backend */}
+                                {data?.profit_engine.metrics.break_even_users && (
+                                    <>
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Break Even</div>
+                                            <div className="text-lg font-bold text-white flex items-center gap-1">
+                                                {data.profit_engine.metrics.break_even_users}
+                                                <Users className="w-3 h-3 text-neutral-500" />
+                                            </div>
+                                        </div>
+                                        <div className="text-right space-y-1">
+                                            <div className="text-xs font-medium text-neutral-400 uppercase tracking-wider">Runway</div>
+                                            <div className="text-lg font-bold text-white flex items-center justify-end gap-1">
+                                                {data.profit_engine.metrics.projected_runway_months}
+                                                <Calendar className="w-3 h-3 text-neutral-500" />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             {/* Middle Section: Sliders */}
@@ -234,17 +273,23 @@ export default function FinancierView({ data }: FinancierViewProps) {
                                     />
                                 </div>
 
-                                {/* Ad Spend */}
+                                {/* Marketing Budget (formerly Ad Spend) */}
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-white font-medium">{t('adSpend')}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-white font-medium">Marketing Budget</span>
+                                            <span className="text-[10px] text-neutral-500">Ads & Tools</span>
+                                        </div>
                                         <span className="text-emerald-400 font-mono">€{adSpend}</span>
                                     </div>
                                     <input
-                                        type="range" min="100" max="5000" step="100"
+                                        type="range" min="0" max="2000" step="50"
                                         value={adSpend} onChange={(e) => setAdSpend(Number(e.target.value))}
                                         className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                                     />
+                                    <p className="text-[10px] text-neutral-400">
+                                        {adSpend === 0 ? "✨ Organic Strategy (SEO, Content, Cold Outreach)" : "🚀 Paid Ads + Organic Growth"}
+                                    </p>
                                 </div>
 
                                 {/* Conversion Rate */}
@@ -336,6 +381,66 @@ export default function FinancierView({ data }: FinancierViewProps) {
                         </div>
                     </Widget>
                 </div>
+
+                {/* NEW: Cost Structure (2x2) */}
+                {data.cost_structure && (
+                    <div className="lg:col-span-2 lg:row-span-2">
+                        <Widget title="Cost Structure" action={<PieChart className="w-4 h-4 text-emerald-500" />}>
+                            <div className="flex flex-col gap-2 h-full overflow-auto pr-1 custom-scrollbar max-h-[300px]">
+                                {data.cost_structure.map((cost, i) => (
+                                    <div key={i} className="flex justify-between items-center p-3 rounded bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-2 h-2 rounded-full ${cost.is_variable ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
+                                            <span className="text-sm text-neutral-200 font-medium">{cost.name}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-sm font-mono text-white">€{cost.monthly_amount.toLocaleString()}</div>
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/40 text-neutral-400 inline-block mt-1">
+                                                {cost.is_variable ? 'Variable' : 'Fixed'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                                {/* Total */}
+                                <div className="mt-2 pt-2 border-t border-white/10 flex justify-between items-center px-3">
+                                    <span className="text-sm text-neutral-400">Total Estimated Monthly</span>
+                                    <span className="text-base font-bold text-white">
+                                        €{data.cost_structure.reduce((acc, c) => acc + c.monthly_amount, 0).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </Widget>
+                    </div>
+                )}
+
+                {/* NEW: Financial Roadmap (2x2) */}
+                {data.financial_roadmap && (
+                    <div className="lg:col-span-2 lg:row-span-2">
+                        <Widget title="Funding Strategy" action={<Flag className="w-4 h-4 text-emerald-500" />}>
+                            <div className="relative border-l border-emerald-500/20 ml-3 space-y-8 py-4 h-full overflow-auto custom-scrollbar max-h-[300px]">
+                                {data.financial_roadmap.map((phase, i) => (
+                                    <div key={i} className="relative pl-8">
+                                        <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-black"></div>
+                                        <div>
+                                            <div className="flex justify-between mb-1 items-start">
+                                                <h4 className="text-base font-bold text-white">{phase.phase_name}</h4>
+                                                <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20 font-mono whitespace-nowrap ml-2">
+                                                    {phase.required_budget}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-neutral-400 mb-2 flex items-center gap-1">
+                                                <Calendar className="w-3 h-3" /> {phase.duration_months} months duration
+                                            </p>
+                                            <div className="p-3 bg-white/5 rounded border border-white/5">
+                                                <p className="text-sm text-neutral-300 italic leading-relaxed">"{phase.milestone_goal}"</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Widget>
+                    </div>
+                )}
 
                 {/* 4. Pricing Strategy (4x1) - Bottom Row */}
                 <div className="lg:col-span-4">

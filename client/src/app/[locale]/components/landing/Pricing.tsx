@@ -2,13 +2,36 @@
 
 import { CheckCircle, XCircle, Eye, Sparkles } from 'lucide-react';
 import { Link } from '@/i18n/routing';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
+import { getCheckoutUrl, VARIANTS } from '@/lib/lemon';
 
 
 export default function Pricing() {
   const [isAnnual, setIsAnnual] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const t = useTranslations('Pricing');
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  const handlePurchase = (variantId: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    const url = getCheckoutUrl(variantId, user.id, window.location.href);
+    window.open(url, '_blank');
+  };
 
   return (
     <section id="pricing" className="py-20 px-4 bg-[#1B1818]">
@@ -70,8 +93,8 @@ export default function Pricing() {
                   <span className="text-xs text-neutral-300">{t('plans.beginner.features.0')}</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-neutral-500 shrink-0" />
-                  <span className="text-xs text-neutral-300">{t('plans.beginner.features.1')}</span>
+                  <XCircle className="w-4 h-4 text-neutral-600 shrink-0" />
+                  <span className="text-xs text-neutral-600">{t('plans.beginner.features.1')}</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-neutral-600 shrink-0" />
@@ -80,10 +103,6 @@ export default function Pricing() {
                 <li className="flex items-center gap-2">
                   <XCircle className="w-4 h-4 text-neutral-600 shrink-0" />
                   <span className="text-xs text-neutral-600">{t('plans.beginner.features.3')}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <XCircle className="w-4 h-4 text-neutral-600 shrink-0" />
-                  <span className="text-xs text-neutral-600">{t('plans.beginner.features.4')}</span>
                 </li>
               </ul>
             </div>
@@ -116,9 +135,12 @@ export default function Pricing() {
               {t('seeAnalysis')}
             </Link>
 
-            <Link href="/waitlist" className="w-full bg-primary-red text-white font-semibold rounded-lg py-3 text-sm hover:bg-red-600 transition-colors duration-200 text-center">
-              {t('joinWaitlist')}
-            </Link>
+            <button
+              onClick={() => handlePurchase(VARIANTS.STARTER_PACK)}
+              className="w-full bg-primary-red text-white font-semibold rounded-lg py-3 text-sm hover:bg-red-600 transition-colors duration-200 text-center"
+            >
+              {t('plans.starter.cta') || "Buy Credits"}
+            </button>
 
             <div className="mt-8 flex-1">
               <p className="text-xs text-neutral-400 mb-3">{t('plans.starter.includesLabel')}</p>
@@ -159,10 +181,10 @@ export default function Pricing() {
             <div className="mb-3">
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-bold text-white transition-all key={isAnnual ? 'annual' : 'monthly'}">
-                  {isAnnual ? '€270' : '€19'}
+                  {isAnnual ? '€200' : '€19'}
                 </span>
                 <span className="text-lg text-neutral-500 line-through">
-                  {isAnnual ? '€348' : '€29'}
+                  {isAnnual ? '€270' : '€29'}
                 </span>
               </div>
               <span className="text-sm text-neutral-400"> {isAnnual ? t('perYear') : t('perMonth')}</span>
@@ -174,9 +196,12 @@ export default function Pricing() {
               {t('seeRoadmap')}
             </Link>
 
-            <Link href="/waitlist" className="w-full bg-neutral-800 text-white font-semibold rounded-lg py-3 text-sm border border-neutral-700 hover:bg-neutral-700 transition-colors duration-200 text-center">
-              {isAnnual ? t('joinWaitlistAnnual') : t('joinWaitlist')}
-            </Link>
+            <button
+              onClick={() => handlePurchase(isAnnual ? VARIANTS.BUILDER_YEARLY : VARIANTS.BUILDER_MONTHLY)}
+              className="w-full bg-neutral-800 text-white font-semibold rounded-lg py-3 text-sm border border-neutral-700 hover:bg-neutral-700 transition-colors duration-200 text-center"
+            >
+              {isAnnual ? (t('plans.builder.cta_annual') || "Subscribe Yearly") : (t('plans.builder.cta_monthly') || "Subscribe Monthly")}
+            </button>
 
             <div className="mt-8 flex-1">
               <p className="text-xs text-neutral-400 mb-3">{t('plans.builder.includesLabel')}</p>

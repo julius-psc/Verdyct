@@ -4,13 +4,15 @@ import { createClient } from '@/utils/supabase/client'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
 import { IconBrandGoogle, IconLoader2, IconBrandGithub } from '@tabler/icons-react'
 
 export default function SignupPage() {
     const supabase = createClient()
     const router = useRouter()
+    const locale = useLocale();
     const searchParams = useSearchParams()
-    const next = searchParams.get('next') || '/dashboard'
+    const next = searchParams.get('next') || `/${locale}/dashboard`
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
@@ -25,7 +27,7 @@ export default function SignupPage() {
             email,
             password,
             options: {
-                emailRedirectTo: `${location.origin}/auth/callback?next=${next}`,
+                emailRedirectTo: `${location.origin}/${locale}/auth/callback?next=${next}`,
             },
         })
 
@@ -118,7 +120,7 @@ export default function SignupPage() {
                                 supabase.auth.signInWithOAuth({
                                     provider: 'google',
                                     options: {
-                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                        redirectTo: `${location.origin}/${locale}/auth/callback?next=${next}`,
                                     },
                                 })
                             }}
@@ -133,7 +135,7 @@ export default function SignupPage() {
                                 supabase.auth.signInWithOAuth({
                                     provider: 'github',
                                     options: {
-                                        redirectTo: `${location.origin}/auth/callback?next=${next}`,
+                                        redirectTo: `${location.origin}/${locale}/auth/callback?next=${next}`,
                                     },
                                 })
                             }}

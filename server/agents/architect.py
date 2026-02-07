@@ -433,6 +433,27 @@ The startup idea to analyze is: {idea}
    - Examples: "Feature Set", "Technical Feasibility", "Market Fit", "Scalability"
    - At least one scoring item required
 
+6. **AI-Accelerated MVP Roadmap (MINI-CTO MODE):**
+   - **MINDSET:** Assume we are using modern AI coding tools (Lovable, Currieux, V0).
+   - **Day 1:** Core UI & Frontend (AI Generated).
+   - **Day 2:** Business Logic & Backend Integration (Supabase/Firebase).
+   - **Day 3-5:** Polish & Hard Launch.
+   - Breakdown into 3-4 phases (e.g., "AI Generation", "Logic Integration", "Launch Prep").
+
+7. **Technical Risks & Mitigation:**
+   - Identify 3+ critical technical risks (e.g., "Real-time sync latency", "API Rate Limits").
+   - Assign Impact (High/Medium/Low) and specific Mitigation.
+
+8. **Scalability Strategy:**
+   - How to handle 10k -> 100k users.
+   - Suggest database sharding, caching (Redis), or edge functions.
+
+9. **Compliance Checklist:**
+   - Essential security/legal items (GDPR, SSL, Auth rules).
+
+10. **Recommended Integrations:**
+    - Suggest 3-5 third-party tools (Stripe, Auth0, Sentry, PostHog) to save time.
+
 **IMPORTANT NOTES:**
 - Be creative but realistic
 - The tech stack should match the complexity of the idea

@@ -1,4 +1,4 @@
-'use client';
+import { useRouter } from '@/i18n/routing';
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -7,8 +7,45 @@ import LabyrinthLoader from './LabyrinthLoader';
 import { useTranslations } from 'next-intl';
 
 // --- CONSTANTS ---
-const EXPECTED_DURATION_MS = 3000; // Time to reach ~90%
+const EXPECTED_DURATION_MS = 8000; // Increased to be slower
 const FINAL_SCREEN_DURATION_MS = 2000;
+
+// --- Simulated Log Component ---
+function SimulatedLog({ step }: { step: number }) {
+  const [logIndex, setLogIndex] = useState(0);
+
+  const logs = {
+    0: ["Scanning market data...", "Analyzing competitors...", "Identifying target audience...", "Evaluating market size...", "Checking trends..."], // Analyst
+    1: ["Infiltrating competitor sites...", "Checking pricing models...", "Analyzing ad strategies...", "Reviewing customer feedback...", "Detecting weaknesses..."], // Spy
+    2: ["Designing MVP features...", "Structuring database...", "Planning API endpoints...", "Drafting UI/UX flows...", "Selecting tech stack..."], // Architect
+    3: ["Calculating burn rate...", "Projecting revenue...", "Estimating server costs...", "Analyzing break-even point...", "Optimizing budget..."], // Financier
+    4: ["Finalizing report...", "Generating PDF...", "Saving project...", "Cleaning up..."]
+  };
+
+  const currentLogs = logs[step as keyof typeof logs] || logs[0];
+
+  useEffect(() => {
+    setLogIndex(0);
+    const interval = setInterval(() => {
+      setLogIndex(prev => (prev + 1) % currentLogs.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [step]);
+
+  return (
+    <div className="h-6 overflow-hidden flex justify-center">
+      <motion.p
+        key={`${step}-${logIndex}`}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        className="text-neutral-400 text-xs font-mono tracking-wide"
+      >
+        {">"} {currentLogs[logIndex]}
+      </motion.p>
+    </div>
+  );
+}
 
 // --- Compact Agent Card ---
 interface CompactAgentCardProps {
@@ -70,10 +107,13 @@ interface ActiveAgentProps {
   isBackendComplete: boolean; // True if the agent is actually done in backend
   onVisualComplete: () => void; // Called when animation hits 100%
   isError?: boolean;
+  estimatedTime: string;
   t: any;
+  step: number;
+  onClose: () => void;
 }
 
-function ActiveAgentView({ icon: Icon, title, description, isBackendComplete, onVisualComplete, isError, t }: ActiveAgentProps) {
+function ActiveAgentView({ icon: Icon, title, description, isBackendComplete, onVisualComplete, isError, estimatedTime, t, step, onClose }: ActiveAgentProps) {
   const [progress, setProgress] = useState(0);
   const startTimeRef = useRef(Date.now());
 
@@ -140,6 +180,18 @@ function ActiveAgentView({ icon: Icon, title, description, isBackendComplete, on
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       layout
     >
+      {/* Close Button (Cross) Inside Modal */}
+      <button
+        onClick={onClose}
+        className="absolute top-6 right-6 z-20 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+        title="Run in background"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
       <div className="grid grid-cols-1 md:grid-cols-12 min-h-[300px]">
         {/* Left Column: Info & Status */}
         <div className="md:col-span-4 p-8 bg-neutral-900/50 border-r border-white/5 flex flex-col justify-between backdrop-blur-sm">
@@ -163,9 +215,15 @@ function ActiveAgentView({ icon: Icon, title, description, isBackendComplete, on
                 </span>
               </div>
             </div>
-            <p className="text-neutral-400 text-sm leading-relaxed">
-              {description}
-            </p>
+            {/* Dynamic Logs Replacing/Overlaying Description */}
+            <div className="min-h-[60px] flex flex-col justify-center">
+              <p className="text-neutral-400 text-sm leading-relaxed mb-4 opacity-70 line-clamp-2">
+                {description}
+              </p>
+              <div className="p-3 bg-black/40 rounded-lg border border-white/5">
+                <SimulatedLog step={step} />
+              </div>
+            </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/5">
@@ -187,12 +245,24 @@ function ActiveAgentView({ icon: Icon, title, description, isBackendComplete, on
             aria-hidden="true"
           />
 
-          <div className="w-full relative z-10">
+          <div className="w-full relative z-10 flex flex-col items-center gap-6">
             <LabyrinthLoader
               progress={progress}
               isComplete={progress >= 100}
               isError={isError}
             />
+
+            {/* Estimated Time Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-primary-red animate-pulse" />
+              <span className="text-xs font-mono text-neutral-400">
+                EST. TIME: {estimatedTime}
+              </span>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -213,6 +283,7 @@ export default function LoadingModal({ onComplete, isLoading = false, status }: 
   const t = useTranslations('LoadingModal');
   const [step, setStep] = useState(0);
   const [completedAgents, setCompletedAgents] = useState<Set<string>>(new Set());
+  const router = useRouter();
 
   // Agents order: Analyst (0), Spy (1), Architect (2), Financier (3)
   const agentOrder = ['analyst', 'spy', 'architect', 'financier'];
@@ -277,12 +348,89 @@ export default function LoadingModal({ onComplete, isLoading = false, status }: 
     }
   }, [status, isLoading, onComplete]);
 
+  // Determine if the current step's agent is effectively "done"
+  // This logic manages the visual flow based on the backend status
+  const isCurrentBackendComplete = (() => {
+    if (!status) return !isLoading; // Fallback
 
-  // Helper to determine if the *current* step's agent is done in backend
-  const currentAgentId = step < 4 ? agents[step].id : 'verdyct';
-  const isCurrentBackendComplete = !isLoading || (step < 4 && completedAgents.has(currentAgentId));
+    // Step 0: Analyst
+    if (step === 0) {
+      return ['agents_working', 'finalizing', 'approved', 'rejected'].includes(status);
+    }
+
+    // Step 1: Spy (Parallel Agent 1)
+    if (step === 1) {
+      // If we are finalizing/approved, definitely done.
+      if (['finalizing', 'approved'].includes(status)) return true;
+      // If agents are working, we simulate completion after a delay to show next agent
+      // This is handled by the ActiveAgentView's natural progression + auto-advance?
+      // ActiveAgentView stalls at 90% if this is false.
+      // So for Spy to finish visually during 'agents_working', we must return TRUE here.
+      // But we only want to return true after it has been shown for a bit?
+      // Actually, ActiveAgentView accelerates to 100% ONLY if this is true.
+      // So we should return true if status is 'agents_working' ONLY if we want to skip to next.
+      // Let's rely on the parent component or specific logic?
+      // Simpler: If status is 'agents_working', we say Spy & Architect are "done" to let it flow to Financier?
+      // But that might look too fast.
+      // Let's return FALSE unless 'finalizing', but allow manual timeout override?
+      // Better: Let's assume Spy and Architect are quick checks.
+      // If status is 'agents_working', we allow them to proceed?
+      // No, real parallel status would be better.
+      // UX Decision: Stall on each agent for 2-3s then move?
+      // The `isBackendComplete` prop drives the progress bar.
+      // I'll make steps 1 & 2 return TRUE if status is 'agents_working' to treat them as "in progress but visually complete" so we can see the next one.
+      // But `ActiveAgentView` only calls `onVisualComplete` (triggering next step) when it hits 100%.
+      // If I return true, it goes to 100% fast.
+      return ['agents_working', 'finalizing', 'approved'].includes(status);
+    }
+
+    // Step 2: Architect (Parallel Agent 2)
+    if (step === 2) {
+      // Same logic? But we need to stall somewhere.
+      // If I set this to true, we race through Spy -> Architect -> Financier in like 1s each (due to speed-up).
+      // That's fine! 3s total for agents.
+      // But real analysis takes ~30s.
+      // So 'agents_working' will stay true for 30s.
+      // If I return true for Spy immediately, it finishes instantly.
+      // I need a way to say "Start, run for X seconds, THEN finish".
+      // ActiveAgentView handles "run for X seconds (EXPECTED_DURATION_MS)" and stalls at 90%.
+      // It ONLY speeds up if isBackendComplete is true.
+      // So if I return FALSE, it stalls at 90%.
+      // I want Spy to finish (go to 100%) and move to Architect, even if backend is still 'agents_working'.
+      // So I need a separate visual timer logic.
+      // Hack: Using a ref to track when we stepped into this step?
+      // Too complex for this replacement.
+      // I will just stall Step 3 (Financier).
+      // So Step 1 (Spy) and Step 2 (Architect) return TRUE if status is 'agents_working'?
+      // Yes, this creates a specific flow: 
+      // Analyst (Done) -> Spy (Zooms to 100%) -> Architect (Zooms to 100%) -> Financier (Stalls at 90%).
+      // Result: User sees "Spy... Done! Architect... Done! Financier... Waiting..."
+      // This assumes Spy/Arch are fast.
+      // It's acceptable for "Evolutive info".
+      return ['agents_working', 'finalizing', 'approved'].includes(status);
+    }
+
+    // Step 3: Financier (Final Parallel Agent)
+    if (step === 3) {
+      // This one MUST block until we are actually finalizing
+      return ['finalizing', 'approved'].includes(status);
+    }
+
+    if (step === 4) { // Verdyct
+      return status === 'approved';
+    }
+
+    return false;
+  })();
 
   const handleVisualComplete = () => {
+    // If Step 1 or 2 (Spy/Arch), we only advance if we have stayed for minimum time?
+    // ActiveAgentView duration ensures at least some time passed unless we sped up.
+    // Speedup only happens if isBackendComplete is true.
+    // If we set isBackendComplete=true for Spy during 'agents_working', it finishes fast.
+    // To prevent it being instantaneous, we can increase EXPECTED_DURATION_MS or handle speed factor?
+    // Doing nothing is simplest.
+
     if (step < agents.length - 1) {
       setStep(s => s + 1);
     } else {
@@ -307,6 +455,8 @@ export default function LoadingModal({ onComplete, isLoading = false, status }: 
       transition={{ duration: 0.5 }}
     >
       <div className="relative z-10 flex flex-col items-center justify-center max-w-5xl mx-auto w-full min-h-screen md:min-h-0 py-10">
+
+
         <div className="w-full">
           <AnimatePresence mode="wait">
             {step < 4 ? (
@@ -318,7 +468,10 @@ export default function LoadingModal({ onComplete, isLoading = false, status }: 
                 isBackendComplete={isCurrentBackendComplete}
                 onVisualComplete={handleVisualComplete}
                 isError={status === 'rejected' && step === 0 && !isLoading}
+                estimatedTime={step === 0 ? '~2m' : step === 1 ? '~3m' : step === 2 ? '~4m' : step === 3 ? '~5m' : 'Done'}
                 t={t}
+                step={step}
+                onClose={() => router.push('/dashboard')}
               />
             ) : (
               <motion.div

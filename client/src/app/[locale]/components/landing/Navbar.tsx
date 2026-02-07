@@ -117,12 +117,6 @@ export default function Navbar() {
             {t('howItWorks')}
           </Link>
           <Link
-            href="/leaderboard"
-            className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
-          >
-            {t('leaderboard')}
-          </Link>
-          <Link
             href="/#pricing"
             className="text-neutral-400 hover:text-white transition-colors duration-200 text-sm tracking-wide"
           >

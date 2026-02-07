@@ -131,7 +131,7 @@
         "annual": "Annual",
         "save22": "Save 22%",
         "launchOffer": "50% Launch Offer",
-        "launchDate": "Launch Feb 1st",
+        "launchDate": "Imminent Launch",
         "perPack": "/ pack",
         "perMonth": "/ month",
         "perYear": "/ year",
@@ -146,11 +146,10 @@
                 "description": "Perfect to get a taste",
                 "includesLabel": "Includes",
                 "features": {
-                    "0": "1 Complete Verdyct Analysis",
-                    "1": "Analyst Agent Access (Report)",
-                    "2": "No Spy Agent (Competitors)",
-                    "3": "No Financier Agent",
-                    "4": "No Architect Agent"
+                    "0": "Analyst Agent Access (Report)",
+                    "1": "No Spy Agent (Competitors)",
+                    "2": "No Financier Agent",
+                    "3": "No Architect Agent"
                 }
             },
             "starter": {
@@ -162,7 +161,8 @@
                     "1": "Access to All 4 Agents",
                     "2": "Analyst, Spy, Financier, Architect",
                     "3": "Full Report Download"
-                }
+                },
+                "cta": "Buy Credits"
             },
             "builder": {
                 "name": "Builder",
@@ -173,7 +173,9 @@
                     "1": "Custom Action Plan (Timeline)",
                     "2": "Access to Deep Dives",
                     "3": "Unlimited AI Coach"
-                }
+                },
+                "cta_annual": "Subscribe Yearly",
+                "cta_monthly": "Subscribe Monthly"
             }
         }
     },
@@ -522,7 +524,14 @@
         "painPointsSubtitle": "Frequent complaints in the market.",
         "mentions": "mentions",
         "voiceOfCustomer": "Voice of Customer",
-        "viewSource": "View Source"
+        "viewSource": "View Source",
+        "feature": "Feature",
+        "yourProduct": "Your Product",
+        "whyItMatters": "Why It Matters",
+        "keyDifferentiator": "Key Differentiator",
+        "recommendedPositioning": "Recommended Positioning",
+        "overallSentiment": "Overall Sentiment",
+        "coverage": "Coverage"
     },
     "Financier": {
         "title": "The Financier",

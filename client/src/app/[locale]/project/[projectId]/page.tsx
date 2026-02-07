@@ -78,8 +78,8 @@ export default function PublicProjectPage() {
                     <div className="text-xl font-semibold text-red-500">
                         {error || "Unable to load analysis data."}
                     </div>
-                    <a href="/leaderboard" className="text-sm text-neutral-400 hover:text-white transition-colors">
-                        ← Back to Leaderboard
+                    <a href="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
+                        ← Back to Home
                     </a>
                 </div>
             </div>
@@ -94,6 +94,11 @@ export default function PublicProjectPage() {
                     data={analystData}
                     fullReport={allAgentsData}
                     isReadOnly={true}
+                    analysisType={
+                        allAgentsData?.analysis_type ||
+                        // Fallback heuristic for legacy analyses: if spy/financier/architect exist, it's full
+                        (allAgentsData?.spy || allAgentsData?.financier || allAgentsData?.architect ? 'full' : 'small')
+                    }
                 />
             </main>
         </div>

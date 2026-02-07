@@ -14,7 +14,8 @@ export default function SpyPage() {
             if (!params.projectId) return;
 
             try {
-                const response = await fetch(`http://localhost:8000/api/projects/${params.projectId}`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                const response = await fetch(`${apiUrl}/api/projects/${params.projectId}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch project data');
                 }

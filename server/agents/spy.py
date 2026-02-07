@@ -18,90 +18,299 @@ def get_competitor_intel(idea: str) -> Dict:
     1. Discovery: Identify real competitor names.
     2. Comparison: Feature & Pricing check.
     3. Sentiment: User complaints & reviews.
+    4. (PREMIUM) Feature Matrix: Detailed capabilities comparison
+    5. (PREMIUM) Pricing Intel: Pricing tiers breakdown
     """
     try:
         all_results = []
         landscape_context = ""
         pain_context = ""
+        feature_context = ""  # NEW - Premium
+        pricing_context = ""  # NEW - Premium
+        
+        print(f"\n🔍 Starting Tavily searches for: {idea[:60]}...")
+        
+        # Step 0: Extract generic search query (Crucial for new/invented names like 'ShadowBoard')
+        search_terms = idea
+        try:
+            print("   Step 0: Extracting market keywords...")
+            term_response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a search query expert. Extract the core market category and 2-3 key functional terms for this startup idea. Return ONLY the terms, no project names, no quotes. Example: 'Project X: A drone for walking dogs' -> 'drone dog walking service pet automation'"},
+                    {"role": "user", "content": idea}
+                ],
+                max_tokens=30
+            )
+            search_terms = term_response.choices[0].message.content.strip()
+            print(f"   ✅ Search terms extracted: '{search_terms}'")
+        except Exception as e:
+            print(f"   ⚠️ Keyword extraction failed, using original idea: {e}")
         
         # Step 1: Discovery (Who?)
-        query_discovery = optimize_query(f"List of top direct competitors for {idea} startup alternatives")
+        # Use extracted terms for broader discovery
+        query_discovery = optimize_query(f"Top direct competitors for {search_terms} SaaS")
         try:
+            print(f"   Step 1/5: Discovery (Query: {query_discovery[:50]}...)...")
             r1 = tavily_client.search(query=query_discovery, search_depth="advanced", max_results=5)
             discovery_results = extract_tavily_results(r1)
             all_results.extend(discovery_results)
-            # Create preliminary context to help next steps if needed, 
-            # but usually we just process them all at the end.
-            # However, for Spy, we need specific contexts for specific sections.
             landscape_context += format_tavily_context(discovery_results)
+            print(f"   ✅ Step 1 complete ({len(discovery_results)} results)")
         except Exception as e:
-            print(f"Error in Step 1 (Discovery): {e}")
+            print(f"   ❌ Step 1 failed: {e}")
 
         # Step 2: Comparison (Features/Pricing)
-        # We use a broad query as we might not have names yet if r1 failed, 
-        # but usually "competitors" keyword is enough for Tavily to fun.
-        query_compare = optimize_query(f"Feature and pricing comparison {idea} vs competitors table")
+        # Use search terms to find comparison tables
+        query_compare = optimize_query(f"Feature and pricing comparison {search_terms} vs competitors table")
         try:
+            print(f"   Step 2/5: Comparison...")
             r2 = tavily_client.search(query=query_compare, search_depth="advanced", max_results=5)
             compare_results = extract_tavily_results(r2)
             all_results.extend(compare_results)
             landscape_context += "\n" + format_tavily_context(compare_results)
+            print(f"   ✅ Step 2 complete ({len(compare_results)} results)")
         except Exception as e:
-             print(f"Error in Step 2 (Compare): {e}")
+             print(f"   ❌ Step 2 failed: {e}")
 
         # Step 3: Sentiment (Pain points)
-        query_sentiment = optimize_query(f"User complaints and negative reviews for {idea} competitors reddit G2")
+        # Use search terms to find real user complaints about the category/competitors
+        query_sentiment = optimize_query(f"User complaints and negative reviews for {search_terms} tools reddit G2 Capterra")
         try:
+            print(f"   Step 3/5: Sentiment...")
             r3 = tavily_client.search(query=query_sentiment, search_depth="advanced", max_results=6)
             sentiment_results = extract_tavily_results(r3)
             all_results.extend(sentiment_results)
             pain_context = format_tavily_context(sentiment_results)
+            print(f"   ✅ Step 3 complete ({len(sentiment_results)} results)")
         except Exception as e:
-             print(f"Error in Step 3 (Sentiment): {e}")
+             print(f"   ❌ Step 3 failed: {e}")
+        
+        # Step 4 & 5 Replacement: DEEP RESEARCH (Targeted Search)
+        # Instead of generic searches, we extract top competitors and search specifically for them
+        try:
+            print(f"   Step 4/5: Deep Research (Targeted Competitor Intel)...")
+            
+            # Sub-step A: Extract Top 3 Competitors from Step 1 results
+            top_competitors = []
+            try:
+                comp_response = openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "Extract the names of the top 3 direct competitors mentioned in the search results. Return ONLY a valid JSON list of strings. Example: [\"HubSpot\", \"Salesforce\", \"Pipedrive\"]"},
+                        {"role": "user", "content": f"Search Results:\n{landscape_context[:2000]}"}
+                    ],
+                    response_format={"type": "json_object"},
+                    temperature=0
+                )
+                comp_data = json.loads(comp_response.choices[0].message.content)
+                top_competitors = comp_data.get("competitors", []) 
+                # Handle direct list return or dict wrapper
+                if not top_competitors and isinstance(comp_data, list):
+                     top_competitors = comp_data
+                if isinstance(comp_data, dict) and not top_competitors:
+                     # Try to find any list in the dict
+                     for k, v in comp_data.items():
+                         if isinstance(v, list):
+                             top_competitors = v
+                             break
+                
+                top_competitors = top_competitors[:3] # Limit to 3 to manage API usage
+                print(f"   🎯 Targeted Competitors: {top_competitors}")
+            except Exception as e:
+                print(f"   ⚠️ Competitor extraction failed: {e}")
+
+            # Sub-step B: Loop search for each competitor
+            if top_competitors:
+                for comp in top_competitors:
+                    print(f"      🔎 Researching {comp}...")
+                    
+                    # Search Pricing
+                    try:
+                        q_pricing = f"{comp} pricing plans cost per user"
+                        r_p = tavily_client.search(query=q_pricing, search_depth="advanced", max_results=1)
+                        p_res = extract_tavily_results(r_p)
+                        all_results.extend(p_res)
+                        pricing_context += f"\n\n--- {comp} PRICING ---\n" + format_tavily_context(p_res)
+                    except: pass
+                    
+                    # Search Features
+                    try:
+                        q_features = f"{comp} key features capabilities list"
+                        r_f = tavily_client.search(query=q_features, search_depth="advanced", max_results=1)
+                        f_res = extract_tavily_results(r_f)
+                        all_results.extend(f_res)
+                        feature_context += f"\n\n--- {comp} FEATURES ---\n" + format_tavily_context(f_res)
+                    except: pass
+                
+                print(f"   ✅ Deep Research Loop Complete.")
+            else:
+                 print("   ⚠️ No competitors found for Deep Research. Falling back to generic search.")
+                 # Fallback to original generic search if no competitors extracted
+                 query_features = optimize_query(f"Detailed feature list capabilities comparison {search_terms} market leaders")
+                 r4 = tavily_client.search(query=query_features, search_depth="advanced", max_results=3)
+                 feature_context = format_tavily_context(extract_tavily_results(r4))
+                 
+                 query_pricing = optimize_query(f"Pricing plans pricing tiers {search_terms} tools detailed breakdown")
+                 r5 = tavily_client.search(query=query_pricing, search_depth="advanced", max_results=3)
+                 pricing_context = format_tavily_context(extract_tavily_results(r5))
+
+        except Exception as e:
+            print(f"   ❌ Deep Research failed: {e}")
+        
+        print(f"✅ Tavily searches complete: {len(all_results)} total results\n")
         
         return {
             "landscape_context": landscape_context,
             "pain_context": pain_context,
-            "landscape_count": 0, # Legacy counts, not critical
+            "feature_context": feature_context, 
+            "pricing_context": pricing_context,
+            "landscape_count": 0,
             "pain_count": 0
         }
         
     except Exception as e:
-        print(f"Error in competitor intel search: {e}")
+        print(f"❌ Error in competitor intel search: {e}")
         return {
             "landscape_context": "",
             "pain_context": "",
+            "feature_context": "",
+            "pricing_context": "",
             "landscape_count": 0,
             "pain_count": 0
         }
 
-def generate_spy_analysis(idea: str, landscape_context: str, pain_context: str, language: str = "en", max_retries: int = 3) -> SpyResponse:
-    """Génère l'analyse stratégique du Spy Agent via OpenAI avec retry automatique"""
+def generate_spy_analysis(idea: str, landscape_context: str, pain_context: str, feature_context: str = "", pricing_context: str = "", language: str = "en", max_retries: int = 3) -> SpyResponse:
+    """Génère l'analyse stratégique du Spy Agent via OpenAI avec retry automatique
     
-    # Extraire les URLs disponibles depuis les contextes
+    Args:
+        idea: The startup idea to analyze
+        landscape_context: Competitive landscape data from Tavily
+        pain_context: Customer complaints and pain points from Tavily
+        feature_context: (OPTIONAL) Feature comparison data for premium features
+        pricing_context: (OPTIONAL) Pricing intelligence data for premium features
+        language: Target language for the report
+        max_retries: Max retry attempts for OpenAI calls
+    """
+    
+    print(f"\n🚀 Generating Spy Analysis...")
+    print(f"   Idea: {idea[:60]}...")
+    print(f"   Language: {language}")
+    
+    # Extraire les URLs disponibles depuis TOUS les contextes (y compris premium)
     landscape_urls = extract_urls_from_context(landscape_context)
     pain_urls = extract_urls_from_context(pain_context)
-    all_urls = {**landscape_urls, **pain_urls}
+    feature_urls = extract_urls_from_context(feature_context) if feature_context else {}
+    pricing_urls = extract_urls_from_context(pricing_context) if pricing_context else {}
+    all_urls = {**landscape_urls, **pain_urls, **feature_urls, **pricing_urls}
+    
+    print(f"   URLs extracted: {len(all_urls)} total")
+    print(f"     - Landscape: {len(landscape_urls)}")
+    print(f"     - Pain: {len(pain_urls)}")
+    print(f"     - Features: {len(feature_urls)}")
+    print(f"     - Pricing: {len(pricing_urls)}")
     
     if not all_urls:
-        raise ValueError("No URLs found in Tavily search results. Cannot verify any information.")
+        print("⚠️ WARNING: No URLs found in Tavily search results. Proceeding with caution (risk of validation failure).")
+        # raise ValueError("No URLs found in Tavily search results. Cannot verify any information.")
     
     # Construire les sections de contexte
     landscape_section = f"COMPETITIVE LANDSCAPE DATA:\n{landscape_context}" if landscape_context else "No competitive landscape data available."
     pain_section = f"CUSTOMER PAIN POINTS & COMPLAINTS:\n{pain_context}" if pain_context else "No customer pain point data available."
     
+    # Sections premium (optionnelles)
+    feature_section = f"FEATURE COMPARISON DATA (for premium features):\n{feature_context}" if feature_context else ""
+    pricing_section = f"PRICING INTELLIGENCE DATA (for premium features):\n{pricing_context}" if pricing_context else ""
+    
     # Liste des URLs disponibles pour référence
     urls_list = "\n".join([f"- {url}" for url in all_urls.keys()]) if all_urls else "No URLs available"
     
-    system_prompt = f"""You are a strategic competitive intelligence expert (The Spy). Your task is to analyze a startup idea and identify the strategic opening in the market.
+    # Instructions premium (ALWAYS INCLUDED to force generation attempt)
+    premium_instructions = """
+
+**PREMIUM FEATURES (REQUIRED):**
+You MUST attempt to generate these premium features using ALL available data (landscape, pain points, etc.). 
+If specific feature/pricing context is missing, INFER it from the general competitor descriptions and pain points.
+
+6. **Feature Comparison Matrix** (OBJECTIVE SCORING REQUIRED):
+   - Extract 3-5 key feature categories relevant to this market
+   - Compare user's product vs 3-5 competitors
+   - **CRITICAL - NO BIAS RULE:**
+     * ✅ = Feature is EXPLICITLY mentioned in the data as present
+     * ❌ = Feature is NOT mentioned or explicitly absent
+     * 🔄 = "Planned" or "Beta" (mentioned as coming soon)
+     * **DO NOT ASSUME** the user's idea has features just because "it could."
+     * If the user's idea is just a concept with NO live product, mark EVERYTHING as ❌ or 🔄.
+   - **CRITICAL:** Use verified_url from ANY context (landscape/pain) if specific feature context is missing.
+
+7. **Pricing Comparison**:
+   - if specific pricing data is missing, providing estimates based on market standards (e.g. "Likely Freemium", "Enterprise Custom") or infer from "expensive/cheap" descriptions.
+   - **CRITICAL:** providing a 'recommended_positioning' is vital.
+
+8. **Sentiment Breakdown**:
+   - Analyze sentiment from the 'pain_context'
+   - Synthesize sources (e.g. "Reddit Generic", "G2 Aggregate") if specific sources are not distinct.
+
+9. **Gap Opportunities**:
+   - Identify 2-4 clear market gaps based on complaints
+   - **CRITICAL:** Each gap MUST have verified_url
+"""
+
+
+    
+    system_prompt = f"""You are a RUTHLESS strategic competitive intelligence expert (The Spy). Your job is to tell founders the TRUTH, not what they want to hear.
+
+**CRITICAL MINDSET SHIFT:**
+- You are NOT a cheerleader. You are an analyst who has seen hundreds of startups fail.
+- If a market is saturated, you MUST say so with LOW scores.
+- If an idea is just a "wrapper" around existing tech, you MUST call it out.
+- **BIAS CHECK:** Do NOT give high scores to ideas with many established competitors just because "there's room for innovation." There isn't.
 
 The startup idea to analyze is: {idea}
+
+**LANGUAGE INSTRUCTION:**
+- The user has requested the response in: **{language}**
+- **CRITICAL OVERRIDE: INPUT LANGUAGE DETECTION**
+- You must DETECT the language of the user's input idea '{idea}'.
+- If the input is in a different language than '{language}' (e.g. input is French but requested is English), you MUST output the report in the **INPUT LANGUAGE**.
+- The goal is to always answer in the same language the user spoke.
+- **CRITICAL:** All textual content (titles, descriptions, summaries) MUST be in the **INPUT LANGUAGE**.
 
 {landscape_section}
 
 {pain_section}
 
+{feature_section}
+
+{pricing_section}
+
 CRITICAL RULES - YOU MUST FOLLOW THESE STRICTLY:
+
+**RUTHLESS SCORING ENFORCEMENT:**
+
+1. **IF competitors include ANY of the following monopolies/giants:**
+   - Social: Facebook, Instagram, TikTok, Snapchat, LinkedIn, Twitter
+   - E-commerce: Amazon, eBay, Alibaba, Shopify
+   - Marketplace: Airbnb, Uber, Upwork, Fiverr
+   - SaaS Incumbents: Salesforce, HubSpot, Adobe, Microsoft, Google Workspace
+   
+   **THEN you MUST:**
+   - Give Strategic Opening Score ≤ 20/100
+   - Label quadrant as "RED OCEAN - SUICIDE MISSION"
+   - State clearly: "This market is DOMINATED by [Giant]. Entry is not recommended."
+
+2. **IF the idea is a "Wrapper" (UI on top of OpenAI/Stripe/Google APIs):**
+   - Innovation Score ≤ 30/100
+   - Strategic Opening Score ≤ 25/100
+   - State: "This is a thin wrapper. No defensibility. Can be cloned in a weekend."
+
+3. **IF there are 10+ competitors mentioned in the data:**
+   - Strategic Opening Score ≤ 40/100
+   - Label: "HIGHLY SATURATED - Requires 10x better product"
+
+4. **IF the ONLY differentiator is "Cheaper Pricing":**
+   - Strategic Opening Score ≤ 35/100
+   - State: "Price wars lead to race-to-bottom. Not a sustainable strategy."
 
 **COMPETITOR NAMES - ABSOLUTE REQUIREMENT:**
 - You MUST use ONLY real competitor names found in the Tavily search results above
@@ -162,6 +371,7 @@ Your analysis must:
    - Summarize the most frequent negative terms
    - Provide a strategic verdict on where the opening is
    - Create highlight boxes with key metrics
+{premium_instructions}
 
 **URL VALIDATION REQUIREMENT - ANTI-HALLUCINATION RULE:**
 - EVERY competitor MUST have a verified_url from the landscape data
@@ -187,6 +397,9 @@ Available URLs for reference:
 {urls_list}
 
 Be data-driven. Use ONLY the actual research data provided. If you cannot find specific competitor names in the data, use fewer competitors rather than inventing names. NEVER include information without a verified_url. ALWAYS ensure you provide at least the minimum required verified data."""
+
+    print(f"   Prompt size: ~{len(system_prompt) // 4:,} tokens (estimate)")
+    print(f"   Calling OpenAI API...")
 
     try:
         response = openai_client.beta.chat.completions.parse(
@@ -249,7 +462,7 @@ Be data-driven. Use ONLY the actual research data provided. If you cannot find s
                 cleaned_dict = clean_dict_recursive(analysis_dict)
                 analysis = SpyResponse(**cleaned_dict)
             except Exception as e:
-                print(f"Warning: Could not clean parsed response: {e}")
+                print(f"   ⚠️  Warning: Could not clean parsed response: {e}")
         
         if not isinstance(analysis, SpyResponse):
             raise ValueError("Failed to parse response as SpyResponse")
@@ -269,7 +482,7 @@ Be data-driven. Use ONLY the actual research data provided. If you cannot find s
                     if verified_url and verified_url in valid_urls:
                         valid_competitors.append(competitor)
                     else:
-                        print(f"Warning: Competitor {competitor.get('name', 'Unknown')} has invalid or missing URL: {verified_url}")
+                        print(f"   ⚠️  Warning: Competitor {competitor.get('name', 'Unknown')} has invalid or missing URL: {verified_url}")
                 analysis_dict['spy']['market_quadrant']['competitors'] = valid_competitors
         
         # Valider les URLs des plaintes
@@ -281,7 +494,7 @@ Be data-driven. Use ONLY the actual research data provided. If you cannot find s
                     if verified_url and verified_url in valid_urls:
                         valid_complaints.append(complaint)
                     else:
-                        print(f"Warning: Complaint has invalid or missing URL: {verified_url}")
+                        print(f"   ⚠️  Warning: Complaint has invalid or missing URL: {verified_url}")
                 analysis_dict['spy']['customer_intel']['top_complaints'] = valid_complaints
             
             # Valider pain_word_cloud (doit avoir au moins 1 élément)
@@ -299,17 +512,27 @@ Be data-driven. Use ONLY the actual research data provided. If you cannot find s
         # Recréer l'objet avec les données validées
         analysis = SpyResponse(**analysis_dict)
         
+        # Log premium features status
+        print(f"\n📊 Premium Features Generated:")
+        print(f"     Feature Matrix: {'✅' if analysis.spy.feature_comparison_matrix else '⚠️  null'}")
+        print(f"     Pricing Comparison: {'✅' if analysis.spy.pricing_comparison else '⚠️  null'}")
+        print(f"     Sentiment Breakdown: {'✅' if analysis.spy.sentiment_breakdown else '⚠️  null'}")
+        print(f"     Gap Opportunities: {'✅' if analysis.spy.gap_opportunities else '⚠️  null'}")
+        
+        print(f"✅ Spy Analysis generation complete!\n")
+        
         return analysis
         
     except HTTPException:
         raise
     except ValueError as ve:
         # Les ValueError sont relancés pour permettre le retry
+        print(f"❌ Validation error: {ve}")
         raise ve
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
-        print(f"Error generating spy analysis: {error_details}")
+        print(f"❌ Error generating spy analysis: {error_details}")
         raise HTTPException(
             status_code=500,
             detail=f"Error generating spy analysis: {str(e)}"

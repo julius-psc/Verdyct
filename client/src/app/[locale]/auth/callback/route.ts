@@ -1,11 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: Request, { params }: { params: Promise<{ locale: string }> }) {
     const { searchParams, origin } = new URL(request.url)
+    const { locale } = await params
     const code = searchParams.get('code')
     // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/dashboard'
+    const next = searchParams.get('next') ?? `/${locale}/dashboard`
 
     if (code) {
         const supabase = await createClient()

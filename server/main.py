@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+import time
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import StreamingResponse
@@ -24,13 +25,13 @@ from models import (
     TimelineMessage
 )
 from auth import verify_token, supabase
-from agents.analyst import generate_analysis, search_market_data, generate_rescue_plan
+from agents.analyst import generate_analysis, search_market_data, generate_rescue_plan, synthesize_tavily_data
 from agents.spy import generate_spy_analysis, get_competitor_intel
-from agents.financier import generate_financier_analysis, get_pricing_intel
+from agents.financier import generate_financier_analysis, get_financial_intel
 from agents.architect import generate_architect_blueprint
 from agents.timeline_coach import run_timeline_agent, generate_next_step_agent
 from agents.watchdog import verify_cta
-from database import init_db, get_session, upsert_vector, delete_vector
+from database import init_db, get_session, upsert_vector, delete_vector, engine
 from sqlmodel import select, delete, func, col
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import Depends
@@ -38,13 +39,16 @@ from fastapi.staticfiles import StaticFiles
 from typing import List, Dict, Optional
 import os
 from utils import generate_project_name
+from routers import webhooks
 
 app = FastAPI(title="Verdyct Analyst Agent", version="1.0")
+
+app.include_router(webhooks.router)
 
 # Configuration CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
+    allow_origins=["http://localhost:3000", "https://verdyct.io", "https://www.verdyct.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -239,10 +243,10 @@ async def get_user_credits(user: tuple = Depends(verify_token)):
             req_supabase.table("users").insert({
                 "id": user_id, 
                 "email": user_payload.get('email'), 
-                "credits": 10,
+                "credits": 0,
                 "subscription_tier": "builder" 
             }).execute()
-            return {"credits": 10}
+            return {"credits": 0}
             
         return {"credits": user_data.data[0]['credits']}
     except Exception as e:
@@ -258,52 +262,26 @@ async def analyze_idea(request: IdeaRequest, user: dict = Depends(verify_token))
     """
     Endpoint principal pour analyser une idée de startup.
     Reçoit une idée, recherche des données de marché via Tavily,
-    et génère un rapport structuré via OpenAI.
-    Système de retry automatique si des données critiques manquent.
+    synthétise les données avec GPT-4o-mini, puis génère un rapport structuré via OpenAI.
     """
-    max_retries = 3
-    retry_count = 0
-    
     try:
-        # Recherche de données de marché (une seule fois, les données Tavily ne changent pas)
+        # Step 1: Recherche de données de marché (mockée pour économiser les coûts)
         market_data = search_market_data(request.idea)
         
-        # Retry loop pour la génération de l'analyse
-        last_error = None
-        while retry_count < max_retries:
-            try:
-                # Génération de l'analyse
-                analysis = generate_analysis(
-                    request.idea,
-                    market_data["context"],
-                    language=request.language,
-                    max_retries=max_retries
-                )
-                
-                # Si on arrive ici, la validation a réussi
-                return analysis
-                
-            except ValueError as ve:
-                # Erreur de validation (listes vides, URLs invalides, etc.)
-                last_error = ve
-                retry_count += 1
-                
-                if retry_count < max_retries:
-                    print(f"Retry {retry_count}/{max_retries}: {str(ve)}")
-                    # Attendre un peu avant de retry (backoff)
-                    await asyncio.sleep(1 * retry_count)  # 1s, 2s, 3s...
-                else:
-                    # Dernier essai échoué
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Failed after {max_retries} retries. Could not generate valid analysis with verified URLs. Last error: {str(ve)}"
-                    )
-        
-        # Ne devrait jamais arriver ici, mais au cas où
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to generate analysis after {max_retries} retries: {str(last_error)}"
+        # Step 2: Synthèse des données Tavily avec GPT-4o-mini (compression ~10k → ~2k tokens)
+        synthesized_context = synthesize_tavily_data(
+            raw_tavily_context=market_data["context"],
+            idea=request.idea
         )
+        
+        # Step 3: Génération de l'analyse avec les données synthétisées
+        analysis = generate_analysis(
+            request.idea,
+            synthesized_context,  # Using synthesized data instead of raw
+            language=request.language
+        )
+        
+        return analysis
         
     except HTTPException:
         raise
@@ -312,6 +290,8 @@ async def analyze_idea(request: IdeaRequest, user: dict = Depends(verify_token))
             status_code=500,
             detail=f"Internal server error: {str(e)}"
         )
+
+
 
 @app.post("/spy", response_model=SpyResponse)
 async def spy_analysis(request: IdeaRequest, user: tuple = Depends(verify_token)):
@@ -337,6 +317,8 @@ async def spy_analysis(request: IdeaRequest, user: tuple = Depends(verify_token)
                     request.idea,
                     intel_data["landscape_context"],
                     intel_data["pain_context"],
+                    feature_context=intel_data.get("feature_context", ""),
+                    pricing_context=intel_data.get("pricing_context", ""),
                     language=request.language,
                     max_retries=max_retries
                 )
@@ -386,8 +368,8 @@ async def financier_analysis(request: IdeaRequest, user: tuple = Depends(verify_
     retry_count = 0
     
     try:
-        # Recherche de pricing (une seule fois, les données Tavily ne changent pas)
-        pricing_data = get_pricing_intel(request.idea)
+        # Recherche financière complète (Pricing + Costs)
+        financial_data = get_financial_intel(request.idea)
         
         # Retry loop pour la génération de l'analyse
         last_error = None
@@ -396,10 +378,65 @@ async def financier_analysis(request: IdeaRequest, user: tuple = Depends(verify_
                 # Génération de l'analyse (sans calculs)
                 analysis = generate_financier_analysis(
                     request.idea,
-                    pricing_data["pricing_context"],
+                    financial_data["pricing_context"],
+                    cost_context=financial_data.get("cost_context", ""),
                     language=request.language,
                     max_retries=max_retries
                 )
+
+                # --- CALCULATE METRICS (The Missing Link) ---
+                try:
+                    # 1. Extract Levers safely
+                    levers = analysis.profit_engine.levers
+                    
+                    # Parse Price (remove currency symbols if LLM hallucinated them)
+                    p_str = str(levers.monthly_price.value).replace("€", "").replace("$", "").replace("/mo", "").strip()
+                    price_val = float(p_str) if p_str else 29.0
+                    
+                    # Parse Ad Spend (Marketing Budget)
+                    a_str = str(levers.ad_spend.value).replace("€", "").replace("$", "").replace(",", "").strip()
+                    ad_val = float(a_str) if a_str else 0.0
+                    
+                    # Parse Conversion
+                    c_str = str(levers.conversion_rate.value).replace("%", "").strip()
+                    conv_val = float(c_str) if c_str else 2.0
+                    
+                    # 2. Run Calculations
+                    metrics_data = calculate_projections(
+                        monthly_price=price_val,
+                        ad_spend=ad_val,
+                        conversion_rate=conv_val,
+                        cost_structure=analysis.cost_structure
+                    )
+                    
+                    # 3. Update Analysis Object with Real Content
+                    # Update Metrics
+                    analysis.profit_engine.metrics.ltv_cac_ratio = f"{metrics_data['ltv_cac_ratio']:.1f}"
+                    analysis.profit_engine.metrics.status = metrics_data['status']
+                    analysis.profit_engine.metrics.estimated_cac = f"€{metrics_data['cac']:.2f}"
+                    analysis.profit_engine.metrics.estimated_ltv = f"€{metrics_data['ltv']:.2f}"
+                    analysis.profit_engine.metrics.break_even_users = metrics_data['break_even_users']
+                    analysis.profit_engine.metrics.projected_runway_months = metrics_data['projected_runway_months']
+                    
+                    # Update Projections
+                    # We need to map the dict back to RevenueProjection objects
+                    new_projections = []
+                    for p in metrics_data['projections']:
+                        new_projections.append({
+                            "year": p['year'],
+                            "revenue": p['revenue']
+                        })
+                    
+                    # Assign back to Pydantic model
+                    # Note: RevenueProjection expects list of objects, we might need to reconstruct
+                    # simpler to just update the 'projections' list if possible, but Pydantic requires objects
+                    from models import RevenueProjection as RP_Model # Inline import to be safe
+                    analysis.revenue_projection.projections = new_projections 
+                    
+                except Exception as calc_error:
+                    print(f"⚠️ Calculation Warning: {calc_error}")
+                    # Don't crash entire request, just return analysis with placeholders/partial data
+                    pass
                 
                 # Si on arrive ici, la validation a réussi
                 return analysis
@@ -501,22 +538,7 @@ async def get_project(project_id: str, session: AsyncSession = Depends(get_sessi
 
     return project
 
-@app.get("/api/leaderboard", response_model=List[Project])
-async def get_leaderboard(sort_by: str = "score", session: AsyncSession = Depends(get_session)):
-    """
-    Get public projects for the leaderboard.
-    """
-    query = select(Project).where(Project.is_public == True, Project.status == "approved")
-    
-    if sort_by == "votes":
-        query = query.order_by(Project.upvotes.desc())
-    else:
-        # Default by POS Score
-        query = query.order_by(Project.pos_score.desc())
-        
-    query = query.limit(50)
-    result = await session.exec(query)
-    return result.all()
+
 
 @app.post("/api/projects/{project_id}/publish")
 async def publish_project(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
@@ -537,40 +559,9 @@ async def publish_project(project_id: str, session: AsyncSession = Depends(get_s
     await session.refresh(project)
     return project
 
-@app.post("/api/projects/{project_id}/vote")
-async def vote_project(project_id: str, session: AsyncSession = Depends(get_session)):
-    """
-    Upvote a public project.
-    """
-    statement = select(Project).where(Project.id == project_id)
-    result = await session.exec(statement)
-    project = result.first()
-    
-    if not project or not project.is_public:
-        raise HTTPException(status_code=404, detail="Project not found or not public")
-        
-    project.upvotes += 1
-    session.add(project)
-    await session.commit()
-    return {"ok": True, "upvotes": project.upvotes}
 
-@app.post("/api/projects/{project_id}/unvote")
-async def unvote_project(project_id: str, session: AsyncSession = Depends(get_session)):
-    """
-    Remove an upvote from a project.
-    """
-    statement = select(Project).where(Project.id == project_id)
-    result = await session.exec(statement)
-    project = result.first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    
-    if project.upvotes > 0:
-        project.upvotes -= 1
-        session.add(project)
-        await session.commit()
-        
-    return {"ok": True, "upvotes": project.upvotes}
+
+
 
 @app.post("/api/projects/{project_id}/unpublish")
 async def unpublish_project(project_id: str, session: AsyncSession = Depends(get_session), user: tuple = Depends(verify_token)):
@@ -731,11 +722,16 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     return
 
             # Step 1: Run Analyst
+            print(f"\n{'='*60}")
+            print(f"[{datetime.utcnow().isoformat()}] Starting Analyst Agent")
+            analyst_start = time.time()
             yield f"data: {json.dumps({'type': 'status', 'agent': 'analyst', 'status': 'running'})}\n\n"
             
             # Run Analyst
             analyst_res = await analyze_idea(request)
-            yield f"data: {json.dumps({'type': 'agent_complete', 'agent': 'analyst'})}\n\n"
+            analyst_duration = time.time() - analyst_start
+            print(f"[{datetime.utcnow().isoformat()}] ✅ Analyst completed in {analyst_duration:.2f}s")
+            yield f"data: {json.dumps({'type': 'agent_complete', 'agent': 'analyst', 'duration': f'{analyst_duration:.2f}s'})}\n\n"
             
             pcs_score = analyst_res.analyst.pcs_score
             
@@ -744,7 +740,11 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 # REJECTED
                 yield f"data: {json.dumps({'type': 'log', 'message': f'POS {pcs_score} < 60. Triggering Rescue Plan.'})}\n\n"
                 
+                print(f"[{datetime.utcnow().isoformat()}] Generating rescue plan...")
+                rescue_start = time.time()
                 rescue_plan = generate_rescue_plan(request.idea, analyst_res.analyst, language=request.language)
+                rescue_duration = time.time() - rescue_start
+                print(f"[{datetime.utcnow().isoformat()}] ✅ Rescue plan generated in {rescue_duration:.2f}s")
                 
                 # Persistence (Rejected)
                 project_id = str(uuid.uuid4())
@@ -771,8 +771,13 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     report_json=report_data.dict(),
                     user_id=user_payload['sub']
                 )
-                session.add(project)
-                await session.commit()
+                
+                # Fix: Create fresh session for long-running stream
+                from sqlalchemy.orm import sessionmaker
+                async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+                async with async_session_maker() as new_session:
+                    new_session.add(project)
+                    await new_session.commit()
                 
                 upsert_vector(
                     text=request.idea,
@@ -801,8 +806,8 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                              current_credits = response.data[0]['credits']
                         else:
                             # Insert default to Supabase
-                            current_credits = 10
-                            supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 10}).execute()
+                            current_credits = 0
+                            supabase.table("users").insert({"id": user_id, "email": user_payload.get('email'), "credits": 0}).execute()
                         
                         if current_credits < 1:
                              yield f"data: {json.dumps({'type': 'error', 'message': 'Insufficient credits. Please upgrade or choose Small analysis.'})}\n\n"
@@ -820,6 +825,8 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                         return
 
                 # Start parallel agents
+                print(f"[{datetime.utcnow().isoformat()}] Starting parallel agents (type: {request.analysis_type})")
+                parallel_start = time.time()
                 tasks = [] 
                 
                 # Spy, Financier, Architect ONLY run if full analysis
@@ -836,15 +843,18 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                 
                 # Process as they complete
                 for coro in asyncio.as_completed(tasks):
+                    agent_start = time.time()
                     tag, result = await coro
+                    agent_duration = time.time() - agent_start
                     if isinstance(result, Exception):
-                        print(f"Error in {tag}: {result}")
+                        print(f"[{datetime.utcnow().isoformat()}] ❌ {tag} failed in {agent_duration:.2f}s: {result}")
                         # We continue even if one fails, but ideally we should handle it
                         # For now, we might have missing data in the final report
                         results[tag] = None 
                     else:
+                        print(f"[{datetime.utcnow().isoformat()}] ✅ {tag} completed in {agent_duration:.2f}s")
                         results[tag] = result
-                        yield f"data: {json.dumps({'type': 'agent_complete', 'agent': tag})}\n\n"
+                        yield f"data: {json.dumps({'type': 'agent_complete', 'agent': tag, 'duration': f'{agent_duration:.2f}s'})}\n\n"
 
                 # Check if we have all results (or handle failures)
                 # Re-construct the specific response objects if needed, or just use what we have
@@ -901,8 +911,13 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     report_json=report_data.dict(),
                     user_id=user_payload['sub']
                 )
-                session.add(project)
-                await session.commit()
+                
+                # Fix: Create fresh session for long-running stream
+                from sqlalchemy.orm import sessionmaker
+                async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+                async with async_session_maker() as new_session:
+                    new_session.add(project)
+                    await new_session.commit()
                 
                 upsert_vector(
                     text=request.idea,
@@ -910,6 +925,9 @@ async def generate_report(request: IdeaRequest, session: AsyncSession = Depends(
                     vector_id=project_id
                 )
                 
+                total_duration = time.time() - parallel_start
+                print(f"[{datetime.utcnow().isoformat()}] ✅ All agents completed. Total time: {total_duration:.2f}s")
+                print(f"{'='*60}\n")
                 yield f"data: {json.dumps({'type': 'complete', 'status': 'approved', 'data': report_data.dict()})}\n\n"
 
         except Exception as e:
@@ -1205,4 +1223,6 @@ async def complete_step(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

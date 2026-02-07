@@ -8,16 +8,20 @@ import confetti from 'canvas-confetti';
 
 export default function WaitlistPage() {
     const [email, setEmail] = useState("");
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success'>("idle");
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>("idle");
+    const [errorMessage, setErrorMessage] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) return;
 
         setStatus("loading");
+        setErrorMessage("");
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
         try {
-            const res = await fetch('http://localhost:8000/api/waitlist', {
+            const res = await fetch(`${apiUrl}/api/waitlist`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -32,12 +36,15 @@ export default function WaitlistPage() {
                     colors: ['#EF4444', '#ffffff']
                 });
             } else {
-                console.error("Failed to join waitlist");
-                setStatus("idle");
+                const errorData = await res.json().catch(() => ({}));
+                console.error("Failed to join waitlist", errorData);
+                setStatus("error");
+                setErrorMessage(errorData.detail || "Something went wrong. Please try again.");
             }
         } catch (err) {
             console.error(err);
-            setStatus("idle");
+            setStatus("error");
+            setErrorMessage(`Connection failed to ${apiUrl}.`);
         }
     };
 
@@ -51,7 +58,7 @@ export default function WaitlistPage() {
                 >
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-white mb-8">
                         <span className="w-2 h-2 rounded-full bg-primary-red animate-pulse" />
-                        Access opening February 1st
+                        Access opening soon
                     </div>
 
                     <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 tracking-tight">
@@ -99,6 +106,9 @@ export default function WaitlistPage() {
                                         disabled={status === 'loading'}
                                     />
                                 </div>
+                                {status === 'error' && (
+                                    <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+                                )}
                                 <button
                                     type="submit"
                                     disabled={status === 'loading'}

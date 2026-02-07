@@ -16,7 +16,8 @@ export default function AnalystPage() {
             if (!params.projectId) return;
 
             try {
-                const response = await fetch(`http://localhost:8000/api/projects/${params.projectId}`);
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                const response = await fetch(`${apiUrl}/api/projects/${params.projectId}`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch project data');
                 }
@@ -34,7 +35,9 @@ export default function AnalystPage() {
                     }
 
                     if (reportData.agents) {
-                        setAllAgentsData(reportData.agents);
+                        // Extract analysis_type from root level, not from agents
+                        const analysisType = reportData.analysis_type || 'small';
+                        setAllAgentsData({ ...reportData.agents, analysis_type: analysisType });
                         if (reportData.agents.analyst) {
                             setAnalystData(reportData.agents.analyst);
                         }
@@ -76,6 +79,11 @@ export default function AnalystPage() {
                         project_id: Array.isArray(params.projectId) ? params.projectId[0] : params.projectId
                     }}
                     isPublic={isPublic}
+                    analysisType={
+                        allAgentsData?.analysis_type ||
+                        // Fallback heuristic for legacy analyses: if spy/financier/architect exist, it's full
+                        (allAgentsData?.spy || allAgentsData?.financier || allAgentsData?.architect ? 'full' : 'small')
+                    }
                 />
             )}
         </main>

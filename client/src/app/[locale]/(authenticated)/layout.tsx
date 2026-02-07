@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { IconLoader2 } from '@tabler/icons-react';
+import PageTransition from '@/components/PageTransition';
 
 export default function AuthenticatedLayout({
     children,
@@ -39,7 +40,9 @@ export default function AuthenticatedLayout({
         <div className="h-screen w-screen bg-[#1B1818] text-white flex overflow-hidden">
             <Sidebar />
             <div className="flex-1 h-full overflow-y-auto w-full relative">
-                {children}
+                <PageTransition>
+                    {children}
+                </PageTransition>
             </div>
         </div>
     );

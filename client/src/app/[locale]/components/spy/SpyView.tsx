@@ -18,6 +18,76 @@ interface HighlightBox {
   label: string;
 }
 
+// Premium Feature Interfaces
+interface CompetitorStatus {
+  name: string;
+  status: string;
+}
+
+interface FeatureRow {
+  feature_name: string;
+  user_product: string;
+  competitors: CompetitorStatus[];
+  strategic_note?: string;
+  verified_url: string;
+}
+
+interface FeatureComparisonMatrix {
+  title: string;
+  subtitle: string;
+  feature_rows: FeatureRow[];
+  key_differentiator: string;
+}
+
+interface PricingTier {
+  tier_name: string;
+  price: string;
+  key_features: string[];
+}
+
+interface CompetitorPricing {
+  competitor_name: string;
+  tiers: PricingTier[];
+  verified_url: string;
+}
+
+interface PricingComparison {
+  title: string;
+  subtitle: string;
+  recommended_positioning: string;
+  competitors_pricing: CompetitorPricing[];
+}
+
+interface ReviewSource {
+  source: string;
+  positive_mentions: number;
+  negative_mentions: number;
+  neutral_mentions: number;
+  top_positive_theme?: string;
+  top_negative_theme?: string;
+}
+
+interface SentimentBreakdown {
+  title: string;
+  overall_sentiment_score: number;
+  sources: ReviewSource[];
+  key_insight: string;
+}
+
+interface GapOpportunity {
+  opportunity_title: string;
+  description: string;
+  impact_level: string;
+  competitor_coverage: string;
+  verified_url: string;
+}
+
+interface GapAnalysis {
+  title: string;
+  subtitle: string;
+  opportunities: GapOpportunity[];
+}
+
 interface SpyData {
   title: string;
   score: number;
@@ -47,6 +117,11 @@ interface SpyData {
     };
     highlight_boxes: HighlightBox[];
   };
+  // Premium Features (Optional)
+  feature_comparison_matrix?: FeatureComparisonMatrix;
+  pricing_comparison?: PricingComparison;
+  sentiment_breakdown?: SentimentBreakdown;
+  gap_opportunities?: GapAnalysis;
 }
 
 interface SpyViewProps {
@@ -276,6 +351,175 @@ export default function SpyView({ data }: SpyViewProps) {
             </div>
           </Widget>
         </div>
+
+        {/* PREMIUM FEATURES */}
+
+        {/* 7. Feature Comparison Matrix (4x1) */}
+        {data.feature_comparison_matrix && (
+          <div className="lg:col-span-4">
+            <Widget title={data.feature_comparison_matrix.title}>
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-400">{data.feature_comparison_matrix.subtitle}</p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="text-left py-3 px-4 text-neutral-400 font-medium">{t('feature')}</th>
+                        <th className="text-center py-3 px-4 text-emerald-400 font-medium">{t('yourProduct')}</th>
+                        {data.feature_comparison_matrix.feature_rows[0]?.competitors.map((comp) => (
+                          <th key={comp.name} className="text-center py-3 px-4 text-neutral-400 font-medium">{comp.name}</th>
+                        ))}
+                        <th className="text-left py-3 px-4 text-neutral-400 font-medium">{t('whyItMatters')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.feature_comparison_matrix.feature_rows.map((row, i) => (
+                        <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                          <td className="py-3 px-4 text-white font-medium">{row.feature_name}</td>
+                          <td className="py-3 px-4 text-center text-lg">{row.user_product}</td>
+                          {row.competitors.map((comp, j) => (
+                            <td key={j} className="py-3 px-4 text-center text-lg">{comp.status}</td>
+                          ))}
+                          <td className="py-3 px-4 text-xs text-neutral-400">{row.strategic_note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/30 rounded-lg">
+                  <div className="font-semibold text-emerald-400 mb-1">🎯 {t('keyDifferentiator')}</div>
+                  <p className="text-sm text-neutral-300">{data.feature_comparison_matrix.key_differentiator}</p>
+                </div>
+              </div>
+            </Widget>
+          </div>
+        )}
+
+        {/* 8. Pricing Comparison (4x1) */}
+        {data.pricing_comparison && (
+          <div className="lg:col-span-4">
+            <Widget title={data.pricing_comparison.title}>
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-400">{data.pricing_comparison.subtitle}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {data.pricing_comparison.competitors_pricing.map((comp, i) => (
+                    <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-4">
+                      <h4 className="font-bold text-white mb-3">{comp.competitor_name}</h4>
+                      <div className="space-y-3">
+                        {comp.tiers.map((tier, j) => (
+                          <div key={j} className="pb-3 border-b border-white/5 last:border-0">
+                            <div className="flex items-baseline gap-2 mb-2">
+                              <span className="text-sm font-medium text-neutral-300">{tier.tier_name}</span>
+                              <span className="text-xl font-bold text-emerald-400">{tier.price}</span>
+                            </div>
+                            <ul className="space-y-1">
+                              {tier.key_features.map((feature, k) => (
+                                <li key={k} className="text-xs text-neutral-400 flex items-start gap-1">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" />
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                  <div className="font-semibold text-blue-400 mb-1">💡 {t('recommendedPositioning')}</div>
+                  <p className="text-sm text-neutral-300">{data.pricing_comparison.recommended_positioning}</p>
+                </div>
+              </div>
+            </Widget>
+          </div>
+        )}
+
+        {/* 9. Sentiment Breakdown (2x1) */}
+        {data.sentiment_breakdown && (
+          <div className="lg:col-span-2">
+            <Widget title={data.sentiment_breakdown.title}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <div className="text-sm text-neutral-400 mb-1">{t('overallSentiment')}</div>
+                    <div className="text-3xl font-bold text-white">{data.sentiment_breakdown.overall_sentiment_score}/100</div>
+                  </div>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${data.sentiment_breakdown.overall_sentiment_score >= 70 ? 'bg-emerald-500/20 text-emerald-400' : data.sentiment_breakdown.overall_sentiment_score >= 40 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                    {data.sentiment_breakdown.overall_sentiment_score >= 70 ? '😊' : data.sentiment_breakdown.overall_sentiment_score >= 40 ? '😐' : '😞'}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {data.sentiment_breakdown.sources.map((source, i) => (
+                    <div key={i} className="bg-white/5 rounded-lg p-3">
+                      <div className="font-medium text-white mb-2">{source.source}</div>
+                      <div className="flex gap-2 mb-2">
+                        <div className="flex-1 bg-neutral-800 rounded-full h-2 overflow-hidden flex">
+                          <div className="bg-emerald-500 h-full" style={{ width: `${(source.positive_mentions / (source.positive_mentions + source.negative_mentions + source.neutral_mentions)) * 100}%` }} />
+                          <div className="bg-neutral-500 h-full" style={{ width: `${(source.neutral_mentions / (source.positive_mentions + source.negative_mentions + source.neutral_mentions)) * 100}%` }} />
+                          <div className="bg-red-500 h-full" style={{ width: `${(source.negative_mentions / (source.positive_mentions + source.negative_mentions + source.neutral_mentions)) * 100}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex gap-4 text-xs">
+                        <span className="text-emerald-400">👍 {source.positive_mentions}</span>
+                        <span className="text-neutral-400">😐 {source.neutral_mentions}</span>
+                        <span className="text-red-400">👎 {source.negative_mentions}</span>
+                      </div>
+                      {source.top_negative_theme && (
+                        <div className="mt-2 text-xs text-neutral-400">
+                          Top complaint: <span className="text-neutral-300">{source.top_negative_theme}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-3 bg-neutral-900 border border-neutral-800 rounded text-xs text-neutral-300">
+                  💡 {data.sentiment_breakdown.key_insight}
+                </div>
+              </div>
+            </Widget>
+          </div>
+        )}
+
+        {/* 10. Gap Opportunities (2x1) */}
+        {data.gap_opportunities && (
+          <div className="lg:col-span-2">
+            <Widget title={data.gap_opportunities.title}>
+              <div className="space-y-4">
+                <p className="text-sm text-neutral-400">{data.gap_opportunities.subtitle}</p>
+
+                <div className="space-y-3">
+                  {data.gap_opportunities.opportunities.map((opp, i) => (
+                    <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-4 hover:border-emerald-500/50 transition-colors">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold text-white">{opp.opportunity_title}</h4>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${opp.impact_level === 'High' ? 'bg-red-500/20 text-red-400' :
+                          opp.impact_level === 'Medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }`}>
+                          {opp.impact_level}
+                        </span>
+                      </div>
+                      <p className="text-sm text-neutral-300 mb-2">{opp.description}</p>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-neutral-500">{t('coverage')}: <span className="text-neutral-300">{opp.competitor_coverage}</span></span>
+                        <a href={opp.verified_url} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                          {t('viewSource')} <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Widget>
+          </div>
+        )}
 
       </div>
     </div>

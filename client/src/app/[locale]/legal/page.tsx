@@ -3,7 +3,7 @@
 import PageWrapper from "@/app/[locale]/components/landing/PageWrapper";
 import { motion } from "motion/react";
 import { Link } from "@/i18n/routing";
-import { IconCookie, IconFileDescription, IconLock, IconShieldLock } from "@tabler/icons-react";
+import { IconCookie, IconFileDescription, IconLock, IconShieldLock, IconScale } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
 
 export default function LegalPage() {
@@ -14,6 +14,7 @@ export default function LegalPage() {
         { name: t('cards.terms.name'), href: "/terms", icon: <IconFileDescription className="w-8 h-8 text-blue-500" />, desc: t('cards.terms.desc') },
         { name: t('cards.security.name'), href: "/security", icon: <IconLock className="w-8 h-8 text-green-500" />, desc: t('cards.security.desc') },
         { name: t('cards.cookies.name'), href: "/cookies", icon: <IconCookie className="w-8 h-8 text-orange-500" />, desc: t('cards.cookies.desc') },
+        { name: "Mentions Légales", href: "/mentions-legales", icon: <IconScale className="w-8 h-8 text-purple-500" />, desc: "Informations légales obligatoires (L.C.E.N.)" },
     ];
 
     return (

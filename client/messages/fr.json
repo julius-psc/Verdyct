@@ -131,7 +131,7 @@
         "annual": "Annuel",
         "save22": "Économisez 22%",
         "launchOffer": "Offre de Lancement -50%",
-        "launchDate": "Lancement 1er Fév",
+        "launchDate": "Lancement imminent",
         "perPack": "/ pack",
         "perMonth": "/ mois",
         "perYear": "/ an",
@@ -146,11 +146,10 @@
                 "description": "Parfait pour tester",
                 "includesLabel": "Inclus",
                 "features": {
-                    "0": "1 Analyse Verdyct Complète",
-                    "1": "Accès Agent Analyste (Rapport)",
-                    "2": "Pas d'Agent Espion (Concurrents)",
-                    "3": "Pas d'Agent Financier",
-                    "4": "Pas d'Agent Architecte"
+                    "0": "Accès Agent Analyste (Rapport)",
+                    "1": "Pas d'Agent Espion (Concurrents)",
+                    "2": "Pas d'Agent Financier",
+                    "3": "Pas d'Agent Architecte"
                 }
             },
             "starter": {
@@ -162,7 +161,8 @@
                     "1": "Accès aux 4 Agents",
                     "2": "Analyste, Espion, Financier, Architecte",
                     "3": "Téléchargement du rapport complet"
-                }
+                },
+                "cta": "Acheter des Crédits"
             },
             "builder": {
                 "name": "Bâtisseur",
@@ -173,7 +173,9 @@
                     "1": "Plan d'Action Personnalisé (Timeline)",
                     "2": "Accès aux Analyses Approfondies",
                     "3": "Coach IA Illimité"
-                }
+                },
+                "cta_annual": "S'abonner (Annuel)",
+                "cta_monthly": "S'abonner (Mensuel)"
             }
         }
     },

@@ -25,11 +25,11 @@ const mockFullReportEn = {
             title: "SEO Goldmine",
             subtitle: "Low difficulty, high value keywords identified.",
             high_opportunity_keywords: [
-                { term: "AI tenant screening", volume_estimate: "High (22k)", difficulty_level: "Low" },
-                { term: "Automated rent collection app", volume_estimate: "Very High (45k)", difficulty_level: "Medium" },
-                { term: "Landlord tax deduction AI", volume_estimate: "Medium (12k)", difficulty_level: "Very Low" },
-                { term: "Property management automation", volume_estimate: "High (33k)", difficulty_level: "Medium" },
-                { term: "Best software for small landlords", volume_estimate: "Huge (60k)", difficulty_level: "Medium" }
+                { keyword: "AI tenant screening", opportunity_level: "High (22k)", difficulty: "Low" },
+                { keyword: "Automated rent collection app", opportunity_level: "Very High (45k)", difficulty: "Medium" },
+                { keyword: "Landlord tax deduction AI", opportunity_level: "Medium (12k)", difficulty: "Very Low" },
+                { keyword: "Property management automation", opportunity_level: "High (33k)", difficulty: "Medium" },
+                { keyword: "Best software for small landlords", opportunity_level: "Huge (60k)", difficulty: "Medium" }
             ]
         },
         ideal_customer_persona: {
@@ -129,7 +129,9 @@ const mockFullReportEn = {
                 ltv_cac_ratio: "8.5",
                 status: "Healthy",
                 estimated_cac: "$45",
-                estimated_ltv: "$380"
+                estimated_ltv: "$380",
+                break_even_users: "150",
+                projected_runway_months: "18"
             }
         },
         revenue_projection: {
@@ -218,11 +220,11 @@ const mockFullReportFr = {
             title: "Mine d'Or SEO",
             subtitle: "Mots-clés à faible difficulté et haute valeur identifiés.",
             high_opportunity_keywords: [
-                { term: "AI tenant screening", volume_estimate: "High (22k)", difficulty_level: "Low" },
-                { term: "Automated rent collection app", volume_estimate: "Very High (45k)", difficulty_level: "Medium" },
-                { term: "Landlord tax deduction AI", volume_estimate: "Medium (12k)", difficulty_level: "Very Low" },
-                { term: "Property management automation", volume_estimate: "High (33k)", difficulty_level: "Medium" },
-                { term: "Best software for small landlords", volume_estimate: "Huge (60k)", difficulty_level: "Medium" }
+                { keyword: "AI tenant screening", opportunity_level: "High (22k)", difficulty: "Low" },
+                { keyword: "Automated rent collection app", opportunity_level: "Very High (45k)", difficulty: "Medium" },
+                { keyword: "Landlord tax deduction AI", opportunity_level: "Medium (12k)", difficulty: "Very Low" },
+                { keyword: "Property management automation", opportunity_level: "High (33k)", difficulty: "Medium" },
+                { keyword: "Best software for small landlords", opportunity_level: "Huge (60k)", difficulty: "Medium" }
             ]
         },
         ideal_customer_persona: {
@@ -322,7 +324,9 @@ const mockFullReportFr = {
                 ltv_cac_ratio: "8.5",
                 status: "Sain",
                 estimated_cac: "$45",
-                estimated_ltv: "$380"
+                estimated_ltv: "$380",
+                break_even_users: "150",
+                projected_runway_months: "18"
             }
         },
         revenue_projection: {

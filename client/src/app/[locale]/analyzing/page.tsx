@@ -17,20 +17,21 @@ export default function AnalyzingPage() {
     const [analysisData, setAnalysisData] = useState<any>(null);
     const [flowState, setFlowState] = useState<'analyzing' | 'decision' | 'completed'>('analyzing');
     const [idea, setIdea] = useState<string | null>(null);
-    const [showCreditError, setShowCreditError] = useState(false);
+    const [status, setStatus] = useState<string>('starting');
+    const [isLoading, setIsLoading] = useState(false); // Controls modal visibility mostly
+    const [projectId, setProjectId] = useState<string | null>(null);
 
     const hasStartedRef = useRef(false);
+    const pollingInterval = useRef<NodeJS.Timeout | null>(null);
 
+    // Initial Load & Auth Check
     useEffect(() => {
         const init = async () => {
-            // Prevent double-execution in Strict Mode or rapid re-mounts
             if (hasStartedRef.current) return;
 
-            // Check session first
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session) {
-                // If no session, redirect to login
                 const currentIdea = searchParams.get('idea') || localStorage.getItem('pending_idea');
                 if (currentIdea) {
                     localStorage.setItem('pending_idea', currentIdea);
@@ -39,34 +40,40 @@ export default function AnalyzingPage() {
                 return;
             }
 
-            // Session exists, proceed with idea retrieval
-            const ideaParam = searchParams.get('idea');
-            const typeParam = searchParams.get('type') || 'small';
+            // Check for existing Project ID from URL or Session
+            // Note: URL param 'id' is better to allow sharing/returning
+            const urlId = searchParams.get('id');
+            const sessionKey = `analysis_id_${searchParams.get('idea') || 'active'}`;
+            const existingId = urlId || sessionStorage.getItem(sessionKey);
 
-            // Generate a simple hash/key for the current analysis attempt
-            const analysisKey = `analysis_lock_${ideaParam || localStorage.getItem('pending_idea')}`;
-
-            // Check if we already started this specific analysis in this session
-            if (sessionStorage.getItem(analysisKey)) {
-                console.log("Analysis already in progress for this idea (lock found).");
+            if (existingId) {
+                // Resume Mode
+                hasStartedRef.current = true;
+                setProjectId(existingId);
+                setIdea(searchParams.get('idea') || "Existing Project");
+                setIsLoading(true);
+                startPolling(existingId, session.access_token);
                 return;
             }
 
+            // New Analysis Mode
+            const ideaParam = searchParams.get('idea');
+            const typeParam = searchParams.get('type') || 'small';
+
             if (ideaParam) {
-                hasStartedRef.current = true; // Mark as started locally
-                sessionStorage.setItem(analysisKey, 'true'); // Set session lock
+                hasStartedRef.current = true;
                 setIdea(ideaParam);
-                startAnalysis(ideaParam, session.access_token, typeParam, analysisKey);
+                startAnalysis(ideaParam, session.access_token, typeParam, sessionKey);
             } else {
+                // Check pending logic from local storage if redirected from login
                 const storedIdea = localStorage.getItem('pending_idea');
                 const storedType = localStorage.getItem('pending_type') || 'small';
                 if (storedIdea) {
-                    hasStartedRef.current = true; // Mark as started locally
-                    sessionStorage.setItem(analysisKey, 'true'); // Set session lock
+                    hasStartedRef.current = true;
                     setIdea(storedIdea);
                     localStorage.removeItem('pending_idea');
                     localStorage.removeItem('pending_type');
-                    startAnalysis(storedIdea, session.access_token, storedType, analysisKey);
+                    startAnalysis(storedIdea, session.access_token, storedType, sessionKey);
                 } else {
                     router.push('/');
                 }
@@ -74,11 +81,17 @@ export default function AnalyzingPage() {
         };
 
         init();
+
+        return () => {
+            if (pollingInterval.current) clearInterval(pollingInterval.current);
+        };
     }, [searchParams]);
 
-    const startAnalysis = async (promptToUse: string, token: string, analysisType: string = 'small', analysisKey?: string) => {
+    const startAnalysis = async (promptToUse: string, token: string, analysisType: string = 'small', sessionKey: string) => {
         try {
+            setIsLoading(true);
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
             const response = await fetch(`${apiUrl}/generate-report`, {
                 method: 'POST',
                 headers: {
@@ -89,63 +102,173 @@ export default function AnalyzingPage() {
             });
 
             if (response.status === 401) {
-                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on auth error
                 await supabase.auth.signOut();
-                localStorage.setItem('pending_idea', promptToUse);
-                router.push('/login?next=/analyzing');
+                router.push('/login');
                 return;
             }
 
             if (!response.ok) {
-                throw new Error('Analysis failed');
+                try {
+                    const err = await response.json();
+                    console.error("Initiation Error:", err);
+                    alert(err.detail || "Failed to start analysis.");
+                } catch {
+                    alert("Failed to start analysis.");
+                }
+                router.push('/');
+                return;
             }
 
+            // Parse SSE stream
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
+            let buffer = '';
 
-            if (!reader) throw new Error('No reader available');
+            if (!reader) {
+                alert("Failed to read response stream.");
+                router.push('/');
+                return;
+            }
 
             while (true) {
                 const { done, value } = await reader.read();
+
                 if (done) break;
 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n\n');
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+
+                // Keep the last incomplete line in the buffer
+                buffer = lines.pop() || '';
 
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        try {
-                            const data = JSON.parse(line.slice(6));
-                            console.log("Stream event:", data);
+                        const jsonStr = line.slice(6); // Remove 'data: ' prefix
 
-                            if (data.type === 'agent_complete') {
-                                window.dispatchEvent(new CustomEvent('agent-complete', { detail: data.agent }));
-                            } else if (data.type === 'complete') {
-                                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on success
-                                setAnalysisData(data.data);
-                            } else if (data.type === 'error') {
-                                if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on error
-                                console.error("Stream error:", data.message);
-                                if (data.message.includes('Insufficient credits')) {
-                                    setShowCreditError(true);
-                                } else {
-                                    alert(data.message);
+                        try {
+                            const event = JSON.parse(jsonStr);
+
+                            // Handle different event types
+                            if (event.type === 'status') {
+                                console.log(`Agent ${event.agent} is ${event.status}`);
+                                setStatus(event.status);
+                            } else if (event.type === 'agent_complete') {
+                                console.log(`Agent ${event.agent} completed`);
+                            } else if (event.type === 'log') {
+                                console.log(`Log: ${event.message}`);
+                            } else if (event.type === 'complete') {
+                                // Analysis completed successfully
+                                const pid = event.data?.project_id;
+
+                                if (!pid) {
+                                    console.error("No project_id in complete event:", event);
+                                    alert("Analysis completed but no project ID received.");
                                     router.push('/');
+                                    return;
                                 }
+
+                                // Persist ID
+                                setProjectId(pid);
+                                sessionStorage.setItem(sessionKey, pid);
+                                localStorage.setItem('verdyct_active_analysis_id', pid);
+
+                                // Update URL
+                                const newUrl = new URL(window.location.href);
+                                newUrl.searchParams.set('id', pid);
+                                window.history.replaceState({}, '', newUrl.toString());
+
+                                // Start Polling
+                                startPolling(pid, token);
+                                return; // Exit the stream reading loop
+                            } else if (event.type === 'error') {
+                                // Server error
+                                console.error("Server error:", event.message);
+                                alert(event.message || "Analysis failed on server. Please try again.");
+                                router.push('/');
+                                return;
                             }
-                        } catch (e) {
-                            console.error("Error parsing stream data:", e);
+                        } catch (parseError) {
+                            console.error("Failed to parse SSE event:", jsonStr, parseError);
                         }
                     }
                 }
             }
 
         } catch (error) {
-            if (analysisKey) sessionStorage.removeItem(analysisKey); // Unlock on exception
-            console.error("Error analyzing idea:", error);
-            alert("Something went wrong. Please try again.");
+            console.error("Error starting analysis:", error);
+            alert("Connection error. Please try again.");
             router.push('/');
         }
+    };
+
+    const startPolling = (pid: string, token: string) => {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+        const poll = async () => {
+            try {
+                const res = await fetch(`${apiUrl}/api/projects/${pid}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    // Token expired logic?
+                    return;
+                }
+
+                if (!res.ok) {
+                    // Project not found or error
+                    console.log("Poll error:", res.status);
+                    return;
+                }
+
+                const project = await res.json();
+                setStatus(project.status); // Update status for LoadingModal
+
+                // Check terminal states
+                if (['approved', 'rejected', 'failed'].includes(project.status)) {
+                    if (pollingInterval.current) clearInterval(pollingInterval.current);
+
+                    if (project.status === 'failed') {
+                        alert("Analysis failed on server. Please try again.");
+                        router.push('/');
+                        return;
+                    }
+
+                    // Complete
+                    // Wait a moment for UI to catch up?
+                    // Actually LoadingModal handles "approved" by calling onComplete
+                    // We need to set data first
+                    if (project.report_json) {
+                        // Map report_json to expected analysisData structure
+                        // report_json IS the VerdyctReportResponse which contains 'agents', 'status', 'pcs_score', etc.
+                        // But frontend expects `data.data` from previous logic?
+                        // Previous logic: `setAnalysisData(data.data)` where data.type === 'complete'.
+                        // Let's inspect `VerdyctReportResponse`.
+                        // It has `status`, `pcs_score`, `agents`, `rescue_plan`.
+                        // The frontend uses `analysisData.status` and `analysisData.pcs_score` etc.
+                        // So we can set it directly.
+
+                        // BUT `project.report_json` is the `VerdyctReportResponse`.
+                        // So we merge it.
+                        setAnalysisData(project.report_json);
+                    }
+
+                    setIsLoading(false); // This might hide modal if not careful. 
+                    // LoadingModal logic: `isLoading={!analysisData}` passed? 
+                    // Previous: `isLoading={!analysisData}`.
+                    // If we setAnalysisData, isLoading becomes false in the View?
+                    // No. passing `isLoading` state variable? No.
+                    // Let's look at `return`.
+                }
+
+            } catch (e) {
+                console.error("Polling error:", e);
+            }
+        };
+
+        // Poll immediately then interval
+        poll();
+        pollingInterval.current = setInterval(poll, 2000);
     };
 
     const handleAnalystComplete = () => {
@@ -162,12 +285,14 @@ export default function AnalyzingPage() {
         setAnalysisData(null);
         setFlowState('analyzing');
         setIdea(prompt);
-
+        // Clear old session
+        sessionStorage.clear(); // Brute force but safer
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-            startAnalysis(prompt, session.access_token);
-        } else {
-            router.push('/login?next=/analyzing');
+            // New Analysis
+            const sessionKey = `analysis_id_${prompt}`;
+            startAnalysis(prompt, session.access_token, 'small', sessionKey); // Assuming restart is small or full?
+            // Actually, EnhancePivot usually triggers meaningful pivot.
         }
     };
 
@@ -177,50 +302,12 @@ export default function AnalyzingPage() {
 
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
-            {flowState === 'analyzing' && !showCreditError && (
+            {flowState === 'analyzing' && (
                 <LoadingModal
                     onComplete={handleAnalystComplete}
-                    isLoading={!analysisData}
-                    status={analysisData?.status}
+                    isLoading={status !== 'approved' && status !== 'rejected'} // Keep loading until terminal
+                    status={status}
                 />
-            )}
-
-            {showCreditError && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
-                    <div className="max-w-md w-full bg-[#1B1818] border border-white/10 rounded-2xl p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
-                        {/* Background Glow */}
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-red-500/10 blur-[100px] pointer-events-none" />
-
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 ring-1 ring-red-500/20">
-                                <span className="text-3xl">⚠️</span>
-                            </div>
-
-                            <h1 className="text-2xl font-bold text-white mb-2">Out of Credits</h1>
-                            <p className="text-neutral-400 text-sm leading-relaxed mb-6">
-                                Oops! You don't have enough credits for a <strong>Full Analysis</strong>.
-                                <br />
-                                You need <strong>1 credit</strong> to unlock all agents.
-                            </p>
-
-                            <div className="flex flex-col gap-3 w-full">
-                                <button
-                                    onClick={() => router.push('/')} // Ideally go to settings/billing
-                                    className="w-full py-3 bg-white hover:bg-neutral-200 text-black font-semibold rounded-lg transition-colors"
-                                >
-                                    Get More Credits
-                                </button>
-
-                                <button
-                                    onClick={() => router.push('/')}
-                                    className="w-full py-3 bg-transparent hover:bg-white/5 text-neutral-400 font-medium rounded-lg border border-white/10 transition-colors"
-                                >
-                                    Return Home
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             )}
 
             {flowState === 'decision' && analysisData && (
